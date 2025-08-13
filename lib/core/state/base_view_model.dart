@@ -34,6 +34,29 @@ class OperationResult<T> {
   }
 }
 
+/// 작업 취소를 위한 토큰
+class CancelToken {
+  bool _isCancelled = false;
+  String? _reason;
+
+  bool get isCancelled => _isCancelled;
+  String? get reason => _reason;
+
+  void cancel([String? reason]) {
+    _isCancelled = true;
+    _reason = reason;
+  }
+
+  void throwIfCancelled() {
+    if (_isCancelled) {
+      throw CancelException(
+        _reason ?? 'Operation was cancelled',
+        code: 'operation_cancelled',
+      );
+    }
+  }
+}
+
 /// 모든 ViewModel의 기본 클래스 (개선된 버전)
 /// 공통 상태 관리 로직과 에러 처리를 제공
 abstract class BaseViewModel extends ChangeNotifier {
@@ -370,9 +393,9 @@ abstract class BaseViewModel extends ChangeNotifier {
     }
   }
 
-  /// 모든 진행 중인 작업 취소
+  /// 모든 진행 중인 작업 취소 (누락된 메서드 추가)
   @protected
-  void cancelAllOperations() {
+  void _cancelAllOperations() {
     for (final token in _cancellationTokens.values) {
       if (!token.isCancelled) {
         token.cancel();
@@ -380,6 +403,12 @@ abstract class BaseViewModel extends ChangeNotifier {
     }
     _cancellationTokens.clear();
     _ongoingOperations.clear();
+  }
+
+  /// 모든 진행 중인 작업 취소 (public 메서드)
+  @protected
+  void cancelAllOperations() {
+    _cancelAllOperations();
     setLoading(false);
   }
 
@@ -396,6 +425,98 @@ abstract class BaseViewModel extends ChangeNotifier {
     }
   }
 
+  // ========================= 편의 메서드 =========================
+
+  /// 간단한 비동기 작업 실행 (CancelToken 없이)
+  @protected
+  Future<OperationResult<T>> executeSimpleOperation<T>(
+      Future<T> Function() operation, {
+        required String operationId,
+        bool showLoading = true,
+        String? successMessage,
+        Duration? timeout,
+      }) async {
+    return executeOperation<T>(
+          (cancelToken) => operation(),
+      operationId: operationId,
+      showLoading: showLoading,
+      successMessage: successMessage,
+      timeout: timeout,
+    );
+  }
+
+  /// 조건부 작업 실행
+  @protected
+  Future<OperationResult<T>> executeConditionalOperation<T>(
+      bool condition,
+      Future<T> Function(CancelToken cancelToken) operation, {
+        required String operationId,
+        String? conditionFailedMessage,
+        bool showLoading = true,
+      }) async {
+    if (!condition) {
+      return OperationResult.failure(
+        ValidationException(
+          conditionFailedMessage ?? 'Operation condition not met',
+          code: 'condition_failed',
+        ),
+      );
+    }
+
+    return executeOperation<T>(
+      operation,
+      operationId: operationId,
+      showLoading: showLoading,
+    );
+  }
+
+  /// 재시도 가능한 작업 실행
+  @protected
+  Future<OperationResult<T>> executeRetryableOperation<T>(
+      Future<T> Function(CancelToken cancelToken) operation, {
+        required String operationId,
+        int maxRetries = 3,
+        Duration retryDelay = const Duration(seconds: 1),
+        bool showLoading = true,
+      }) async {
+    for (int attempt = 0; attempt <= maxRetries; attempt++) {
+      final result = await executeOperation<T>(
+        operation,
+        operationId: '${operationId}_attempt_$attempt',
+        showLoading: showLoading && attempt == 0,
+        clearPreviousError: attempt == 0,
+      );
+
+      if (result.isSuccess || result.wasCancelled) {
+        return result;
+      }
+
+      // 마지막 시도가 아니고 재시도 가능한 에러인 경우
+      if (attempt < maxRetries &&
+          result.error != null &&
+          ErrorHandler.isRetryableError(result.error!)) {
+
+        // 재시도 전 대기
+        await Future.delayed(retryDelay * (attempt + 1));
+
+        // 재시도 로그
+        if (kDebugMode) {
+          debugPrint('Retrying operation $operationId (attempt ${attempt + 2}/${maxRetries + 1})');
+        }
+
+        continue;
+      }
+
+      // 재시도 불가능하거나 마지막 시도인 경우
+      return result;
+    }
+
+    // 여기에 도달하지 않아야 하지만 안전을 위해
+    return OperationResult.failure(
+      UnknownException('Max retries exceeded for operation $operationId'),
+    );
+  }
+
   // ========================= 라이프사이클 관리 =========================
 
   /// ViewModel 초기화 (서브클래스에서 오버라이드)
@@ -403,7 +524,9 @@ abstract class BaseViewModel extends ChangeNotifier {
   @mustCallSuper
   void initialize() {
     // 서브클래스에서 구현
-    debugPrint('${runtimeType} initialized');
+    if (kDebugMode) {
+      debugPrint('${runtimeType} initialized');
+    }
   }
 
   /// 리소스 정리 (서브클래스에서 오버라이드)
@@ -411,7 +534,9 @@ abstract class BaseViewModel extends ChangeNotifier {
   @mustCallSuper
   void cleanup() {
     // 서브클래스에서 구현
-    debugPrint('${runtimeType} cleaned up');
+    if (kDebugMode) {
+      debugPrint('${runtimeType} cleaned up');
+    }
   }
 
   /// ViewModel 해제
@@ -419,7 +544,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   @mustCallSuper
   void dispose() {
     _isDisposed = true;
-    cancelAllOperations();
+    _cancelAllOperations();
     cleanup();
     super.dispose();
   }
@@ -430,6 +555,16 @@ abstract class BaseViewModel extends ChangeNotifier {
     if (!_isDisposed) {
       notifyListeners();
     }
+  }
+
+  /// 현재 상태가 유효한지 확인
+  @protected
+  bool get isStateValid => !_isDisposed && !hasError;
+
+  /// 작업 실행 가능 여부 확인
+  @protected
+  bool canExecuteOperation(String operationId) {
+    return !_isDisposed && !isOperationInProgress(operationId);
   }
 
   /// 디버그 정보 출력
@@ -445,29 +580,6 @@ ViewModel State (${runtimeType}):
 - Ongoing Operations: $_ongoingOperations
 - Is Disposed: $_isDisposed
 ''');
-    }
-  }
-}
-
-/// 작업 취소를 위한 토큰
-class CancelToken {
-  bool _isCancelled = false;
-  String? _reason;
-
-  bool get isCancelled => _isCancelled;
-  String? get reason => _reason;
-
-  void cancel([String? reason]) {
-    _isCancelled = true;
-    _reason = reason;
-  }
-
-  void throwIfCancelled() {
-    if (_isCancelled) {
-      throw CancelException(
-        _reason ?? 'Operation was cancelled',
-        code: 'operation_cancelled',
-      );
     }
   }
 }

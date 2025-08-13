@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
     id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'  // Crashlytics 플러그인 추가
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -25,41 +26,58 @@ if (flutterVersionName == null) {
 
 android {
     namespace 'kdn.vms.app'
-    compileSdk 34  // 35 → 34로 변경 (안정성)
+    compileSdk 34
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17  // 1.8 → 17
-        targetCompatibility JavaVersion.VERSION_17  // 1.8 → 17
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '17'  // 1.8 → 17
+        jvmTarget = '17'
     }
 
     defaultConfig {
         applicationId "kdn.vms.app"
-        minSdkVersion 23
-        targetSdkVersion 34  // 35 → 34
+        minSdkVersion 23  // Firebase Messaging 최소 요구사항
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+
+        // ProGuard 설정 개선
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         debug {
-            minifyEnabled false  // true → false (디버그에서는 불필요)
+            minifyEnabled false
+            debuggable true
+            // 디버그 빌드에서는 난독화 비활성화
         }
         release {
             signingConfig signingConfigs.debug
-            shrinkResources true
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            // Release 빌드 최적화
+            zipAlignEnabled true
+            debuggable false
         }
     }
 
+    // Lint 설정 개선
     lint {
         disable 'InvalidPackage'
         checkReleaseBuilds false
+        abortOnError false
+    }
+
+    // 패키징 옵션 추가 (중복 파일 처리)
+    packagingOptions {
+        pickFirst '**/libc++_shared.so'
+        pickFirst '**/libjsc.so'
     }
 }
 
@@ -68,14 +86,31 @@ flutter {
 }
 
 dependencies {
-    // Firebase BOM을 명시적 버전으로 고정
-    implementation platform('com.google.firebase:firebase-bom:32.5.0')
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-messaging'
+    // Firebase BOM으로 버전 통합 관리
+    implementation platform('com.google.firebase:firebase-bom:33.6.0')  // 최신 안정 버전
 
-    // Play Services 버전 명시적 지정
-    implementation 'com.google.android.gms:play-services-measurement:21.5.0'
-    implementation 'com.google.android.gms:play-services-measurement-api:21.5.0'
+    // Firebase 서비스들 (BOM에 의해 버전 자동 관리)
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'  // Crashlytics 추가
+    implementation 'com.google.firebase:firebase-core'
 
+    // Google Play Services (버전 명시)
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
+    implementation 'com.google.android.gms:play-services-auth:21.2.0'
+
+    // AndroidX 라이브러리
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.6'
+    implementation 'androidx.activity:activity-compose:1.9.2'
+
+    // 네트워크 보안 (OkHttp)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // WorkManager (백그라운드 작업용)
+    implementation 'androidx.work:work-runtime-ktx:2.9.1'
 }

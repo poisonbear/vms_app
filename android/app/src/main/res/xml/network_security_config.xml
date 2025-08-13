@@ -1,16 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <!-- 기본은 HTTPS만 허용 -->
-    <base-config cleartextTrafficPermitted="false" />
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- 시스템 CA 인증서 신뢰 -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
 
-    <!-- 개발용 디버그 빌드에선 HTTP도 허용 -->
+    <!-- Firebase 및 Google 서비스 도메인 설정 -->
+    <domain-config>
+        <domain includeSubdomains="true">firebase.googleapis.com</domain>
+        <domain includeSubdomains="true">firestore.googleapis.com</domain>
+        <domain includeSubdomains="true">fcm.googleapis.com</domain>
+        <domain includeSubdomains="true">crashlytics.googleapis.com</domain>
+        <domain includeSubdomains="true">firebase-settings.crashlytics.com</domain>
+        <domain includeSubdomains="true">google-analytics.com</domain>
+        <domain includeSubdomains="true">googletagmanager.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- VMS API 서버 도메인 설정 (HTTPS 권장) -->
+    <domain-config>
+        <domain includeSubdomains="true">api.kdn-vms.com</domain>
+        <domain includeSubdomains="true">vms-api.kdn.co.kr</domain>
+        <!-- 실제 API 서버 도메인으로 변경 필요 -->
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- 개발용 디버그 빌드에서만 HTTP 허용 -->
     <debug-overrides>
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
+
+        <!-- 개발 환경 HTTP 허용 도메인들 -->
         <domain-config cleartextTrafficPermitted="true">
-            <domain includeSubdomains="true">10.0.2.2</domain> <!-- 에뮬레이터 localhost -->
+            <!-- 로컬 개발 환경 -->
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">127.0.0.1</domain>
+            <domain includeSubdomains="true">10.0.2.2</domain> <!-- Android 에뮬레이터 localhost -->
+            <domain includeSubdomains="true">10.0.3.2</domain> <!-- Genymotion 에뮬레이터 -->
+
+            <!-- 로컬 네트워크 (개발팀 내부) -->
+            <domain includeSubdomains="true">192.168.1.1</domain>
+            <domain includeSubdomains="true">192.168.0.1</domain>
+            <domain includeSubdomains="true">192.168.100.1</domain>
+
+            <!-- 개발 서버 도메인 (실제 도메인으로 변경 필요) -->
+            <domain includeSubdomains="true">dev-api.kdn-vms.com</domain>
+            <domain includeSubdomains="true">test-api.kdn-vms.com</domain>
+            <domain includeSubdomains="true">staging-api.kdn-vms.com</domain>
+
+            <!-- ngrok 터널 (개발용) -->
+            <domain includeSubdomains="true">ngrok.io</domain>
+            <domain includeSubdomains="true">ngrok-free.app</domain>
+
+            <!-- 기타 개발 도구 -->
             <domain includeSubdomains="true">your-dev-api.com</domain>
         </domain-config>
     </debug-overrides>
+
+    <!-- 핀닝 설정 (프로덕션 보안 강화용 - 선택사항) -->
+    <!--
+    <domain-config>
+        <domain includeSubdomains="true">api.kdn-vms.com</domain>
+        <pin-set expiration="2025-12-31">
+            <pin digest="SHA-256">XXXXXX</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+    -->
+
 </network-security-config>

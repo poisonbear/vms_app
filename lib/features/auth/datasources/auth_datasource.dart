@@ -56,7 +56,7 @@ class AuthDatasource {
     } on DioException catch (e) {
       throw _mapNetworkError(e);
     } catch (e) {
-      logger.e("Unexpected login error", e);
+      logger.e("Unexpected login error", error: e);
       throw AuthException('로그인 중 예기치 못한 오류가 발생했습니다: ${e.toString()}');
     }
   }
@@ -96,7 +96,7 @@ class AuthDatasource {
     } on DioException catch (e) {
       throw _mapNetworkError(e);
     } catch (e) {
-      logger.e("Auto login error", e);
+      logger.e("Auto login error", error: e);
       throw AuthException('자동 로그인 중 예기치 못한 오류가 발생했습니다.');
     }
   }
@@ -128,7 +128,7 @@ class AuthDatasource {
     } on DioException catch (e) {
       throw _mapNetworkError(e);
     } catch (e) {
-      logger.e("Registration error", e);
+      logger.e("Registration error", error: e);
       throw AuthException('회원가입 중 예기치 못한 오류가 발생했습니다.');
     }
   }
@@ -154,7 +154,7 @@ class AuthDatasource {
     } on DioException catch (e) {
       throw _mapNetworkError(e);
     } catch (e) {
-      logger.e("Check user ID availability error", e);
+      logger.e("Check user ID availability error", error: e);
       throw AuthException('아이디 중복 확인 중 오류가 발생했습니다.');
     }
   }
@@ -182,7 +182,7 @@ class AuthDatasource {
     } on DioException catch (e) {
       throw _mapNetworkError(e);
     } catch (e) {
-      logger.e("Get terms list error", e);
+      logger.e("Get terms list error", error: e);
       throw AuthException('이용약관을 불러오는 중 오류가 발생했습니다.');
     }
   }
@@ -195,7 +195,7 @@ class AuthDatasource {
         FirebaseAuth.instance.signOut(),
       ]);
     } catch (e) {
-      logger.e("Logout error", e);
+      logger.e("Logout error", error: e);
       // 로그아웃은 실패해도 계속 진행
     }
   }
@@ -249,7 +249,7 @@ class AuthDatasource {
     try {
       return await user.getIdToken().timeout(_operationTimeout);
     } catch (e) {
-      logger.e("Get Firebase token error", e);
+      logger.e("Get Firebase token error", error: e);
       return null;
     }
   }
@@ -403,7 +403,7 @@ class AuthDatasource {
         return (role: role, mmsi: mmsi);
       }
     } catch (e) {
-      logger.e("Get user role error", e);
+      logger.e("Get user role error", error: e);
     }
 
     return (role: '', mmsi: null);
@@ -504,5 +504,24 @@ class AuthDatasource {
     }
 
     logger.d("$operation Request (sanitized): $safeRequest");
+  }
+
+  /// 향상된 로깅 메서드들
+  void _logApiCall(String method, String endpoint, {Map<String, dynamic>? data}) {
+    LoggerUtils.logApiRequest(method, endpoint, data: data);
+  }
+
+  void _logApiResponse(String method, String endpoint, int statusCode, {dynamic data}) {
+    LoggerUtils.logApiResponse(method, endpoint, statusCode, data: data);
+  }
+
+  /// 인증 흐름 로깅
+  void _logAuthFlow(String step, {Map<String, dynamic>? context}) {
+    logger.i('🔐 Auth Flow: $step${context != null ? '\nContext: $context' : ''}');
+  }
+
+  /// 성능 측정을 위한 로깅
+  PerformanceLogger _startPerformanceLogging(String operation) {
+    return PerformanceLogger('Auth_$operation');
   }
 }

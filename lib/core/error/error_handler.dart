@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'exceptions.dart';
-import '../../utils/logger.dart';
+import '../utils/logger.dart';
 
 /// 에러 메시지 상수 (국제화 준비)
 class ErrorMessages {
@@ -37,9 +37,6 @@ class ErrorMessages {
   static const String firebaseUnavailable = 'error.firebase.unavailable';
   static const String firebaseDeadlineExceeded = 'error.firebase.deadline_exceeded';
 }
-
-/// 에러 심각도 레벨
-enum ErrorSeverity { low, medium, high, critical }
 
 /// 에러 컨텍스트 정보
 class ErrorContext {
@@ -156,8 +153,8 @@ class ErrorHandler {
       );
     }
 
-    // 알 수 없는 에러
-    return AppException(
+    // 알 수 없는 에러 - UnknownException 사용
+    return UnknownException(
       _getLocalizedMessage(ErrorMessages.unknownError),
       code: 'unknown_error',
       originalError: error,
@@ -418,47 +415,14 @@ class ErrorHandler {
     return localizedMessage;
   }
 
-  /// 에러 심각도 평가
+  /// 에러 심각도 평가 (새로운 예외 시스템 사용)
   static ErrorSeverity getErrorSeverity(AppException exception) {
-    if (exception is NetworkException || exception is TimeoutException) {
-      return ErrorSeverity.medium;
-    }
-
-    if (exception is AuthException) {
-      return ErrorSeverity.high;
-    }
-
-    if (exception is ServerException) {
-      if (exception.statusCode >= 500) {
-        return ErrorSeverity.high;
-      } else {
-        return ErrorSeverity.medium;
-      }
-    }
-
-    if (exception is ValidationException || exception is ParseException) {
-      return ErrorSeverity.low;
-    }
-
-    return ErrorSeverity.medium;
+    return exception.severity;
   }
 
-  /// 재시도 가능한 에러인지 확인
+  /// 재시도 가능한 에러인지 확인 (새로운 예외 시스템 사용)
   static bool isRetryableError(AppException exception) {
-    if (exception is NetworkException) {
-      return true;
-    }
-
-    if (exception is TimeoutException) {
-      return true;
-    }
-
-    if (exception is ServerException) {
-      final retryableCodes = [500, 502, 503, 504, 429];
-      return retryableCodes.contains(exception.statusCode);
-    }
-
-    return false;
+    return exception.isRetryable;
   }
 
   /// 국제화된 메시지 가져오기 (추후 국제화 시스템과 연동)
@@ -489,6 +453,12 @@ class ErrorHandler {
       ErrorMessages.firebasePermissionDenied: 'Firebase 권한이 없습니다',
       ErrorMessages.firebaseUnavailable: 'Firebase 서비스를 일시적으로 사용할 수 없습니다',
       ErrorMessages.firebaseDeadlineExceeded: 'Firebase 요청 시간이 초과되었습니다',
+
+      // 추가 메시지들
+      'error.auth.email_already_in_use': '이미 사용 중인 이메일입니다',
+      'error.auth.weak_password': '비밀번호가 너무 약합니다. (6자 이상 입력해주세요)',
+      'error.auth.invalid_email': '이메일 형식이 올바르지 않습니다',
+      'error.auth.user_disabled': '비활성화된 계정입니다. 관리자에게 문의하세요',
     };
 
     return koreanMessages[messageKey] ?? messageKey;
@@ -517,14 +487,14 @@ class ErrorHandler {
       // 심각도에 따른 로그 레벨 선택
       switch (severity) {
         case ErrorSeverity.low:
-          logger.i('Low severity error occurred', error, stackTrace);
+          logger.i('Low severity error occurred', error: error, stackTrace: stackTrace);
           break;
         case ErrorSeverity.medium:
-          logger.w('Medium severity error occurred', error, stackTrace);
+          logger.w('Medium severity error occurred', error: error, stackTrace: stackTrace);
           break;
         case ErrorSeverity.high:
         case ErrorSeverity.critical:
-          logger.e('High/Critical severity error occurred', error, stackTrace);
+          logger.e('High/Critical severity error occurred', error: error, stackTrace: stackTrace);
           break;
       }
 
@@ -556,5 +526,39 @@ class ErrorHandler {
 
   static void clearErrorStatistics() {
     _errorCounts.clear();
+  }
+
+  /// 에러 보고서 생성 (디버깅용)
+  static Map<String, dynamic> generateErrorReport() {
+    return {
+      'error_statistics': getErrorStatistics(),
+      'total_errors': _errorCounts.values.fold(0, (sum, count) => sum + count),
+      'most_common_error': _errorCounts.entries
+          .fold<MapEntry<String, int>?>(null, (prev, current) {
+        if (prev == null || current.value > prev.value) {
+          return current;
+        }
+        return prev;
+      })?.key,
+      'generated_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  /// 개발자용 에러 정보 출력
+  static void debugPrintError(AppException exception) {
+    if (kDebugMode) {
+      print('=== VMS Error Debug Info ===');
+      print('Type: ${exception.runtimeType}');
+      print('Message: ${exception.message}');
+      print('Code: ${exception.code}');
+      print('Severity: ${exception.severity}');
+      print('Retryable: ${exception.isRetryable}');
+      print('User Friendly: ${exception.isUserFriendly}');
+      if (exception.originalError != null) {
+        print('Original Error: ${exception.originalError}');
+      }
+      print('Timestamp: ${DateTime.now()}');
+      print('===========================');
+    }
   }
 }
