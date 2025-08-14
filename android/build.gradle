@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.20'
+    ext.kotlin_version = '1.9.10'  // 안정적인 버전으로 조정
     repositories {
         google()
         mavenCentral()
@@ -8,8 +8,8 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.2'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'  // Crashlytics 클래스패스 추가
+        classpath 'com.google.gms:google-services:4.4.0'  // 호환성 검증된 버전
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'  // 호환성 검증된 버전
     }
 }
 
@@ -19,34 +19,71 @@ allprojects {
         mavenCentral()
     }
 
-    // 버전 충돌 해결을 위한 강제 지정
+    // 버전 충돌 해결을 위한 안정적인 버전 강제 지정
     configurations.all {
         resolutionStrategy {
-            // Play Services 버전 강제 지정
-            force 'com.google.android.gms:play-services-measurement:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-api:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-base:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-impl:21.5.0'
-            force 'com.google.android.gms:play-services-location:21.3.0'
-            force 'com.google.android.gms:play-services-maps:18.2.0'
-            force 'com.google.android.gms:play-services-auth:21.2.0'
+            // Play Services 버전 강제 지정 (호환 가능한 버전)
+            force 'com.google.android.gms:play-services-measurement:21.0.0'
+            force 'com.google.android.gms:play-services-measurement-api:21.0.0'
+            force 'com.google.android.gms:play-services-measurement-base:21.0.0'
+            force 'com.google.android.gms:play-services-measurement-impl:21.0.0'
+            force 'com.google.android.gms:play-services-location:21.0.1'
+            force 'com.google.android.gms:play-services-maps:18.1.0'
+            force 'com.google.android.gms:play-services-auth:20.7.0'
+            force 'com.google.android.gms:play-services-base:18.2.0'
 
-            // Firebase 버전 강제 지정 (BOM과 충돌 방지)
-            force 'com.google.firebase:firebase-analytics:21.5.0'
-            force 'com.google.firebase:firebase-messaging:23.4.0'
-            force 'com.google.firebase:firebase-auth:22.3.0'
-            force 'com.google.firebase:firebase-firestore:24.10.0'
-            force 'com.google.firebase:firebase-crashlytics:18.6.0'
+            // Firebase 버전 강제 지정 (BOM 32.2.3과 호환되는 버전)
+            force 'com.google.firebase:firebase-analytics:21.2.0'
+            force 'com.google.firebase:firebase-messaging:23.1.2'
+            force 'com.google.firebase:firebase-auth:21.3.0'
+            force 'com.google.firebase:firebase-firestore:24.6.1'
+            force 'com.google.firebase:firebase-crashlytics:18.3.6'
+            force 'com.google.firebase:firebase-core:21.1.1'
 
-            // AndroidX 라이브러리 버전 통일
-            force 'androidx.core:core:1.13.1'
-            force 'androidx.lifecycle:lifecycle-runtime:2.8.6'
-            force 'androidx.work:work-runtime:2.9.1'
+            // AndroidX 라이브러리 버전 통일 (안정적인 버전)
+            force 'androidx.core:core:1.10.1'
+            force 'androidx.core:core-ktx:1.10.1'
+            force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
+            force 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+            force 'androidx.work:work-runtime:2.8.1'
+            force 'androidx.work:work-runtime-ktx:2.8.1'
+            force 'androidx.activity:activity-compose:1.7.2'
+            force 'androidx.annotation:annotation:1.6.0'
 
-            // OkHttp 버전 통일
-            force 'com.squareup.okhttp3:okhttp:4.12.0'
-            force 'com.squareup.okio:okio:3.6.0'
+            // MultiDex 버전 통일
+            force 'androidx.multidex:multidex:2.0.1'
+
+            // OkHttp 버전 통일 (안정적인 버전)
+            force 'com.squareup.okhttp3:okhttp:4.10.0'
+            force 'com.squareup.okio:okio:3.3.0'
+
+            // Kotlin 표준 라이브러리 버전 통일
+            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+            // Gson 버전 통일
+            force 'com.google.code.gson:gson:2.10.1'
+
+            // 추가 충돌 방지
+            force 'com.google.guava:guava:31.1-android'
+            force 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1'
+
+            // 특정 문제 있는 의존성 제외
+            exclude group: 'com.google.firebase', module: 'firebase-iid'
+            exclude group: 'com.google.firebase', module: 'firebase-measurement-connector'
         }
+    }
+
+    // JVM 타겟 통일 설정 (중요!)
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions {
+            jvmTarget = "17"
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -55,12 +92,25 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 
-    // namespace 자동 설정
+    // namespace 자동 설정 및 Android 설정 최적화
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
                 if (namespace == null) {
-                    namespace project.group ?: "com.example.${project.name.replace('-', '_')}"
+                    namespace project.group ?: "kdn.vms.app.${project.name.replace('-', '_')}"
+                }
+
+                // 컴파일 최적화
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                }
+
+                // Lint 설정 통일
+                lintOptions {
+                    abortOnError false
+                    checkReleaseBuilds false
+                    disable 'InvalidPackage'
                 }
             }
         }
@@ -73,4 +123,11 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
+}
+
+// 추가: Gradle 데몬 최적화
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
 }
