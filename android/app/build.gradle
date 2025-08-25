@@ -1,0 +1,81 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id 'com.google.gms.google-services'
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+android {
+    namespace 'kdn.vms.app'
+    compileSdk 34  // 35 → 34로 변경 (안정성)
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17  // 1.8 → 17
+        targetCompatibility JavaVersion.VERSION_17  // 1.8 → 17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'  // 1.8 → 17
+    }
+
+    defaultConfig {
+        applicationId "kdn.vms.app"
+        minSdkVersion 23
+        targetSdkVersion 34  // 35 → 34
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false  // true → false (디버그에서는 불필요)
+        }
+        release {
+            signingConfig signingConfigs.debug
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        disable 'InvalidPackage'
+        checkReleaseBuilds false
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    // Firebase BOM을 명시적 버전으로 고정
+    implementation platform('com.google.firebase:firebase-bom:32.5.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
+
+    // Play Services 버전 명시적 지정
+    implementation 'com.google.android.gms:play-services-measurement:21.5.0'
+    implementation 'com.google.android.gms:play-services-measurement-api:21.5.0'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
