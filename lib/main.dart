@@ -2,20 +2,20 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/kdn/ros/view/mainView.dart';
-import 'package:vms_app/kdn/usm/view/LoginView.dart';
-import 'package:vms_app/kdn/cmm_widget/common_style_widget.dart';
-import 'package:vms_app/kdn/cmm_widget/common_size_widget.dart';
+import 'package:vms_app/presentation/screens/main/main_screen.dart';
+import 'package:vms_app/presentation/screens/auth/login_screen.dart';
+import 'package:vms_app/core/constants/app_colors.dart';
+import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/kdn/ros/viewModel/NavigationViewModel.dart';
+import 'package:vms_app/presentation/providers/navigation_provider.dart';
 
 import 'firebase_options.dart';
-import 'kdn/main/viewModel/VesselSearchViewModel.dart';
-import 'kdn/usm/viewModel/UserState.dart';
+import 'package:vms_app/presentation/providers/vessel_provider.dart';
+import 'package:vms_app/presentation/providers/auth_provider.dart';
 
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
