@@ -1,13 +1,13 @@
+// lib/presentation/providers/navigation_provider_with_result.dart
+
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/errors/app_exceptions.dart';
 import 'package:vms_app/core/utils/error_handler.dart';
 import 'package:vms_app/data/repositories/navigation_repository_with_result.dart';
 import 'package:vms_app/data/models/navigation/navigation_model.dart';
 
-/// Result 패턴을 사용하는 Provider 예시
 class NavigationProviderWithResult extends ChangeNotifier {
-  final NavigationRepositoryWithResult _repository =
-      NavigationRepositoryWithResult();
+  late final NavigationRepositoryWithResult _repository;
 
   List<RosModel> _rosList = [];
   bool _isLoading = false;
@@ -18,6 +18,11 @@ class NavigationProviderWithResult extends ChangeNotifier {
   String? get errorMessage =>
       _error != null ? ErrorHandler.getUserMessage(_error!) : null;
   bool get hasError => _error != null;
+
+  NavigationProviderWithResult() {
+    // ✅ DI 컨테이너에서 주입 (필요시)
+    _repository = NavigationRepositoryWithResult();
+  }
 
   Future<void> loadNavigationHistory({
     String? startDate,

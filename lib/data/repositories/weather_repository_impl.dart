@@ -1,10 +1,12 @@
 import 'package:vms_app/data/datasources/remote/weather_remote_datasource.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 
-// 기상정보 데이터 Load
-final WidSource _dataSource = WidSource();
+class WeatherRepository {
+  final WidSource _dataSource;
 
-class WidRepository {
+  // ✅ 생성자를 통한 의존성 주입
+  WeatherRepository(this._dataSource);
+
   Future<List<WidModel>> getWidList() {
     return _dataSource.getWidList();
   }

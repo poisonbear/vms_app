@@ -1,26 +1,33 @@
+// lib/presentation/providers/weather_provider.dart
+
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/core/utils/logger.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 import 'package:vms_app/data/repositories/weather_repository_impl.dart';
 
-// 기상정보 데이터 Load
 class WidWeatherInfoViewModel with ChangeNotifier {
-  late final WidRepository _WidRepository;
-  List<WidModel>? _WidList;
+  late final WeatherRepository _widRepository;
+
+  List<WidModel>? _widList;
   List<String> _windDirection = [];
   List<String> _windSpeed = [];
   List<String> _windIcon = [];
+  bool _isLoading = true;
 
-  List<WidModel>? get WidList => _WidList;
+  // Getter들
+  List<WidModel>? get widList => _widList;
+  List<WidModel>? get WidList => _widList; // 대문자 버전 (호환성)
   List<String> get windDirection => _windDirection;
   List<String> get windSpeed => _windSpeed;
   List<String> get windIcon => _windIcon;
-  bool _isLoading = true;
   bool get isLoading => _isLoading;
+  String get errorMessage => '';
 
   WidWeatherInfoViewModel() {
-    _WidRepository = WidRepository();
+    // ✅ DI 컨테이너에서 주입
+    _widRepository = getIt<WeatherRepository>();
     getWidList();
   }
 
@@ -71,14 +78,19 @@ class WidWeatherInfoViewModel with ChangeNotifier {
   }
 
   Future<void> getWidList() async {
-    _isLoading = true; // 로딩 시작 - 여기에 추가
-    notifyListeners(); // 로딩 상태 변경 알림 - 여기에 추가
+    _isLoading = true;
+    notifyListeners();
 
     try {
-      List<WidModel> fetchedList = await _WidRepository.getWidList();
-      _WidList = fetchedList;
+      List<WidModel> fetchedList = await _widRepository.getWidList();
+      _widList = fetchedList;
 
       if (fetchedList.isNotEmpty) {
+        // 리스트 초기화
+        _windDirection.clear();
+        _windSpeed.clear();
+        _windIcon.clear();
+
         for (int i = 0; i < fetchedList.length; i++) {
           calculateWind(
             fetchedList[i].wind_u_surface?.toDouble(),
@@ -88,12 +100,12 @@ class WidWeatherInfoViewModel with ChangeNotifier {
       }
     } catch (e) {
       logger.e('Error in getWidList: $e');
-      _WidList = [];
+      _widList = [];
       _windDirection = [];
       _windSpeed = [];
       _windIcon = [];
     } finally {
-      _isLoading = false; // 오류 발생 시에도 로딩 상태 해제
+      _isLoading = false;
       notifyListeners();
     }
   }

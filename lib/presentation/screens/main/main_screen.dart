@@ -1551,8 +1551,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               getSize56(),
                               '파고',
                               getSize160(),
-                              viewModel.getFormattedWaveThresholdText(
-                                  viewModel.wave),
+                              viewModel.getFormattedWaveThresholdText(viewModel.wave),
                               isSelected: isWaveSelected,
                               onTap: () {
                                 setState(() {
@@ -1564,14 +1563,12 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             // 시정 버튼
                             _buildCircularButton_slide_on(
                               'assets/kdn/home/img/top_visibility_img.svg',
-                              viewModel
-                                  .getVisibilityColor(viewModel.visibility),
+                              viewModel.getVisibilityColor(viewModel.visibility),
                               getSize56(),
                               getSize56(),
                               '시정',
                               getSize160(),
-                              viewModel.getFormattedVisibilityThresholdText(
-                                  viewModel.visibility),
+                              viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
                               isSelected: isVisibilitySelected,
                               onTap: () {
                                 setState(() {

@@ -1,19 +1,13 @@
 import 'package:vms_app/data/datasources/remote/route_search_remote_datasource.dart';
 import 'package:vms_app/data/models/navigation/vessel_route_model.dart';
 
-//특정 선박 과거/미래 항로 조회
-final RouteSearchSource _RouteSearchSource = RouteSearchSource();
+class RouteSearchRepositoryImpl {
+  final RouteSearchSource _routeSearchSource;
 
-/*
- * [GIS] 특정 선박의 과거 항로 목록을 조회한다.
- *
- * @param Map<String, Object> param
- * @return List<Map<String, Object>> result
- * @throws Exception
- */
-class RouteSearchRepositoryImplImpl {
+  // ✅ 생성자를 통한 의존성 주입
+  RouteSearchRepositoryImpl(this._routeSearchSource);
+
   Future<VesselRouteResponse> getVesselRoute({String? regDt, int? mmsi}) {
-    //ViewModesl에서 받은 요청을 Source로 전달
-    return _RouteSearchSource.getVesselRoute(regDt: regDt, mmsi: mmsi);
+    return _routeSearchSource.getVesselRoute(regDt: regDt, mmsi: mmsi);
   }
 }
