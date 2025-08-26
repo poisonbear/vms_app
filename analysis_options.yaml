@@ -1,0 +1,24 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "**/*_backup_*/**"
+    - "warning_fix_backup_*/**"
+    - "lib/kdn/**"
+    - "lib/examples/**"
+    - "backup/**"
+    - "build/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  
+  errors:
+    unused_field: warning
+    unused_element: warning
+    unused_local_variable: warning
+    invalid_use_of_protected_member: error
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    always_declare_return_types: true
+    avoid_print: false
