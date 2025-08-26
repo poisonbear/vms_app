@@ -26,3 +26,6 @@ ios/Pods/
 ios/.symlinks/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
+build/
+.dart_tool/
+.idea/
