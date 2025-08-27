@@ -427,7 +427,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       Expanded(
                         child: Consumer<NavigationProvider>(
                           builder: (context, provider, child) {
-                            var rosList = provider.RosList;
+                            var rosList = provider.rosList;
 
                             if (provider.isLoading) {
                               return const Center(

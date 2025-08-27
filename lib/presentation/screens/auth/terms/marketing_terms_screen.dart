@@ -41,7 +41,7 @@ class _CmdViewState extends State<CmdMarkettingview> {
         // 데이터를 불러 올 때는 Consumer 항상 viewmodel을 거쳐서 가져오기
 
         builder: (context, provider, child) {
-          CmdList = provider.CmdList!;
+          CmdList = provider.cmdList!;
           return ListView.builder(
             itemCount: CmdList.length,
             itemBuilder: (context, index) {

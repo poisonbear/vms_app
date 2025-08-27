@@ -392,7 +392,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
                                           await _routeSearchViewModel
                                               .getVesselRoute(
-                                                  mmsi: vessel.mmsi,
+                                                  mmsi: vessel.mmsi ?? 0,
                                                   regDt: DateFormat(
                                                           'yyyy-MM-dd')
                                                       .format(DateTime.now()));
@@ -403,7 +403,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                             12.0,
                                           );
                                           _selectedVesselMmsi =
-                                              vessel.mmsi; // 선택된 선박의 MMSI 저장
+                                              vessel.mmsi ?? 0; // 선택된 선박의 MMSI 저장
                                           _isTrackingEnabled =
                                               true; // 항적 표시 활성화
                                           _vesselUpdateTimer
@@ -503,9 +503,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   // 1️⃣ async/await 스타일로 변경
   Future<void> _loadVesselDataAndUpdateMap() async {
     try {
-      final mmsi = context.read<UserState>().mmsi;
+      final mmsi = context.read<UserState>().mmsi ?? 0;
       final role = context.read<UserState>().role;
-      if (mmsi == null) return;
 
       // 2️⃣ 한 번만 데이터 가져오기
       if (role == 'ROLE_USER') {
@@ -1173,7 +1172,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final role = context.watch<UserState>().role; //로그인한 사용자 역할 가져오기
-    final mmsi = context.watch<UserState>().mmsi; //로그인한 사용자 mmsi 가져오기
+    final mmsi = context.watch<UserState>().mmsi ?? 0; //로그인한 사용자 mmsi 가져오기
 
     // VesselProvider 추가 - 역할에 따라 자신의 선박 또는 모든 선박 조회
     final vesselsViewModel = context.watch<VesselProvider>();
@@ -1469,7 +1468,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     //현재 선박 레이어
                     MarkerLayer(
                       markers: vessels
-                          .where((vessel) => vessel.mmsi == mmsi) // 내 선박만 필터링
+                          .where((vessel) => (vessel.mmsi ?? 0) == mmsi) // 내 선박만 필터링
                           .map((vessel) {
                         return Marker(
                           point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
@@ -1496,7 +1495,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
                         child: MarkerLayer(
                           markers: vessels
-                              .where((vessel) => vessel.mmsi != mmsi)
+                              .where((vessel) => (vessel.mmsi ?? 0) != mmsi)
                               .map((vessel) {
                             return Marker(
                               point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
@@ -1662,14 +1661,13 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               builder: (context) {
                                 final mmsi = context
                                     .read<UserState>()
-                                    .mmsi; // 현재 사용자 mmsi 값
+                                    .mmsi ?? 0; // 현재 사용자 mmsi 값
                                 final vessels = context
                                     .watch<VesselProvider>()
                                     .vessels; // 선박 목록을 감시
 
                                 // mmsi가 없거나 선박 목록에 사용자의 mmsi가 없으면 버튼을 표시하지 않음
-                                if (mmsi == null ||
-                                    !vessels
+                                if (!vessels
                                         .any((vessel) => vessel.mmsi == mmsi)) {
                                   return const SizedBox.shrink(); // 빈 위젯 반환
                                 }

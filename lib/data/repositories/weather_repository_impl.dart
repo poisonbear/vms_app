@@ -1,12 +1,13 @@
+import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/data/datasources/remote/weather_remote_datasource.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 
-class WeatherRepository {
+class WeatherRepositoryImpl implements WeatherRepository {
   final WidSource _dataSource;
 
-  // ✅ 생성자를 통한 의존성 주입
-  WeatherRepository(this._dataSource);
+  WeatherRepositoryImpl(this._dataSource);
 
+  @override
   Future<List<WidModel>> getWidList() {
     return _dataSource.getWidList();
   }

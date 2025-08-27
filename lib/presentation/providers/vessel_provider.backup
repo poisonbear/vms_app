@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import 'package:vms_app/core/di/injection.dart';
+import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/domain/repositories/vessel_repository.dart';
+import 'package:vms_app/domain/usecases/vessel/search_vessel.dart';
+import 'package:vms_app/presentation/providers/base/base_provider.dart';
+
+class VesselProvider extends BaseProvider {
+  late final VesselRepository _vesselRepository;
+  late final SearchVessel _searchVessel;
+
+  List<VesselSearchModel> _vessels = [];
+
+  List<VesselSearchModel> get vessels => _vessels;
+
+  VesselProvider() {
+    _vesselRepository = getIt<VesselRepository>();
+    _searchVessel = getIt<SearchVessel>();
+  }
+
+  Future<void> getVesselList({String? regDt, int? mmsi}) async {
+    final result = await executeAsync(() async {
+      return await _vesselRepository.getVesselList(
+        regDt: regDt,
+        mmsi: mmsi,
+      );
+    });
+
+    if (result != null) {
+      _vessels = result;
+      notifyListeners();
+    }
+  }
+
+  Future<void> searchVessels(String query) async {
+    if (query.isEmpty) {
+      setError('검색어를 입력해주세요');
+      return;
+    }
+
+    final result = await executeAsync(() async {
+      return await _searchVessel.execute(query);
+    });
+
+    if (result != null) {
+      _vessels = result;
+      notifyListeners();
+    }
+  }
+}

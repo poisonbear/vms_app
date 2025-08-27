@@ -5,8 +5,16 @@ import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
 
 class MarketingTermsProvider with ChangeNotifier {
   late final GetTermsList _getTermsList;
-  List<CmdModel>? _CmdList;
-  List<CmdModel>? get CmdList => _CmdList;
+  
+  // 변수명 수정: _CmdList -> _cmdList
+  List<CmdModel>? _cmdList;
+  
+  // Getter 수정: CmdList -> cmdList
+  List<CmdModel>? get cmdList => _cmdList;
+  
+  // 하위 호환성
+  @deprecated
+  List<CmdModel>? get CmdList => cmdList;
 
   MarketingTermsProvider() {
     _getTermsList = getIt<GetTermsList>();
@@ -16,9 +24,9 @@ class MarketingTermsProvider with ChangeNotifier {
   Future<void> getCmdList() async {
     List<CmdModel> fetchedList = await _getTermsList.execute();
     if (fetchedList.length > 3) {
-      _CmdList = [fetchedList[3]];
+      _cmdList = [fetchedList[3]];
     } else {
-      _CmdList = [];
+      _cmdList = [];
     }
     notifyListeners();
   }

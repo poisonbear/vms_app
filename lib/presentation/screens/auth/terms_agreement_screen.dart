@@ -91,10 +91,10 @@ class _CmdChoiceViewState extends State<CmdChoiceView> {
         final locationVM = Provider.of<LocationTermsProvider>(context);
         final marketVM = Provider.of<MarketingTermsProvider>(context);
 
-        final allDataLoaded = serviceVM.CmdList != null &&
-            infoVM.CmdList != null &&
-            locationVM.CmdList != null &&
-            marketVM.CmdList != null;
+        final allDataLoaded = serviceVM.cmdList != null &&
+            infoVM.cmdList != null &&
+            locationVM.cmdList != null &&
+            marketVM.cmdList != null;
 
         return Scaffold(
           appBar: AppBar(
@@ -220,7 +220,7 @@ class _CmdChoiceViewState extends State<CmdChoiceView> {
                     child: _buildAgreementRow_Service(
                       context,
                       TextWidgetString(
-                          '${serviceVM.CmdList![0].terms_nm}',
+                          '${serviceVM.cmdList![0].terms_nm}',
                           getTextcenter(),
                           getSize16(),
                           getText700(),
@@ -245,7 +245,7 @@ class _CmdChoiceViewState extends State<CmdChoiceView> {
                     child: _buildAgreementRow_Service(
                       context,
                       TextWidgetString(
-                          '${infoVM.CmdList![0].terms_nm}',
+                          '${infoVM.cmdList![0].terms_nm}',
                           getTextcenter(),
                           getSize16(),
                           getText700(),
@@ -270,7 +270,7 @@ class _CmdChoiceViewState extends State<CmdChoiceView> {
                     child: _buildAgreementRow_Service(
                       context,
                       TextWidgetString(
-                          '${locationVM.CmdList![0].terms_nm}',
+                          '${locationVM.cmdList![0].terms_nm}',
                           getTextcenter(),
                           getSize16(),
                           getText700(),
@@ -295,7 +295,7 @@ class _CmdChoiceViewState extends State<CmdChoiceView> {
                     child: _buildAgreementRow_Service(
                       context,
                       TextWidgetString(
-                          '${marketVM.CmdList![0].terms_nm}',
+                          '${marketVM.cmdList![0].terms_nm}',
                           getTextcenter(),
                           getSize16(),
                           getText700(),

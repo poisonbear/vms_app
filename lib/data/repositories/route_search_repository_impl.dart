@@ -1,13 +1,14 @@
 import 'package:vms_app/data/datasources/remote/route_search_remote_datasource.dart';
 import 'package:vms_app/data/models/navigation/vessel_route_model.dart';
+import 'package:vms_app/domain/repositories/route_search_repository.dart';
 
-class RouteSearchRepositoryImpl {
-  final RouteSearchSource _routeSearchSource;
+class RouteSearchRepositoryImpl implements RouteSearchRepository {
+  final RouteSearchSource _dataSource;
 
-  // ✅ 생성자를 통한 의존성 주입
-  RouteSearchRepositoryImpl(this._routeSearchSource);
+  RouteSearchRepositoryImpl(this._dataSource);
 
+  @override
   Future<VesselRouteResponse> getVesselRoute({String? regDt, int? mmsi}) {
-    return _routeSearchSource.getVesselRoute(regDt: regDt, mmsi: mmsi);
+    return _dataSource.getVesselRoute(regDt: regDt, mmsi: mmsi);
   }
 }

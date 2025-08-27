@@ -5,8 +5,16 @@ import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
 
 class LocationTermsProvider with ChangeNotifier {
   late final GetTermsList _getTermsList;
-  List<CmdModel>? _CmdList;
-  List<CmdModel>? get CmdList => _CmdList;
+  
+  // 변수명 수정: _CmdList -> _cmdList
+  List<CmdModel>? _cmdList;
+  
+  // Getter 수정: CmdList -> cmdList
+  List<CmdModel>? get cmdList => _cmdList;
+  
+  // 하위 호환성
+  @deprecated
+  List<CmdModel>? get CmdList => cmdList;
 
   LocationTermsProvider() {
     _getTermsList = getIt<GetTermsList>();
@@ -16,9 +24,9 @@ class LocationTermsProvider with ChangeNotifier {
   Future<void> getCmdList() async {
     List<CmdModel> fetchedList = await _getTermsList.execute();
     if (fetchedList.length > 2) {
-      _CmdList = [fetchedList[2]];
+      _cmdList = [fetchedList[2]];
     } else {
-      _CmdList = [];
+      _cmdList = [];
     }
     notifyListeners();
   }

@@ -1,5 +1,43 @@
+#!/bin/bash
+
+echo "🔧 WeatherProvider 에러 수정..."
+
+# 1. WeatherRepository 생성 (없는 경우)
+echo "📝 [1/3] WeatherRepository 인터페이스 생성..."
+cat > lib/domain/repositories/weather_repository.dart << 'EOF'
+import 'package:vms_app/data/models/weather/weather_model.dart';
+
+abstract class WeatherRepository {
+  Future<List<WidModel>> getWidList();
+}
+EOF
+
+# 2. WeatherRepositoryImpl 생성 
+echo "📝 [2/3] WeatherRepositoryImpl 생성..."
+cat > lib/data/repositories/weather_repository_impl.dart << 'EOF'
+import 'package:vms_app/domain/repositories/weather_repository.dart';
+import 'package:vms_app/data/datasources/remote/weather_remote_datasource.dart';
+import 'package:vms_app/data/models/weather/weather_model.dart';
+
+class WeatherRepositoryImpl implements WeatherRepository {
+  final WidSource _dataSource;
+
+  WeatherRepositoryImpl(this._dataSource);
+
+  @override
+  Future<List<WidModel>> getWidList() {
+    return _dataSource.getWidList();
+  }
+}
+EOF
+
+# 3. WeatherProvider 수정 (필드명 수정)
+echo "📝 [3/3] WeatherProvider 수정..."
+cat > lib/presentation/providers/weather_provider.dart << 'EOF'
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
+import 'package:vms_app/core/utils/logger.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
@@ -8,9 +46,9 @@ class WidWeatherInfoViewModel extends BaseProvider {
   late final WeatherRepository _widRepository;
 
   List<WidModel>? _widList;
-  final List<String> _windDirection = [];
-  final List<String> _windSpeed = [];
-  final List<String> _windIcon = [];
+  List<String> _windDirection = [];
+  List<String> _windSpeed = [];
+  List<String> _windIcon = [];
 
   // Getters
   List<WidModel>? get widList => _widList;
@@ -92,3 +130,36 @@ class WidWeatherInfoViewModel extends BaseProvider {
     }
   }
 }
+EOF
+
+# 4. injection.dart 업데이트 (WeatherRepository 추가)
+echo "📝 WeatherRepository를 DI 컨테이너에 추가..."
+cat >> lib/core/di/injection_weather_patch.dart << 'EOF'
+
+// WeatherRepository 추가 (injection.dart의 _injectRepositories 함수에 추가)
+// Weather Repository
+getIt.registerLazySingleton<WeatherRepository>(
+  () => WeatherRepositoryImpl(getIt<WidSource>()),
+);
+
+// DataSource 추가 (injection.dart의 _injectDataSources 함수에 추가)
+// Weather DataSource
+getIt.registerLazySingleton<WidSource>(
+  () => WidSource(),
+);
+EOF
+
+echo "✅ WeatherProvider 에러 수정 완료!"
+echo ""
+echo "📊 수정 내역:"
+echo "  • WeatherRepository 인터페이스 생성"
+echo "  • WeatherRepositoryImpl 구현체 생성"
+echo "  • WeatherProvider 필드명 수정 (wind_u_surface, wind_v_surface)"
+echo "  • BaseProvider 상속 적용"
+echo ""
+echo "⚠️ 주의: injection.dart에 다음을 추가해야 합니다:"
+echo "  1. _injectDataSources()에 WidSource 등록"
+echo "  2. _injectRepositories()에 WeatherRepository 등록"
+echo ""
+echo "🔍 검증 중..."
+flutter analyze lib/presentation/providers/weather_provider.dart | grep -e 'error' || echo "✨ WeatherProvider 에러 해결!"

@@ -12,6 +12,8 @@ import 'package:vms_app/data/repositories/weather_repository_impl.dart';
 import 'package:vms_app/domain/repositories/terms_repository.dart';
 import 'package:vms_app/domain/repositories/navigation_repository.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart';
+import 'package:vms_app/domain/repositories/route_search_repository.dart';
+import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
 import 'package:vms_app/domain/usecases/navigation/get_navigation_history.dart';
 import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart';
@@ -36,7 +38,8 @@ Future<void> initInjection() async {
         () => VesselRepositoryImpl(getIt<VesselSearchSource>()),
   );
 
-  getIt.registerLazySingleton<RouteSearchRepositoryImpl>(
+  // RouteSearchRepository 인터페이스로 등록
+  getIt.registerLazySingleton<RouteSearchRepository>(
         () => RouteSearchRepositoryImpl(getIt<RouteSearchSource>()),
   );
 
@@ -44,8 +47,9 @@ Future<void> initInjection() async {
         () => NavigationRepositoryImpl(getIt<RosSource>()),
   );
 
+  // WeatherRepositoryImpl로 수정
   getIt.registerLazySingleton<WeatherRepository>(
-        () => WeatherRepository(getIt<WidSource>()),
+        () => WeatherRepositoryImpl(getIt<WidSource>()),
   );
 
   // ===== UseCases =====

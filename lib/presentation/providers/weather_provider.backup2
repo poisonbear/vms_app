@@ -1,50 +1,34 @@
-import 'dart:math';
-import 'package:vms_app/core/di/injection.dart';
-import 'package:vms_app/data/models/weather/weather_model.dart';
-import 'package:vms_app/domain/repositories/weather_repository.dart';
-import 'package:vms_app/presentation/providers/base/base_provider.dart';
+// lib/presentation/providers/weather_provider.dart
 
-class WidWeatherInfoViewModel extends BaseProvider {
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:vms_app/core/di/injection.dart';
+import 'package:vms_app/core/utils/logger.dart';
+import 'package:vms_app/data/models/weather/weather_model.dart';
+import 'package:vms_app/data/repositories/weather_repository_impl.dart';
+
+class WidWeatherInfoViewModel with ChangeNotifier {
   late final WeatherRepository _widRepository;
 
   List<WidModel>? _widList;
-  final List<String> _windDirection = [];
-  final List<String> _windSpeed = [];
-  final List<String> _windIcon = [];
+  List<String> _windDirection = [];
+  List<String> _windSpeed = [];
+  List<String> _windIcon = [];
+  bool _isLoading = true;
 
-  // Getters
+  // Getter들
   List<WidModel>? get widList => _widList;
-  List<WidModel>? get WidList => _widList; // 하위 호환성
+  List<WidModel>? get WidList => _widList; // 대문자 버전 (호환성)
   List<String> get windDirection => _windDirection;
   List<String> get windSpeed => _windSpeed;
   List<String> get windIcon => _windIcon;
+  bool get isLoading => _isLoading;
+  String get errorMessage => '';
 
   WidWeatherInfoViewModel() {
+    // ✅ DI 컨테이너에서 주입
     _widRepository = getIt<WeatherRepository>();
     getWidList();
-  }
-
-  Future<void> getWidList() async {
-    final result = await executeAsync(() async {
-      return await _widRepository.getWidList();
-    }, errorMessage: '기상 정보 로드 중 오류 발생');
-
-    if (result != null) {
-      _widList = result;
-      _processWindData(result);
-      notifyListeners();
-    }
-  }
-
-  void _processWindData(List<WidModel> weatherList) {
-    _windDirection.clear();
-    _windSpeed.clear();
-    _windIcon.clear();
-
-    for (var weather in weatherList) {
-      // 실제 필드명 사용: wind_u_surface, wind_v_surface
-      calculateWind(weather.wind_u_surface, weather.wind_v_surface);
-    }
   }
 
   void calculateWind(double? windU, double? windV) {
@@ -89,6 +73,40 @@ class WidWeatherInfoViewModel extends BaseProvider {
     } else {
       _windDirection.add('북서풍');
       _windIcon.add('ro135');
+    }
+    notifyListeners();
+  }
+
+  Future<void> getWidList() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      List<WidModel> fetchedList = await _widRepository.getWidList();
+      _widList = fetchedList;
+
+      if (fetchedList.isNotEmpty) {
+        // 리스트 초기화
+        _windDirection.clear();
+        _windSpeed.clear();
+        _windIcon.clear();
+
+        for (int i = 0; i < fetchedList.length; i++) {
+          calculateWind(
+            fetchedList[i].wind_u_surface?.toDouble(),
+            fetchedList[i].wind_v_surface?.toDouble(),
+          );
+        }
+      }
+    } catch (e) {
+      logger.e('Error in getWidList: $e');
+      _widList = [];
+      _windDirection = [];
+      _windSpeed = [];
+      _windIcon = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
