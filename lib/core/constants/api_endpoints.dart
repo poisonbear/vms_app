@@ -20,18 +20,14 @@ class ApiEndpoints {
   static String get termsAgree => _getEndpoint('CMD_AGREE_TERMS');
 
   // 항행 이력 관련
-  static String get navigationHistory =>
-      _getEndpoint('kdn_ros_select_navigation_Info');
-  static String get navigationVisibility =>
-      _getEndpoint('kdn_ros_select_visibility_Info');
-  static String get navigationWarnings =>
-      _getEndpoint('kdn_ros_select_navigation_warn_Info');
+  static String get navigationHistory => _getEndpoint('kdn_ros_select_navigation_Info');
+  static String get navigationVisibility => _getEndpoint('kdn_ros_select_visibility_Info');
+  static String get navigationWarnings => _getEndpoint('kdn_ros_select_navigation_warn_Info');
 
   // 선박 관련
   static String get vesselSearch => _getEndpoint('kdn_gis_select_vessel_Info');
   static String get vesselRoute => _getEndpoint('kdn_gis_select_vessel_Route');
-  static String get vesselRealtime =>
-      _getEndpoint('kdn_gis_select_vessel_Realtime');
+  static String get vesselRealtime => _getEndpoint('kdn_gis_select_vessel_Realtime');
 
   // 헬퍼 메서드
   static String _getEndpoint(String key) {

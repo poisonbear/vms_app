@@ -47,27 +47,27 @@ void _injectDataSources() {
 void _injectRepositories() {
   // Terms Repository
   getIt.registerLazySingleton<TermsRepository>(
-        () => TermsRepositoryImpl(getIt<CmdSource>()),
+    () => TermsRepositoryImpl(getIt<CmdSource>()),
   );
 
   // Navigation Repository
   getIt.registerLazySingleton<NavigationRepository>(
-        () => NavigationRepositoryImpl(getIt<RosSource>()),
+    () => NavigationRepositoryImpl(getIt<RosSource>()),
   );
 
   // Vessel Repository
   getIt.registerLazySingleton<VesselRepository>(
-        () => VesselRepositoryImpl(getIt<VesselSearchSource>()),
+    () => VesselRepositoryImpl(getIt<VesselSearchSource>()),
   );
 
   // Route Search Repository
   getIt.registerLazySingleton<RouteSearchRepository>(
-        () => RouteSearchRepositoryImpl(getIt<RouteSearchSource>()),
+    () => RouteSearchRepositoryImpl(getIt<RouteSearchSource>()),
   );
 
   // Weather Repository
   getIt.registerLazySingleton<WeatherRepository>(
-        () => WeatherRepositoryImpl(getIt<WidSource>()),
+    () => WeatherRepositoryImpl(getIt<WidSource>()),
   );
 }
 
@@ -75,24 +75,24 @@ void _injectRepositories() {
 void _injectUseCases() {
   // Auth UseCases
   getIt.registerLazySingleton<GetTermsList>(
-        () => GetTermsList(getIt<TermsRepository>()),
+    () => GetTermsList(getIt<TermsRepository>()),
   );
 
   // Navigation UseCases
   getIt.registerLazySingleton<GetNavigationHistory>(
-        () => GetNavigationHistory(getIt<NavigationRepository>()),
+    () => GetNavigationHistory(getIt<NavigationRepository>()),
   );
 
   // Weather UseCases
   // ⚠️ 확인 필요: NavigationRepository가 맞나요?
   // 만약 WeatherRepository를 사용해야 한다면 수정 필요
   getIt.registerLazySingleton<GetWeatherInfo>(
-        () => GetWeatherInfo(getIt<NavigationRepository>()),
+    () => GetWeatherInfo(getIt<NavigationRepository>()),
   );
 
   // Vessel UseCases
   getIt.registerLazySingleton<SearchVessel>(
-        () => SearchVessel(getIt<VesselRepository>()),
+    () => SearchVessel(getIt<VesselRepository>()),
   );
 }
 

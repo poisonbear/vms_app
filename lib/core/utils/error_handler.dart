@@ -8,14 +8,14 @@ class ErrorHandler {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
         return const NetworkException('연결 시간이 초과되었습니다', 'TIMEOUT');
-        
+
       case DioExceptionType.connectionError:
         return const NetworkException('네트워크 연결을 확인해주세요', 'CONNECTION_ERROR');
-        
+
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
         final message = error.response?.data?['message'] ?? '서버 오류가 발생했습니다';
-        
+
         if (statusCode == 401) {
           return AuthException(message, 'UNAUTHORIZED');
         } else if (statusCode == 403) {
@@ -27,15 +27,15 @@ class ErrorHandler {
         } else {
           return ServerException(message, statusCode: statusCode);
         }
-        
+
       case DioExceptionType.cancel:
         return const NetworkException('요청이 취소되었습니다', 'CANCELLED');
-        
+
       default:
         return NetworkException('알 수 없는 오류가 발생했습니다: ${error.message}');
     }
   }
-  
+
   static AppException handleError(dynamic error) {
     if (error is AppException) {
       return error;
@@ -47,7 +47,7 @@ class ErrorHandler {
       return GeneralAppException(error.toString());
     }
   }
-  
+
   static String getUserMessage(AppException exception) {
     if (exception is NetworkException) {
       return '네트워크 연결을 확인해주세요';

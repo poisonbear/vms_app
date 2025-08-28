@@ -89,13 +89,8 @@ Widget inputWidget(
 }
 
 // 텍스트 입력값을 받을 때 - .svg 파일 필요 할 때
-Widget inputWidgetSvg(
-    int widthsize,
-    int heightsize,
-    TextEditingController controller,
-    String title,
-    Color color,
-    String svgPath) {
+Widget inputWidgetSvg(int widthsize, int heightsize, TextEditingController controller, String title,
+    Color color, String svgPath) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
@@ -129,8 +124,8 @@ Widget inputWidgetSvg(
 }
 
 // 텍스트를 비활성화 할 때
-Widget inputWidget_deactivate(int widthsize, int heightsize,
-    TextEditingController controller, String title, Color color,
+Widget inputWidget_deactivate(
+    int widthsize, int heightsize, TextEditingController controller, String title, Color color,
     {bool isEnabled = true, bool isReadOnly = false}) {
   return SizedBox(
     width: widthsize.toDouble(),
@@ -168,13 +163,13 @@ void showTopSnackBar(BuildContext context, String message) {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16, vertical: DesignConstants.spacing12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: DesignConstants.spacing16, vertical: DesignConstants.spacing12),
           decoration: BoxDecoration(
             color: getColorgray_Type8(),
             borderRadius: BorderRadius.circular(DesignConstants.radiusM),
             boxShadow: [
-              BoxShadow(
-                  color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
+              BoxShadow(color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
             ],
           ),
           child: Row(
@@ -185,8 +180,7 @@ void showTopSnackBar(BuildContext context, String message) {
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

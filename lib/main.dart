@@ -26,7 +26,7 @@ import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 Future<void> _setupFlutterNotifications() async {
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -36,19 +36,15 @@ Future<void> _setupFlutterNotifications() async {
     importance: Importance.high,
   );
 
-  final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
-  flutterLocalNotificationsPlugin
+  final AndroidFlutterLocalNotificationsPlugin? androidPlugin = flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidPlugin != null) {
     await androidPlugin.createNotificationChannel(channel);
   }
 
-
-  const initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initializationSettingsIOS =
-  DarwinInitializationSettings();
+  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsIOS = DarwinInitializationSettings();
 
   const initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
@@ -242,7 +238,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // MMSI 설정 (UserState에 해당 메서드가 있는 경우)
       // userState.setMMSI(mmsi);
-
     } catch (e) {
       log('자동 로그인 실패: $e');
       // 자동 로그인 실패 시 로그인 화면으로

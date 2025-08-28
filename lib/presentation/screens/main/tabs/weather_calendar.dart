@@ -58,8 +58,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
           },
           backgroundColor: getColorblack_type3(),
           shape: const RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(0)), // ✅ radius 제거
+            borderRadius: BorderRadius.vertical(top: Radius.circular(0)), // ✅ radius 제거
           ),
         );
         return false; // 🚨 뒤로가기 이벤트를 막음 (앱이 종료되지 않도록)
@@ -69,11 +68,13 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
         child: Container(
           height: 550,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
+          padding: const EdgeInsets.symmetric(
+              vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(DesignConstants.radiusXL), topRight: Radius.circular(DesignConstants.radiusXL)),
+                topLeft: Radius.circular(DesignConstants.radiusXL),
+                topRight: Radius.circular(DesignConstants.radiusXL)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -87,18 +88,16 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
-                          width: 24, height: 24),
+                      icon: SvgPicture.asset('assets/kdn/usm/img/close.svg', width: 24, height: 24),
                       onPressed: () => {
-                        _bottomSheetController =
-                            Scaffold.of(context).showBottomSheet(
+                        _bottomSheetController = Scaffold.of(context).showBottomSheet(
                           (context) {
                             return mainViewWindy(context);
                           },
                           backgroundColor: getColorblack_type3(),
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(0)), // ✅ radius 제거
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(0)), // ✅ radius 제거
                           ),
                         )
                       },
@@ -137,8 +136,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
-                    titleTextStyle:
-                        TextStyle(fontSize: DesignConstants.fontSizeXL, fontWeight: FontWeight.bold),
+                    titleTextStyle: TextStyle(
+                        fontSize: DesignConstants.fontSizeXL, fontWeight: FontWeight.bold),
                   ),
                   calendarStyle: CalendarStyle(
                     selectedDecoration: BoxDecoration(
@@ -164,8 +163,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                               fontSize: DesignConstants.fontSizeM,
                             ),
                           ),
-                          TextWidgetString('오늘', getTextleft(), getSize14(),
-                              getText700(), getColorgray_Type3()),
+                          TextWidgetString(
+                              '오늘', getTextleft(), getSize14(), getText700(), getColorgray_Type3()),
                         ],
                       );
                     },
@@ -173,36 +172,29 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                       switch (day.weekday) {
                         case 1:
                           return const Center(
-                              child: Text('월',
-                                  style: TextStyle(color: Colors.black)));
+                              child: Text('월', style: TextStyle(color: Colors.black)));
                         case 2:
                           return const Center(
-                              child: Text('화',
-                                  style: TextStyle(color: Colors.black)));
+                              child: Text('화', style: TextStyle(color: Colors.black)));
                         case 3:
                           return const Center(
-                              child: Text('수',
-                                  style: TextStyle(color: Colors.black)));
+                              child: Text('수', style: TextStyle(color: Colors.black)));
                         case 4:
                           return const Center(
-                              child: Text('목',
-                                  style: TextStyle(color: Colors.black)));
+                              child: Text('목', style: TextStyle(color: Colors.black)));
                         case 5:
                           return const Center(
-                              child: Text('금',
-                                  style: TextStyle(color: Colors.black)));
+                              child: Text('금', style: TextStyle(color: Colors.black)));
                         case 6:
                           return const Center(
                               child: Text('토',
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold)));
+                                  style:
+                                      TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)));
                         case 7:
                           return const Center(
                               child: Text('일',
-                                  style: TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)));
+                                  style:
+                                      TextStyle(color: Colors.red, fontWeight: FontWeight.bold)));
                         default:
                           return const Center(child: Text(''));
                       }
@@ -218,9 +210,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                         decoration: isSelected
                             ? BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: Colors.blue,
-                                    width: 2), // ✅ 선택된 날짜 동그란 테두리
+                                border:
+                                    Border.all(color: Colors.blue, width: 2), // ✅ 선택된 날짜 동그란 테두리
                               )
                             : null,
                         alignment: Alignment.center,
@@ -230,9 +221,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                             Text(
                               '${day.day}',
                               style: TextStyle(
-                                color: holiday != null || day.weekday == 7
-                                    ? Colors.red
-                                    : Colors.black,
+                                color:
+                                    holiday != null || day.weekday == 7 ? Colors.red : Colors.black,
                                 fontWeight: holiday != null || day.weekday == 7
                                     ? FontWeight.bold
                                     : FontWeight.normal,

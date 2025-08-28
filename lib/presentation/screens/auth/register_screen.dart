@@ -23,16 +23,11 @@ class Membershipview extends StatefulWidget {
 
 class _MembershipviewState extends State<Membershipview> {
   final TextEditingController idController = TextEditingController(); // 아이디 입력값
-  final TextEditingController passwordController =
-      TextEditingController(); // 비밀번호 입력값
-  final TextEditingController confirmPasswordController =
-      TextEditingController(); // 비밀번호 확인 입력값
-  final TextEditingController mmsiController =
-      TextEditingController(); // mmsi 번호 입력값
-  final TextEditingController phoneController =
-      TextEditingController(); // 휴대폰 번호 입력값
-  final TextEditingController emailController =
-      TextEditingController(); // 이메일 입력값
+  final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력값
+  final TextEditingController confirmPasswordController = TextEditingController(); // 비밀번호 확인 입력값
+  final TextEditingController mmsiController = TextEditingController(); // mmsi 번호 입력값
+  final TextEditingController phoneController = TextEditingController(); // 휴대폰 번호 입력값
+  final TextEditingController emailController = TextEditingController(); // 이메일 입력값
   final TextEditingController emailaddrController =
       TextEditingController(); // 이메일 주소 입력값  naver.com , google.com 등등
 
@@ -47,13 +42,10 @@ class _MembershipviewState extends State<Membershipview> {
 
   List<String> items = ['naver.com', 'gmail.com', 'hanmail.net']; // 이메일 주소
   String? selectedValue; // 이메일 주소 직접이력
-  TextEditingController controller =
-      TextEditingController(); // 이메일 주소 직접입력 시 이메일 주소 입력값
+  TextEditingController controller = TextEditingController(); // 이메일 주소 직접입력 시 이메일 주소 입력값
 
-  final String apiUrl =
-      dotenv.env['kdn_usm_insert_membership_key'] ?? ''; // 회원가입 url
-  final String apisearchUrl =
-      dotenv.env['kdn_usm_select_membership_search_key'] ?? ''; // 회원조회 url
+  final String apiUrl = dotenv.env['kdn_usm_insert_membership_key'] ?? ''; // 회원가입 url
+  final String apisearchUrl = dotenv.env['kdn_usm_select_membership_search_key'] ?? ''; // 회원조회 url
   final dioRequest = DioRequest();
 
   // 시작
@@ -210,10 +202,7 @@ class _MembershipviewState extends State<Membershipview> {
     final FirebaseAuth auth = FirebaseAuth.instance;
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    if (id.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty ||
-        mmsi.isEmpty) {
+    if (id.isEmpty || password.isEmpty || confirmPassword.isEmpty || mmsi.isEmpty) {
       showTopSnackBar(context, '회원가입을 위해 필수 항목을 입력해주세요.');
       return;
     }
@@ -285,9 +274,7 @@ class _MembershipviewState extends State<Membershipview> {
         'mphn_no': phone,
         'choice_time': widget.nowTime.toIso8601String(),
         'firebase_uuid': uuid,
-        'email_addr': (email.isNotEmpty && emailaddr.isNotEmpty)
-            ? '$email@$emailaddr'
-            : '',
+        'email_addr': (email.isNotEmpty && emailaddr.isNotEmpty) ? '$email@$emailaddr' : '',
       };
       Response response;
       response = await dioRequest.dio.post(
@@ -322,8 +309,8 @@ class _MembershipviewState extends State<Membershipview> {
       appBar: AppBar(
         title: const AppBarLayerView('회원가입'),
         leading: IconButton(
-          icon: svgload('assets/kdn/usm/img/arrow-left.svg',
-              getSize24().toDouble(), getSize24().toDouble()),
+          icon: svgload(
+              'assets/kdn/usm/img/arrow-left.svg', getSize24().toDouble(), getSize24().toDouble()),
           onPressed: () {
             Navigator.pop(
                 context,
@@ -344,8 +331,7 @@ class _MembershipviewState extends State<Membershipview> {
             left: getSize20().toDouble(),
             right: getSize20().toDouble(),
             top: getSize20().toDouble(),
-            bottom: MediaQuery.of(context).viewInsets.bottom +
-                getSize20().toDouble(),
+            bottom: MediaQuery.of(context).viewInsets.bottom + getSize20().toDouble(),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,39 +343,34 @@ class _MembershipviewState extends State<Membershipview> {
                   const Spacer(),
                   Padding(
                     padding: EdgeInsets.only(left: getSize8().toDouble()),
-                    child: svgload('assets/kdn/usm/img/Frame_one_off.svg',
-                        getSize32().toDouble(), getSize32().toDouble()),
+                    child: svgload('assets/kdn/usm/img/Frame_one_off.svg', getSize32().toDouble(),
+                        getSize32().toDouble()),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: getSize8().toDouble()),
-                    child: svgload('assets/kdn/usm/img/Frame_two_on.svg',
-                        getSize32().toDouble(), getSize32().toDouble()),
+                    child: svgload('assets/kdn/usm/img/Frame_two_on.svg', getSize32().toDouble(),
+                        getSize32().toDouble()),
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: getSize8().toDouble()),
-                    child: svgload('assets/kdn/usm/img/Frame_three_off.svg',
-                        getSize32().toDouble(), getSize32().toDouble()),
+                    child: svgload('assets/kdn/usm/img/Frame_three_off.svg', getSize32().toDouble(),
+                        getSize32().toDouble()),
                   ),
                 ]),
               ),
 
               // 제목
-              TextWidgetString('K-VMS', getTextcenter(), getSize32(),
-                  getText700(), getColorblack_type2()),
-              TextWidgetString('회원정보입력', getTextcenter(), getSize32(),
-                  getText700(), getColorblack_type2()),
+              TextWidgetString(
+                  'K-VMS', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
+              TextWidgetString(
+                  '회원정보입력', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
 
               // 소제목
               Padding(
-                padding: EdgeInsets.only(
-                    top: getSize12().toDouble(),
-                    bottom: getSize32().toDouble()),
-                child: TextWidgetString(
-                    '회원가입을 위한 필요 정보를 입력해주시기 바랍니다.',
-                    getTextcenter(),
-                    getSize12(),
-                    getText700(),
-                    getColorgray_Type2()),
+                padding:
+                    EdgeInsets.only(top: getSize12().toDouble(), bottom: getSize32().toDouble()),
+                child: TextWidgetString('회원가입을 위한 필요 정보를 입력해주시기 바랍니다.', getTextcenter(),
+                    getSize12(), getText700(), getColorgray_Type2()),
               ),
 
               // 아이디
@@ -416,9 +397,8 @@ class _MembershipviewState extends State<Membershipview> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
                   child: Row(
                     children: [
                       Expanded(
@@ -466,9 +446,8 @@ class _MembershipviewState extends State<Membershipview> {
               // 아이디 유효성 메시지
               if (!isIdValid)
                 Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
                   child: TextWidgetString(
                     '아이디는 문자, 숫자를 포함한 8자리 이상 12자리 이하로 입력하여야 합니다.',
                     getTextleft(),
@@ -479,19 +458,17 @@ class _MembershipviewState extends State<Membershipview> {
                 )
               else if (isIdAvailable == 0)
                 Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
-                  child: TextWidgetString('사용가능한 아이디 입니다.', getTextcenter(),
-                      getSize12(), getText700(), getColorgreen_Type1()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
+                  child: TextWidgetString('사용가능한 아이디 입니다.', getTextcenter(), getSize12(),
+                      getText700(), getColorgreen_Type1()),
                 )
               else if (isIdAvailable == 1)
                 Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
-                  child: TextWidgetString('이미 사용중인 아이디 입니다.', getTextcenter(),
-                      getSize12(), getText700(), getColorred_type3()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
+                  child: TextWidgetString('이미 사용중인 아이디 입니다.', getTextcenter(), getSize12(),
+                      getText700(), getColorred_type3()),
                 ),
 
               // 비밀번호
@@ -518,11 +495,10 @@ class _MembershipviewState extends State<Membershipview> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(),
-                      passwordController, '비밀번호', getColorgray_Type7(),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
+                  child: inputWidget(
+                      getSize266(), getSize48(), passwordController, '비밀번호', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -533,12 +509,8 @@ class _MembershipviewState extends State<Membershipview> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextWidgetString(
-                            '비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
-                            getTextleft(),
-                            getSize12(),
-                            getText700(),
-                            getColorred_type3()),
+                        TextWidgetString('비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
+                            getTextleft(), getSize12(), getText700(), getColorred_type3()),
                       ],
                     )),
 
@@ -566,15 +538,10 @@ class _MembershipviewState extends State<Membershipview> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
-                  child: inputWidget(
-                      getSize266(),
-                      getSize48(),
-                      confirmPasswordController,
-                      '비밀번호 확인',
-                      getColorgray_Type7(),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
+                  child: inputWidget(getSize266(), getSize48(), confirmPasswordController,
+                      '비밀번호 확인', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -603,9 +570,8 @@ class _MembershipviewState extends State<Membershipview> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
                   child: inputWidget(getSize266(), getSize48(), mmsiController,
                       'MMSI 번호(숫자 9자리)를 입력해주세요', getColorgray_Type7()),
                 ),
@@ -636,11 +602,10 @@ class _MembershipviewState extends State<Membershipview> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), phoneController,
-                      '- 제외한 11자리', getColorgray_Type7()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
+                  child: inputWidget(getSize266(), getSize48(), phoneController, '- 제외한 11자리',
+                      getColorgray_Type7()),
                 ),
               ),
 
@@ -650,8 +615,8 @@ class _MembershipviewState extends State<Membershipview> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('이메일', getTextcenter(), getSize16(),
-                        getText700(), getColorgray_Type8()),
+                    TextWidgetString(
+                        '이메일', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                     SizedBox(width: getSize3().toDouble()),
                     CustomPaint(
                       size: Size(getSize4().toDouble(), getSize4().toDouble()),
@@ -663,9 +628,8 @@ class _MembershipviewState extends State<Membershipview> {
 
               SizedBox(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      top: getSize8().toDouble(),
-                      bottom: getSize8().toDouble()),
+                  padding:
+                      EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),
                   child: Row(
                     children: [
                       Expanded(
@@ -678,10 +642,9 @@ class _MembershipviewState extends State<Membershipview> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: getSize4().toDouble()),
-                        child: TextWidgetString('@', getTextcenter(),
-                            getSize16(), getText700(), getColorgray_Type8()),
+                        padding: EdgeInsets.symmetric(horizontal: getSize4().toDouble()),
+                        child: TextWidgetString(
+                            '@', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                       ),
                       Expanded(
                         child: Stack(
@@ -694,21 +657,19 @@ class _MembershipviewState extends State<Membershipview> {
                                 fillColor: getColorwhite_type1(),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                  borderSide: BorderSide(
-                                      color: getColorgray_Type7(), width: 1),
+                                  borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                  borderSide: BorderSide(
-                                      color: getColorgray_Type7(), width: 1),
+                                  borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                  borderSide: BorderSide(
-                                      color: getColorgray_Type7(), width: 1),
+                                  borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
+                                    horizontal: DesignConstants.spacing20,
+                                    vertical: DesignConstants.spacing12),
                               ),
                             ),
                             PopupMenuButton<String>(
@@ -730,8 +691,7 @@ class _MembershipviewState extends State<Membershipview> {
                                     value: value,
                                     child: Text(
                                       value,
-                                      style:
-                                          const TextStyle(color: Colors.black),
+                                      style: const TextStyle(color: Colors.black),
                                     ),
                                   );
                                 }).toList();
@@ -755,8 +715,8 @@ class _MembershipviewState extends State<Membershipview> {
                       shape: getTextradius6(), // 테두리 제거
                       elevation: getSize0().toDouble(), // 그림자 제거 (선택 사항)
                       padding: EdgeInsets.all(getSize18().toDouble())),
-                  child: TextWidgetString('회원가입 완료', getTextcenter(),
-                      getSize16(), getText700(), getColorwhite_type1()),
+                  child: TextWidgetString(
+                      '회원가입 완료', getTextcenter(), getSize16(), getText700(), getColorwhite_type1()),
                 ),
               )),
             ],

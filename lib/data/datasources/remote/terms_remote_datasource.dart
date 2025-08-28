@@ -15,9 +15,7 @@ class CmdSource {
       logger.d('[API URL] : $apiUrl');
       logger.d('[Response] : ${response.data}');
 
-      return (response.data as List)
-          .map<CmdModel>((json) => CmdModel.fromJson(json))
-          .toList();
+      return (response.data as List).map<CmdModel>((json) => CmdModel.fromJson(json)).toList();
     } catch (e) {
       // 예외 처리
       logger.e('Error occurred: $e');

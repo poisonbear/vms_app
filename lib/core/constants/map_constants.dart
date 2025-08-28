@@ -17,13 +17,13 @@ class MapConstants {
   static const double longitudeMax = 132.0;
 
   // ============ Default Locations ============
-  static const double defaultLatitude = 36.5;  // 대한민국 중심
+  static const double defaultLatitude = 36.5; // 대한민국 중심
   static const double defaultLongitude = 127.5;
-  
+
   // ============ Update Intervals ============
   static const int vesselUpdateSeconds = 2;
   static const int locationUpdateSeconds = 5;
-  
+
   // ============ Marker Sizes ============
   static const double markerSizeSmall = 20.0;
   static const double markerSizeMedium = 30.0;

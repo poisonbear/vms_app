@@ -24,8 +24,8 @@ class _MembershipClearViewState extends State<MembershipClearView> {
       appBar: AppBar(
         title: const AppBarLayerView('회원가입'),
         leading: IconButton(
-          icon: svgload('assets/kdn/usm/img/arrow-left.svg',
-              getSize24().toDouble(), getSize24().toDouble()),
+          icon: svgload(
+              'assets/kdn/usm/img/arrow-left.svg', getSize24().toDouble(), getSize24().toDouble()),
           onPressed: () {
             Navigator.pushAndRemoveUntil(
               context,
@@ -83,8 +83,7 @@ class _MembershipClearViewState extends State<MembershipClearView> {
               width: double.infinity, // 원하는 너비
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(
-                      'assets/kdn/usm/img/membership_clear2.png'), // 배경 이미지 경로
+                  image: AssetImage('assets/kdn/usm/img/membership_clear2.png'), // 배경 이미지 경로
                   fit: BoxFit.contain, // 이미지를 컨테이너에 맞게 채움
                 ),
               ),
@@ -94,14 +93,14 @@ class _MembershipClearViewState extends State<MembershipClearView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: getSize20().toDouble()), // 간격 추가
-                      TextWidgetString('K-VMS', getTextleft(), getSize32(),
-                          getText700(), getColorblack_type2()),
-                      TextWidgetString('회원가입완료', getTextleft(), getSize32(),
-                          getText700(), getColorsky_Type2()),
-                      TextWidgetString('K-VMS 회원가입을 완료하였습니다.', getTextleft(),
-                          getSize12(), getText700(), getColorgray_Type2()),
-                      TextWidgetString('이제 모든 서비스를 이용하실 수 있습니다.', getTextleft(),
-                          getSize12(), getText700(), getColorgray_Type2()),
+                      TextWidgetString(
+                          'K-VMS', getTextleft(), getSize32(), getText700(), getColorblack_type2()),
+                      TextWidgetString(
+                          '회원가입완료', getTextleft(), getSize32(), getText700(), getColorsky_Type2()),
+                      TextWidgetString('K-VMS 회원가입을 완료하였습니다.', getTextleft(), getSize12(),
+                          getText700(), getColorgray_Type2()),
+                      TextWidgetString('이제 모든 서비스를 이용하실 수 있습니다.', getTextleft(), getSize12(),
+                          getText700(), getColorgray_Type2()),
                     ],
                   ),
                   Positioned(

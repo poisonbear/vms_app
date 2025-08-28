@@ -7,11 +7,11 @@ class ErrorMessageWidget extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const ErrorMessageWidget({
-    super.key,  // Key? key 대신 super.key 사용
+    super.key, // Key? key 대신 super.key 사용
     required this.message,
     this.onRetry,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Center(

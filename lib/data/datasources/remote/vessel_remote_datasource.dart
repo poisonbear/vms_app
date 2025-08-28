@@ -8,8 +8,7 @@ class VesselSearchSource {
   //dioRequest 객체 생성 HTTP클라이언트를 wrap한 클래스 내부에 dio.get(..) 있음.
   final dioRequest = DioRequest();
 
-  Future<List<VesselSearchModel>> getVesselList(
-      {String? regDt, int? mmsi}) async {
+  Future<List<VesselSearchModel>> getVesselList({String? regDt, int? mmsi}) async {
     try {
       final String apiUrl = dotenv.env['kdn_gis_select_vessel_List'] ?? '';
 
@@ -22,8 +21,7 @@ class VesselSearchSource {
       );
 
       //GET 방식으로 요청 보냄.
-      final response =
-          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       // 로그 출력
       //logger.d("[API URL] : ${apiUrl}");
@@ -32,9 +30,7 @@ class VesselSearchSource {
       //Map일 경우 ex "mmsi": [ { "id": 1, "name": "선박A" }, { "id": 2, "name": "선박B" }]
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
-        return items
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        return items.map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
       }
 
       //List일 경우 [ { "id": 1, "name": "선박A" },{ "id": 2, "name": "선박B" }]

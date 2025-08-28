@@ -29,8 +29,7 @@ import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 List<LatLng> parseGeoJsonLineString(String geoJsonStr) {
   try {
     final decodedOnce = jsonDecode(geoJsonStr);
-    final geoJson =
-        decodedOnce is String ? jsonDecode(decodedOnce) : decodedOnce;
+    final geoJson = decodedOnce is String ? jsonDecode(decodedOnce) : decodedOnce;
     final coords = geoJson['coordinates'] as List;
     return coords.map<LatLng>((c) {
       final lon = double.tryParse(c[0].toString());
@@ -143,8 +142,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     super.initState();
 
     // 전달받은 viewModel이 있으면 사용하고, 없으면 새로 생성
-    _routeSearchViewModel =
-        widget.routeSearchViewModel ?? RouteSearchProvider();
+    _routeSearchViewModel = widget.routeSearchViewModel ?? RouteSearchProvider();
 
     // ✅ 이 두 줄을 꼭 추가해!
     selectedIndex = widget.initTabIndex;
@@ -199,19 +197,16 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
         _showForegroundNotification(message);
 
         //알림 type 종류에 따라 팝업 화면 다르게 분기
-        if (type == 'turbine_entry_alert' &&
-            !_activePopups['turbine_entry_alert']!) {
+        if (type == 'turbine_entry_alert' && !_activePopups['turbine_entry_alert']!) {
           _activePopups['turbine_entry_alert'] = true;
           _startFlashing();
           _showRosPopup(context, message.notification?.title ?? '알림',
               message.notification?.body ?? '새로운 메시지');
-        } else if (type == 'weather_alert' &&
-            !_activePopups['weather_alert']!) {
+        } else if (type == 'weather_alert' && !_activePopups['weather_alert']!) {
           _activePopups['weather_alert'] = true;
           _showWeatherPopup(context, message.notification?.title ?? '알림',
               message.notification?.body ?? '새로운 메시지');
-        } else if (type == 'submarine_cable_alert' &&
-            !_activePopups['submarine_cable_alert']!) {
+        } else if (type == 'submarine_cable_alert' && !_activePopups['submarine_cable_alert']!) {
           _activePopups['submarine_cable_alert'] = true;
           _startFlashing();
           _showMarinPopup(context, message.notification?.title ?? '알림',
@@ -231,9 +226,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
       // final prevWave = Provider.of<NavigationProvider>(context, listen: false).wave;
       // final prevVisibility = Provider.of<NavigationProvider>(context, listen: false).visibility;
 
-      Provider.of<NavigationProvider>(context, listen: false)
-          .getWeatherInfo()
-          .then((_) {
+      Provider.of<NavigationProvider>(context, listen: false).getWeatherInfo().then((_) {
         // 실제로 값이 변경되었는지 확인
         if (mounted) {
           setState(() {});
@@ -242,8 +235,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     });
 
     // 항행경보 알림 데이터 가져오기
-    Provider.of<NavigationProvider>(context, listen: false)
-        .getNavigationWarnings();
+    Provider.of<NavigationProvider>(context, listen: false).getNavigationWarnings();
   }
 
   //선박정보 표시
@@ -265,7 +257,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
           child: Text(
             value,
             style: const TextStyle(
-                fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.w500, color: Colors.black),
+                fontSize: DesignConstants.fontSizeL,
+                fontWeight: FontWeight.w500,
+                color: Colors.black),
           ),
         ),
       ],
@@ -301,8 +295,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: getSize10().toDouble(),
-                          offset: Offset(
-                              getSize0().toDouble(), getSize4().toDouble()),
+                          offset: Offset(getSize0().toDouble(), getSize4().toDouble()),
                         ),
                       ],
                     ),
@@ -311,8 +304,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(children: [
-                          TextWidgetString('선박 정보', getTextleft(), getSize24(),
-                              getTextbold(), getColorblack_type1()),
+                          TextWidgetString('선박 정보', getTextleft(), getSize24(), getTextbold(),
+                              getColorblack_type1()),
                           const Spacer(),
                           TextButton(
                             onPressed: () {
@@ -322,8 +315,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               padding: EdgeInsets.zero, // 패딩 제거
                               minimumSize: Size(getSize24().toDouble(),
                                   getSize24().toDouble()), // 최소 크기 설정 (선택 사항)
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
                             ),
                             child: SvgPicture.asset(
                               'assets/kdn/ros/img/close_popup.svg',
@@ -344,24 +336,14 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               _infoRow('선박명', vessel.ship_nm ?? '-'),
                               _infoRow('MMSI', vessel.mmsi?.toString() ?? '-'),
                               _infoRow('선종', vessel.cd_nm ?? '-'),
-                              _infoRow(
-                                  '흘수',
-                                  vessel.draft != null
-                                      ? '${vessel.draft} m'
-                                      : '-'),
-                              _infoRow(
-                                  '대지속도',
-                                  vessel.sog != null
-                                      ? '${vessel.sog} kn'
-                                      : '-'),
-                              _infoRow('대지침로',
-                                  vessel.cog != null ? '${vessel.cog}°' : '-'),
+                              _infoRow('흘수', vessel.draft != null ? '${vessel.draft} m' : '-'),
+                              _infoRow('대지속도', vessel.sog != null ? '${vessel.sog} kn' : '-'),
+                              _infoRow('대지침로', vessel.cog != null ? '${vessel.cog}°' : '-'),
                             ],
                           ),
                         ),
                         SizedBox(height: getSize32().toDouble()),
-                        if (_routeSearchViewModel.isNavigationHistoryMode !=
-                            true) ...[
+                        if (_routeSearchViewModel.isNavigationHistoryMode != true) ...[
                           Align(
                             alignment: Alignment.center,
                             child: Row(
@@ -369,8 +351,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () async {
-                                      final loadingContext =
-                                          Navigator.of(context);
+                                      final loadingContext = Navigator.of(context);
 
                                       showDialog(
                                         context: context,
@@ -385,55 +366,42 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                         if (vessel.mmsi != null) {
                                           // 기존 궤적 초기화는 예측항로 버튼 누를 때만
                                           _routeSearchViewModel.clearRoutes();
-                                          _routeSearchViewModel
-                                              .setNavigationHistoryMode(false);
+                                          _routeSearchViewModel.setNavigationHistoryMode(false);
                                           _stopRouteUpdates();
 
-                                          await _routeSearchViewModel
-                                              .getVesselRoute(
-                                                  mmsi: vessel.mmsi ?? 0,
-                                                  regDt: DateFormat(
-                                                          'yyyy-MM-dd')
-                                                      .format(DateTime.now()));
-                                          _mapControllerProvider.mapController
-                                              .move(
+                                          await _routeSearchViewModel.getVesselRoute(
+                                              mmsi: vessel.mmsi ?? 0,
+                                              regDt:
+                                                  DateFormat('yyyy-MM-dd').format(DateTime.now()));
+                                          _mapControllerProvider.mapController.move(
                                             LatLng(vessel.lttd ?? 35.3790988,
                                                 vessel.lntd ?? 126.167763),
                                             12.0,
                                           );
-                                          _selectedVesselMmsi =
-                                              vessel.mmsi ?? 0; // 선택된 선박의 MMSI 저장
-                                          _isTrackingEnabled =
-                                              true; // 항적 표시 활성화
+                                          _selectedVesselMmsi = vessel.mmsi ?? 0; // 선택된 선박의 MMSI 저장
+                                          _isTrackingEnabled = true; // 항적 표시 활성화
                                           _vesselUpdateTimer
                                               ?.cancel(); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
-                                          _routeUpdateTimer
-                                              ?.cancel(); // 기존에 실행 중인 타이머가 있다면 취소
+                                          _routeUpdateTimer?.cancel(); // 기존에 실행 중인 타이머가 있다면 취소
 
                                           // final startTime = DateTime.now();
 
                                           // 선박 위치 갱신 타이머 재시작
                                           _vesselUpdateTimer = Timer.periodic(
-                                              AnimationConstants.autoScrollDelay,
-                                              (timer) {
+                                              AnimationConstants.autoScrollDelay, (timer) {
                                             _loadVesselDataAndUpdateMap();
                                           });
 
                                           // 3초마다 데이터 갱신하는 타이머 시작
                                           _routeUpdateTimer = Timer.periodic(
-                                              AnimationConstants.autoScrollDelay,
-                                              (timer) {
+                                              AnimationConstants.autoScrollDelay, (timer) {
                                             try {
                                               if (_isTrackingEnabled) {
                                                 // 플래그 체크 없이 항상 갱신
-                                                _routeSearchViewModel
-                                                    .getVesselRoute(
-                                                        mmsi:
-                                                            _selectedVesselMmsi!,
-                                                        regDt: DateFormat(
-                                                                'yyyy-MM-dd')
-                                                            .format(DateTime
-                                                                .now()));
+                                                _routeSearchViewModel.getVesselRoute(
+                                                    mmsi: _selectedVesselMmsi!,
+                                                    regDt: DateFormat('yyyy-MM-dd')
+                                                        .format(DateTime.now()));
 
                                                 // UI 업데이트
                                                 if (mounted) {
@@ -450,10 +418,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                         Navigator.of(context).pop(); // 본래 팝업 닫기
                                       } catch (e) {
                                         Navigator.of(context).pop(); // 로딩 팝업 닫기
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text('예측항로 로딩 중 오류 발생')),
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('예측항로 로딩 중 오류 발생')),
                                         );
                                       }
                                     },
@@ -467,8 +433,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       elevation: getSize0().toDouble(),
-                                      padding: EdgeInsets.all(
-                                          getSize18().toDouble()),
+                                      padding: EdgeInsets.all(getSize18().toDouble()),
                                     ),
                                     child: TextWidgetString(
                                       '예측항로 및 과거항적',
@@ -480,8 +445,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                   ),
                                 ),
 
-                                SizedBox(
-                                    width: getSize12().toDouble()), // 버튼 사이 간격
+                                SizedBox(width: getSize12().toDouble()), // 버튼 사이 간격
                               ],
                             ),
                           ),
@@ -540,8 +504,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     }
 
     // 알림 권한 확인
-    NotificationSettings notifSettings =
-        await FirebaseMessaging.instance.getNotificationSettings();
+    NotificationSettings notifSettings = await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus == AuthorizationStatus.authorized) {
       print('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {
@@ -611,11 +574,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
   //  연속 알람시 구별
   Future<void> _showForegroundNotification(RemoteMessage message) async {
-    final int notificationId =
-        DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    final int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: '중요 알림을 위한 채널입니다.',
@@ -727,11 +688,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10),
+                          vertical: DesignConstants.spacing10,
+                          horizontal: DesignConstants.spacing10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(
-                            color: Color(0xFF5CA1F6), width: 1),
+                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
                       ),
                       elevation: 0,
                       minimumSize: const Size(270, 48),
@@ -826,11 +787,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
+                          vertical: DesignConstants.spacing10,
+                          horizontal: DesignConstants.spacing10), // 패딩 수정
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(
-                            color: Color(0xFF5CA1F6), width: 1),
+                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
                       ),
                       elevation: 0,
                       minimumSize: const Size(270, 48), // 버튼 최소 크기 설정
@@ -925,11 +886,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
+                          vertical: DesignConstants.spacing10,
+                          horizontal: DesignConstants.spacing10), // 패딩 수정
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(
-                            color: Color(0xFF5CA1F6), width: 1),
+                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
                       ),
                       elevation: 0,
                       minimumSize: const Size(270, 48), // 버튼 최소 크기 설정
@@ -955,9 +916,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
   int selectedIndex = 0; // 선택된 인덱스를 클래스 변수로 선언
   Color getItemColor(int index) {
-    return selectedIndex == index
-        ? getColorgray_Type8()
-        : getColorblack_type2();
+    return selectedIndex == index ? getColorgray_Type8() : getColorblack_type2();
   }
 
   int _selectedIndex = 0;
@@ -1072,8 +1031,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('현재 위치를 가져올 수 없습니다.',
-                          style: TextStyle(color: Colors.red)),
+                      const Text('현재 위치를 가져올 수 없습니다.', style: TextStyle(color: Colors.red)),
                       const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
@@ -1132,8 +1090,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('현재 위치를 가져올 수 없습니다.',
-                          style: TextStyle(color: Colors.red)),
+                      const Text('현재 위치를 가져올 수 없습니다.', style: TextStyle(color: Colors.red)),
                       const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
@@ -1179,9 +1136,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
     if (role == 'ROLE_USER') {
       // ROLE_USER인 경우: 자신의 MMSI 선박만 조회
-      vessels = vesselsViewModel.vessels
-          .where((vessel) => vessel.mmsi == mmsi)
-          .toList();
+      vessels = vesselsViewModel.vessels.where((vessel) => vessel.mmsi == mmsi).toList();
     } else {
       // 관리자인 경우: 모든 선박 조회
       vessels = vesselsViewModel.vessels;
@@ -1203,8 +1158,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
             Consumer<RouteSearchProvider>(
               builder: (context, routeSearchViewModel, child) {
                 // Consumer 또는 Provider.of를 통해 동일 인스턴스를 받아와 FlutterMap에 전달
-                final mapController =
-                    Provider.of<MapControllerProvider>(context).mapController;
+                final mapController = Provider.of<MapControllerProvider>(context).mapController;
                 //point 줄이기 작업(변침+14노트 선박은 AIS신호가 4초마다 들어오는 선박 때문에 point가 너무 많이찍이고, 지도가 느려지기 때문에 줄임)
                 int cnt = 20;
                 if ((routeSearchViewModel.pastRoutes.length ?? 0) <= cnt) {
@@ -1217,26 +1171,21 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                 if (routeSearchViewModel.pastRoutes.isNotEmpty == true) {
                   // 첫 번째 포인트 추가
                   final firstPoint = routeSearchViewModel.pastRoutes.first;
-                  pastRouteLine
-                      .add(LatLng(firstPoint.lttd ?? 0, firstPoint.lntd ?? 0));
+                  pastRouteLine.add(LatLng(firstPoint.lttd ?? 0, firstPoint.lntd ?? 0));
 
                   // 중간 포인트들 추가 (인덱스 1부터 마지막-1까지)
                   if ((routeSearchViewModel.pastRoutes.length ?? 0) > 2) {
-                    for (int i = 1;
-                        i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1;
-                        i++) {
+                    for (int i = 1; i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1; i++) {
                       if (i % cnt == 0) {
                         final route = routeSearchViewModel.pastRoutes[i];
-                        pastRouteLine
-                            .add(LatLng(route.lttd ?? 0, route.lntd ?? 0));
+                        pastRouteLine.add(LatLng(route.lttd ?? 0, route.lntd ?? 0));
                       }
                     }
                   }
 
                   // 마지막 포인트 추가
                   final lastPoint = routeSearchViewModel.pastRoutes.last;
-                  pastRouteLine
-                      .add(LatLng(lastPoint.lttd ?? 0, lastPoint.lntd ?? 0));
+                  pastRouteLine.add(LatLng(lastPoint.lttd ?? 0, lastPoint.lntd ?? 0));
                 }
 
                 //예측항로 LatLng 리스트 생성
@@ -1255,8 +1204,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                 //_isTrackingEnabled -> main지도에서 선박 클릭을 통해 그려진 과거항적 및 예측항로
                 //isNavigationHistoryMode -> 항행이력 탭을 통해 그려진 과거항적
                 //즉, refresh버튼을 눌러서 과거항적 및 예측항로를 지웠고, 항행이력 탭을 통해 그려진 과거항적이 아닌경우 항적 지우기!
-                if (!_isTrackingEnabled &&
-                    routeSearchViewModel.isNavigationHistoryMode != true) {
+                if (!_isTrackingEnabled && routeSearchViewModel.isNavigationHistoryMode != true) {
                   pastRouteLine.clear();
                   predRouteLine.clear();
                 }
@@ -1264,8 +1212,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                 return FlutterMap(
                   mapController: mapController,
                   options: MapOptions(
-                    initialCenter:
-                        _currentPosition ?? const LatLng(35.374509, 126.132268),
+                    initialCenter: _currentPosition ?? const LatLng(35.374509, 126.132268),
                     initialZoom: 12.0,
                     maxZoom: 14.0, // 최대 줌 레벨 설정
                     minZoom: 5.5, // 필요한 경우 최소 줌 레벨도 설정 가능
@@ -1273,8 +1220,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                     ),
-                    onPositionChanged:
-                        (MapPosition position, bool hasGesture) {},
+                    onPositionChanged: (MapPosition position, bool hasGesture) {},
                   ),
                   children: [
                     //전자해도 수심면 레이어
@@ -1332,8 +1278,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 color: Colors.orangeAccent, // 노란색
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 1),
+                                border: Border.all(color: Colors.white, width: 1),
                               ),
                             ),
                           );
@@ -1347,8 +1292,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 color: Colors.orangeAccent,
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.white, width: 0.5),
+                                border: Border.all(color: Colors.white, width: 0.5),
                               ),
                             ),
                           );
@@ -1376,8 +1320,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             decoration: BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: Colors.white, width: 0.5),
+                              border: Border.all(color: Colors.white, width: 0.5),
                             ),
                           ),
                         );
@@ -1387,11 +1330,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     // 1. 점선 경로
                     PolylineLayer(
                       polylineCulling: false,
-                      polylines: vessels
-                          .where((v) => v.escapeRouteGeojson != null)
-                          .map((v) {
-                        final pts =
-                            parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
+                      polylines: vessels.where((v) => v.escapeRouteGeojson != null).map((v) {
+                        final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
                         return Polyline(
                           points: pts,
                           strokeWidth: 2.0,
@@ -1406,8 +1346,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       polygons: vessels
                           .where((v) => v.escapeRouteGeojson != null)
                           .map((v) {
-                            final pts = parseGeoJsonLineString(
-                                v.escapeRouteGeojson ?? '');
+                            final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
                             if (pts.length < 2) return null;
                             final end = pts.last;
                             final prev = pts[pts.length - 2];
@@ -1474,8 +1413,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                           width: 25,
                           height: 25,
                           child: Transform.rotate(
-                            angle:
-                                (vessel.cog ?? 0) * (pi / 180), // COG를 라디안으로 변환
+                            angle: (vessel.cog ?? 0) * (pi / 180), // COG를 라디안으로 변환
                             child: SvgPicture.asset(
                               'assets/kdn/home/img/myVessel.svg',
                               width: 40,
@@ -1490,12 +1428,10 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       opacity: isOtherVesselsVisible ? 1.0 : 0.0, // 가시성 제어
                       // 완전히 투명하게 만들면 상호작용도 불가능해짐
                       child: IgnorePointer(
-                        ignoring:
-                            !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
+                        ignoring: !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
                         child: MarkerLayer(
-                          markers: vessels
-                              .where((vessel) => (vessel.mmsi ?? 0) != mmsi)
-                              .map((vessel) {
+                          markers:
+                              vessels.where((vessel) => (vessel.mmsi ?? 0) != mmsi).map((vessel) {
                             return Marker(
                               point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
                               width: 25,
@@ -1600,18 +1536,14 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             Consumer<RouteSearchProvider>(
                               builder: (context, routeViewModel, _) {
                                 //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 mainView에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
-                                if ((routeViewModel.pastRoutes.isNotEmpty ==
-                                            true ||
-                                        (routeViewModel.predRoutes.isNotEmpty ==
-                                            true)) &&
-                                    routeViewModel.isNavigationHistoryMode !=
-                                        true &&
+                                if ((routeViewModel.pastRoutes.isNotEmpty == true ||
+                                        (routeViewModel.predRoutes.isNotEmpty == true)) &&
+                                    routeViewModel.isNavigationHistoryMode != true &&
                                     _isTrackingEnabled) {
                                   return Column(
                                     children: [
                                       CircularButton(
-                                        svgPath:
-                                            'assets/kdn/home/img/refresh.svg',
+                                        svgPath: 'assets/kdn/home/img/refresh.svg',
                                         colorOn: getColorgray_Type8(),
                                         colorOff: getColorgray_Type8(),
                                         widthSize: getSize56(),
@@ -1619,11 +1551,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                         onTap: () {
                                           _stopRouteUpdates();
                                           // 사용자에게 피드백 제공
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
+                                          ScaffoldMessenger.of(context).showSnackBar(
                                             const SnackBar(
-                                              content:
-                                                  Text('항적 데이터가 초기화되었습니다.'),
+                                              content: Text('항적 데이터가 초기화되었습니다.'),
                                               duration: Duration(seconds: 1),
                                             ),
                                           );
@@ -1639,16 +1569,14 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             //관리자만 접근 가능
                             if (role == 'ROLE_ADMIN') ...[
                               CircularButton(
-                                svgPath:
-                                    'assets/kdn/home/img/bouttom_ship_img.svg',
+                                svgPath: 'assets/kdn/home/img/bouttom_ship_img.svg',
                                 colorOn: getColorgray_Type9(),
                                 colorOff: getColorgray_Type8(),
                                 widthSize: getSize56(),
                                 heightSize: getSize56(),
                                 onTap: () {
                                   setState(() {
-                                    isOtherVesselsVisible =
-                                        !isOtherVesselsVisible;
+                                    isOtherVesselsVisible = !isOtherVesselsVisible;
                                   });
                                   // 관리자 전용 기능
                                 },
@@ -1658,22 +1586,17 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                             // 현재 위치 버튼 - Builder로 감싸서 MultiProvider의 하위 컨텍스트 전달
                             Builder(
                               builder: (context) {
-                                final mmsi = context
-                                    .read<UserState>()
-                                    .mmsi ?? 0; // 현재 사용자 mmsi 값
-                                final vessels = context
-                                    .watch<VesselProvider>()
-                                    .vessels; // 선박 목록을 감시
+                                final mmsi = context.read<UserState>().mmsi ?? 0; // 현재 사용자 mmsi 값
+                                final vessels =
+                                    context.watch<VesselProvider>().vessels; // 선박 목록을 감시
 
                                 // mmsi가 없거나 선박 목록에 사용자의 mmsi가 없으면 버튼을 표시하지 않음
-                                if (!vessels
-                                        .any((vessel) => vessel.mmsi == mmsi)) {
+                                if (!vessels.any((vessel) => vessel.mmsi == mmsi)) {
                                   return const SizedBox.shrink(); // 빈 위젯 반환
                                 }
 
                                 return CircularButton(
-                                  svgPath:
-                                      'assets/kdn/home/img/bouttom_location_img.svg',
+                                  svgPath: 'assets/kdn/home/img/bouttom_location_img.svg',
                                   colorOn: getColorgray_Type8(),
                                   colorOff: getColorgray_Type8(),
                                   widthSize: getSize56(),
@@ -1682,17 +1605,14 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                     // 해당 mmsi의 선박 목록을 조회합니다.
                                     if (role == 'ROLE_ADMIN') {
                                       //관리자일 경우
-                                      await context
-                                          .read<VesselProvider>()
-                                          .getVesselList(mmsi: 0);
+                                      await context.read<VesselProvider>().getVesselList(mmsi: 0);
                                     } else {
                                       await context
                                           .read<VesselProvider>()
                                           .getVesselList(mmsi: mmsi);
                                     }
 
-                                    final vessels =
-                                        context.read<VesselProvider>().vessels;
+                                    final vessels = context.read<VesselProvider>().vessels;
 
                                     VesselSearchModel? myVessel;
 
@@ -1707,20 +1627,15 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                     // myVessel 객체가 유효하면 그 좌표를 사용하여 지도 중심을 이동합니다.
                                     if (myVessel != null || myVessel != '') {
                                       final vesselPoint = LatLng(
-                                        myVessel?.lttd ??
-                                            35.3790988, // 위도 (null이면 기본값 사용)
-                                        myVessel?.lntd ??
-                                            126.167763, // 경도 (null이면 기본값 사용)
+                                        myVessel?.lttd ?? 35.3790988, // 위도 (null이면 기본값 사용)
+                                        myVessel?.lntd ?? 126.167763, // 경도 (null이면 기본값 사용)
                                       );
 
                                       // Builder 내의 context는 MultiProvider 자식이므로 Provider 접근이 가능합니다.
                                       final mapController =
-                                          Provider.of<MapControllerProvider>(
-                                                  context,
-                                                  listen: false)
+                                          Provider.of<MapControllerProvider>(context, listen: false)
                                               .mapController;
-                                      mapController.move(vesselPoint,
-                                          mapController.camera.zoom);
+                                      mapController.move(vesselPoint, mapController.camera.zoom);
                                     }
                                   },
                                 );
@@ -1736,11 +1651,10 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               heightSize: getSize56(),
                               onTap: () {
                                 //_showCustomPopuplive(context);
-                                _mapControllerProvider.mapController
-                                    .moveAndRotate(
-                                        const LatLng(35.374509, 126.132268),
-                                        12.0,
-                                        0.0); // 지도를 기본 위치와 줌 레벨로 이동
+                                _mapControllerProvider.mapController.moveAndRotate(
+                                    const LatLng(35.374509, 126.132268),
+                                    12.0,
+                                    0.0); // 지도를 기본 위치와 줌 레벨로 이동
 
                                 //_routeSearchViewModel.clearRoutes(); // 과거항적과 예측항로 데이터 초기화
                                 //_stopRouteUpdates();                  // 항로 업데이트 중지 및 데이터 초기화
@@ -1784,11 +1698,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 velocity: 50.0,
                                 pauseAfterRound: const Duration(seconds: 1),
                                 startPadding: 10.0,
-                                accelerationDuration:
-                                    const Duration(seconds: 1),
+                                accelerationDuration: const Duration(seconds: 1),
                                 accelerationCurve: Curves.linear,
-                                decelerationDuration:
-                                    const Duration(seconds: 1),
+                                decelerationDuration: const Duration(seconds: 1),
                                 decelerationCurve: Curves.easeOut,
                               ),
                             ),
@@ -1823,8 +1735,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1844,8 +1755,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1865,8 +1775,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1886,8 +1795,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               begin: Alignment.centerRight,
                               end: Alignment.centerLeft,
                               colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1904,8 +1812,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: Colors.white, // 배경색 설정
             border: Border(
-              top: BorderSide(
-                  color: getColorgray_Type4(), width: 1), // 상단 Border 추가
+              top: BorderSide(color: getColorgray_Type4(), width: 1), // 상단 Border 추가
             ),
           ),
           child: Builder(
@@ -1915,10 +1822,10 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
               elevation: 0, // 그림자 제거
               selectedItemColor: getColorgray_Type8(),
               unselectedItemColor: getColorgray_Type2(),
-              selectedLabelStyle: TextStyle(
-                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
-              unselectedLabelStyle: TextStyle(
-                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              selectedLabelStyle:
+                  TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              unselectedLabelStyle:
+                  TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
               currentIndex: selectedIndex,
               onTap: (index) {
                 setState(() {
@@ -2021,8 +1928,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   }
 }
 
-Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize,
-    int heightsize, String labelText, int widthSizeline, String statusText,
+Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize, int heightsize,
+    String labelText, int widthSizeline, String statusText,
     {VoidCallback? onTap, bool isSelected = true}) {
   return Padding(
     padding: EdgeInsets.only(bottom: getSize12().toDouble()),
@@ -2038,8 +1945,7 @@ Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize,
             top: 0,
             child: AnimatedContainer(
               duration: AnimationConstants.durationQuick,
-              width:
-                  isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
+              width: isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
               height: heightsize.toDouble(),
               decoration: BoxDecoration(
                 color: getColorblack_type1(),
@@ -2059,10 +1965,10 @@ Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize,
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString(labelText, getTextleft(), getSize14(),
-                        getText700(), getColorgray_Type2()),
-                    TextWidgetString(statusText, getTextleft(), getSize14(),
-                        getText700(), getColorwhite_type1()),
+                    TextWidgetString(
+                        labelText, getTextleft(), getSize14(), getText700(), getColorgray_Type2()),
+                    TextWidgetString(statusText, getTextleft(), getSize14(), getText700(),
+                        getColorwhite_type1()),
                   ],
                 ),
               ),
@@ -2115,8 +2021,7 @@ Widget _warningPopOn(
     child: GestureDetector(
       onTap: () {
         // 버튼 클릭 시 동작 추가
-        warningPop(context, title, titleColor, detail, detailColor, alarmicon,
-            shadowcolor);
+        warningPop(context, title, titleColor, detail, detailColor, alarmicon, shadowcolor);
       },
       child: Stack(
         alignment: Alignment.center,
@@ -2167,8 +2072,7 @@ Widget _warningPopOnDetail(
     child: GestureDetector(
       onTap: () {
         // 버튼 클릭 시 동작 추가
-        warningPopdetail(context, title, titleColor, detail, detailColor,
-            alarmicon, shadowcolor);
+        warningPopdetail(context, title, titleColor, detail, detailColor, alarmicon, shadowcolor);
       },
       child: Stack(
         alignment: Alignment.center,

@@ -30,8 +30,7 @@ class MainViewNavigationSheet extends StatefulWidget {
   });
 
   @override
-  _MainViewNavigationSheetState createState() =>
-      _MainViewNavigationSheetState();
+  _MainViewNavigationSheetState createState() => _MainViewNavigationSheetState();
 }
 
 class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
@@ -69,9 +68,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         endDate: selectedEndDate,
         mmsi: role == 'ROLE_USER'
             ? mmsi
-            : (globalMmsiController.text.isEmpty
-                ? null
-                : int.tryParse(globalMmsiController.text)),
+            : (globalMmsiController.text.isEmpty ? null : int.tryParse(globalMmsiController.text)),
         shipName: globalShipNameController.text.isEmpty
             ? null
             : globalShipNameController.text.toUpperCase() // 대문자로 변환
@@ -80,21 +77,19 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final routeSearchViewModel = Provider.of<RouteSearchProvider>(context,
-        listen: false); // RouteSearchProvider 가져오기
+    final routeSearchViewModel =
+        Provider.of<RouteSearchProvider>(context, listen: false); // RouteSearchProvider 가져오기
     return WillPopScope(
         // 추가: WillPopScope로 감싸서 뒤로가기 처리
         onWillPop: () async {
           // 👉 mainView의 selectedIndex를 0으로 초기화 추가
-          final mainViewState =
-              context.findAncestorStateOfType<State<mainView>>();
+          final mainViewState = context.findAncestorStateOfType<State<mainView>>();
           mainViewState?.setState(() {
             (mainViewState as dynamic).selectedIndex = 0;
           });
 
           routeSearchViewModel.clearRoutes(); // 중요: 뒤로가기 시 클리어 처리
-          routeSearchViewModel
-              .setNavigationHistoryMode(false); //항행이력에서 벗어났다는 플래그값
+          routeSearchViewModel.setNavigationHistoryMode(false); //항행이력에서 벗어났다는 플래그값
           return true; // 뒤로가기 허용
         },
         child: ChangeNotifierProvider.value(
@@ -107,8 +102,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 child: Container(
                   height: MediaQuery.of(context).size.height * 0.81,
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.only(
@@ -122,8 +117,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       // 닫기 버튼 영역
                       Row(
                         children: [
-                          TextWidgetString('항행 이력 내역 조회', getTextleft(),
-                              getSize20(), getText700(), getColorblack_type2()),
+                          TextWidgetString('항행 이력 내역 조회', getTextleft(), getSize20(), getText700(),
+                              getColorblack_type2()),
                           const Spacer(),
                           Container(
                             child: SizedBox(
@@ -132,8 +127,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               child: IconButton(
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
-                                icon: const Icon(Icons.close,
-                                    color: Colors.black),
+                                icon: const Icon(Icons.close, color: Colors.black),
                                 onPressed: () {
                                   if (widget.onClose != null) {
                                     widget.onClose!();
@@ -141,16 +135,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
                                   // 👉 mainView의 selectedIndex를 0으로 초기화 추가
                                   final mainViewState =
-                                      context.findAncestorStateOfType<
-                                          State<mainView>>();
+                                      context.findAncestorStateOfType<State<mainView>>();
                                   mainViewState?.setState(() {
-                                    (mainViewState as dynamic).selectedIndex =
-                                        0;
+                                    (mainViewState as dynamic).selectedIndex = 0;
                                   });
 
                                   routeSearchViewModel.clearRoutes();
-                                  routeSearchViewModel
-                                      .setNavigationHistoryMode(false);
+                                  routeSearchViewModel.setNavigationHistoryMode(false);
                                   Navigator.pop(context);
                                 },
                               ),
@@ -167,41 +158,30 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  _bottomSheetController =
-                                      Scaffold.of(context).showBottomSheet(
+                                  _bottomSheetController = Scaffold.of(context).showBottomSheet(
                                     (context) {
-                                      return const MainViewNavigationDate(
-                                          title: '시작일자 선택');
+                                      return const MainViewNavigationDate(title: '시작일자 선택');
                                     },
                                     backgroundColor: getColorblack_type3(),
                                     shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(0)),
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                                     ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  side: BorderSide(
-                                      color: getColorgray_Type7(), width: 1),
+                                  side: BorderSide(color: getColorgray_Type7(), width: 1),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                   ),
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: getSize12().toDouble()),
+                                  padding: EdgeInsets.symmetric(horizontal: getSize12().toDouble()),
                                   backgroundColor: Colors.white,
                                 ),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    TextWidgetString(
-                                        selectedStartDate,
-                                        getTextleft(),
-                                        getSize14(),
-                                        getText600(),
-                                        getColorgray_Type8()),
+                                    TextWidgetString(selectedStartDate, getTextleft(), getSize14(),
+                                        getText600(), getColorgray_Type8()),
                                     Icon(Icons.calendar_today,
                                         size: 20, color: getColorgray_Type8()),
                                   ],
@@ -215,41 +195,30 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  _bottomSheetController =
-                                      Scaffold.of(context).showBottomSheet(
+                                  _bottomSheetController = Scaffold.of(context).showBottomSheet(
                                     (context) {
-                                      return const MainViewNavigationDate(
-                                          title: '종료일자 선택');
+                                      return const MainViewNavigationDate(title: '종료일자 선택');
                                     },
                                     backgroundColor: getColorblack_type3(),
                                     shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(0)),
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
                                     ),
                                   );
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  side: BorderSide(
-                                      color: getColorgray_Type7(), width: 1),
+                                  side: BorderSide(color: getColorgray_Type7(), width: 1),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                   ),
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: getSize12().toDouble()),
+                                  padding: EdgeInsets.symmetric(horizontal: getSize12().toDouble()),
                                   backgroundColor: Colors.white,
                                 ),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    TextWidgetString(
-                                        selectedEndDate,
-                                        getTextleft(),
-                                        getSize14(),
-                                        getText600(),
-                                        getColorgray_Type8()),
+                                    TextWidgetString(selectedEndDate, getTextleft(), getSize14(),
+                                        getText600(), getColorgray_Type8()),
                                     Icon(Icons.calendar_today,
                                         size: 20, color: getColorgray_Type8()),
                                   ],
@@ -283,16 +252,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       fontSize: getSize14().toDouble(),
                                       fontWeight: getText600()),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorgray_Type7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorgray_Type7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
@@ -325,16 +290,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       fontSize: getSize14().toDouble(),
                                       fontWeight: getText600()),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorgray_Type7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorgray_Type7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
@@ -366,13 +327,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       provider.getRosList(
                                           startDate: selectedStartDate, // 시작일자
                                           endDate: selectedEndDate, // 종료일자
-                                          mmsi: globalMmsiController
-                                                  .text.isEmpty
+                                          mmsi: globalMmsiController.text.isEmpty
                                               ? null
-                                              : int.tryParse(
-                                                  globalMmsiController.text),
-                                          shipName: globalShipNameController
-                                                  .text.isEmpty
+                                              : int.tryParse(globalMmsiController.text),
+                                          shipName: globalShipNameController.text.isEmpty
                                               ? null
                                               : globalShipNameController.text
                                                   .toUpperCase() // 대문자로 변환
@@ -380,13 +338,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     },
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      getSize4().toDouble()),
+                                  borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                 ),
                                 elevation: 0,
                                 backgroundColor: getColorsky_Type2(),
-                                side: BorderSide(
-                                    color: getColorgray_Type7(), width: 1),
+                                side: BorderSide(color: getColorgray_Type7(), width: 1),
                               ),
                               child: provider.isLoading
                                   ? SizedBox(
@@ -395,24 +351,16 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                getColorgray_Type8()),
+                                            AlwaysStoppedAnimation<Color>(getColorgray_Type8()),
                                       ),
                                     )
                                   : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.search,
-                                            color: getColorsky_Type1(),
-                                            size: 20),
+                                        Icon(Icons.search, color: getColorsky_Type1(), size: 20),
                                         SizedBox(width: getSize8().toDouble()),
-                                        TextWidgetString(
-                                            '항행 이력 내역 조회하기',
-                                            getTextcenter(),
-                                            getSize14(),
-                                            getText600(),
-                                            getColorsky_Type1()),
+                                        TextWidgetString('항행 이력 내역 조회하기', getTextcenter(),
+                                            getSize14(), getText600(), getColorsky_Type1()),
                                       ],
                                     ),
                             );
@@ -429,8 +377,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                             var rosList = provider.rosList;
 
                             if (provider.isLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
+                              return const Center(child: CircularProgressIndicator());
                             }
 
                             if (provider.errorMessage.isNotEmpty) {
@@ -447,28 +394,21 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     child: Container(
                                       width: double.infinity,
                                       margin: EdgeInsets.only(
-                                          top: getSize60()
-                                              .toDouble()), // ✅ SizedBox 대신 여백
-                                      padding: EdgeInsets.all(
-                                          getSize16().toDouble()),
+                                          top: getSize60().toDouble()), // ✅ SizedBox 대신 여백
+                                      padding: EdgeInsets.all(getSize16().toDouble()),
                                       decoration: BoxDecoration(
-                                        border: Border.all(
-                                            color: getColorgray_Type7(),
-                                            width: 1.0),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
+                                        border: Border.all(color: getColorgray_Type7(), width: 1.0),
+                                        borderRadius: BorderRadius.circular(8.0),
                                       ),
                                       child: Column(
-                                        mainAxisSize:
-                                            MainAxisSize.min, // ✅ 내용 크기만큼만 차지
+                                        mainAxisSize: MainAxisSize.min, // ✅ 내용 크기만큼만 차지
                                         children: [
                                           SvgPicture.asset(
                                             'assets/kdn/ros/img/circle-exclamation.svg',
                                             width: 100,
                                             height: 100,
                                           ),
-                                          SizedBox(
-                                              height: getSize20().toDouble()),
+                                          SizedBox(height: getSize20().toDouble()),
                                           TextWidgetString(
                                             '해당 기간에 항행 이력이 없습니다.',
                                             getTextcenter(),
@@ -511,8 +451,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 }
 
 // 항행 이력 아이템 위젯
-Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
-    String startTime, RouteSearchProvider viewModel) {
+Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm, String startTime,
+    RouteSearchProvider viewModel) {
   String formattedTime;
   DateTime? dateTime;
   if (startTime.isNotEmpty && int.tryParse(startTime) != null) {
@@ -560,13 +500,11 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
                 regDt: dateTime != null
                     ? "${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}"
                     : null,
-                mmsi: int.tryParse(mmsi)
-            );
+                mmsi: int.tryParse(mmsi));
 
             // 첫 번째 과거 항적 포인트로 지도 이동
             if (viewModel.pastRoutes.isNotEmpty) {
-              LatLng firstPoint = LatLng(
-                  viewModel.pastRoutes.last.lttd ?? 35.3790988,
+              LatLng firstPoint = LatLng(viewModel.pastRoutes.last.lttd ?? 35.3790988,
                   viewModel.pastRoutes.last.lntd ?? 126.167763);
 
               // 상위 위젯의 MapController에 접근해서 지도 중심 이동
@@ -584,15 +522,13 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
               (context) => GestureDetector(
                 onVerticalDragEnd: (details) {
                   // 아래로 드래그한 경우 (속도가 양수)
-                  if (details.primaryVelocity != null &&
-                      details.primaryVelocity! > 0) {
+                  if (details.primaryVelocity != null && details.primaryVelocity! > 0) {
                     // 항적 지우기
                     viewModel.clearRoutes();
                     viewModel.setNavigationHistoryMode(false);
 
                     // mainView의 selectedIndex를 0으로 초기화
-                    final mainViewState =
-                        context.findAncestorStateOfType<State<mainView>>();
+                    final mainViewState = context.findAncestorStateOfType<State<mainView>>();
                     if (mainViewState != null) {
                       (mainViewState as dynamic).selectedIndex = 0;
                     }
@@ -604,8 +540,7 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
                 child: WillPopScope(
                   onWillPop: () async {
                     // 뒤로가기 누를 때도 mainView의 selectedIndex를 0으로 초기화 추가
-                    final mainViewState =
-                        context.findAncestorStateOfType<State<mainView>>();
+                    final mainViewState = context.findAncestorStateOfType<State<mainView>>();
                     if (mainViewState != null) {
                       (mainViewState as dynamic).selectedIndex = 0;
                     }
@@ -614,8 +549,8 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
                     viewModel.setNavigationHistoryMode(false);
                     return true; // 뒤로가기 허용
                   },
-                  child: _buildCollapsedBottomSheet(
-                      context, shipNm, mmsi, formattedTime, viewModel),
+                  child:
+                      _buildCollapsedBottomSheet(context, shipNm, mmsi, formattedTime, viewModel),
                 ),
               ),
               backgroundColor: Colors.white,
@@ -641,8 +576,7 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(
-                vertical: getSize16().toDouble(),
-                horizontal: getSize12().toDouble()),
+                vertical: getSize16().toDouble(), horizontal: getSize12().toDouble()),
             child: Row(
               children: [
                 Expanded(
@@ -650,30 +584,29 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 선박명 (큰 글씨)
-                      TextWidgetString(shipNm, getTextleft(), getSize16(),
-                          getText700(), getColorblack_type2()),
+                      TextWidgetString(
+                          shipNm, getTextleft(), getSize16(), getText700(), getColorblack_type2()),
                       SizedBox(height: getSize4().toDouble()),
                       // MMSI와 날짜 정보
                       Row(
                         children: [
                           // MMSI 라벨과 값
-                          TextWidgetString('MMSI ', getTextleft(), getSize12(),
-                              getText400(), getColorgray_Type3()),
-                          TextWidgetString(mmsi, getTextleft(), getSize12(),
-                              getText600(), getColorgray_Type3()),
+                          TextWidgetString('MMSI ', getTextleft(), getSize12(), getText400(),
+                              getColorgray_Type3()),
+                          TextWidgetString(
+                              mmsi, getTextleft(), getSize12(), getText600(), getColorgray_Type3()),
                           SizedBox(width: getSize12().toDouble()),
                           // DATE 라벨과 값
-                          TextWidgetString('DATE ', getTextleft(), getSize12(),
-                              getText400(), getColorgray_Type3()),
-                          TextWidgetString(formattedTime, getTextleft(),
-                              getSize12(), getText600(), getColorgray_Type3()),
+                          TextWidgetString('DATE ', getTextleft(), getSize12(), getText400(),
+                              getColorgray_Type3()),
+                          TextWidgetString(formattedTime, getTextleft(), getSize12(), getText600(),
+                              getColorgray_Type3()),
                         ],
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    color: getColorgray_Type8(), size: 20),
+                Icon(Icons.chevron_right, color: getColorgray_Type8(), size: 20),
               ],
             ),
           ),
@@ -681,8 +614,8 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
   });
 }
 
-Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
-    String mmsi, String formattedTime, RouteSearchProvider viewModel) {
+Widget _buildCollapsedBottomSheet(BuildContext context, String shipName, String mmsi,
+    String formattedTime, RouteSearchProvider viewModel) {
 // viewModel에서 첫 번째와 마지막 항적의 시간을 가져옵니다
   String timeRange = '00:00:00~00:00:00'; // 기본값
 
@@ -691,16 +624,14 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
     var firstRoute = viewModel.pastRoutes.first;
     DateTime? firstTime;
     if (firstRoute.regDt != null) {
-      firstTime = DateTime.fromMillisecondsSinceEpoch(
-          int.parse(firstRoute.regDt.toString()));
+      firstTime = DateTime.fromMillisecondsSinceEpoch(int.parse(firstRoute.regDt.toString()));
     }
 
     // 마지막 항적의 시간
     var lastRoute = viewModel.pastRoutes.last;
     DateTime? lastTime;
     if (lastRoute.regDt != null) {
-      lastTime = DateTime.fromMillisecondsSinceEpoch(
-          int.parse(lastRoute.regDt.toString()));
+      lastTime = DateTime.fromMillisecondsSinceEpoch(int.parse(lastRoute.regDt.toString()));
     }
 
     // 시간 포맷팅
@@ -716,7 +647,8 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
   return Container(
     height: 80,
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(vertical: DesignConstants.spacing12, horizontal: DesignConstants.spacing16),
+    padding: const EdgeInsets.symmetric(
+        vertical: DesignConstants.spacing12, horizontal: DesignConstants.spacing16),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: const BorderRadius.only(
@@ -780,8 +712,7 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
           icon: Icon(Icons.close, color: getColorgray_Type8()),
           onPressed: () {
             // 👉 mainView의 selectedIndex를 0으로 초기화 추가
-            final mainViewState =
-                context.findAncestorStateOfType<State<mainView>>();
+            final mainViewState = context.findAncestorStateOfType<State<mainView>>();
             if (mainViewState != null) {
               (mainViewState as dynamic).selectedIndex = 0;
             }

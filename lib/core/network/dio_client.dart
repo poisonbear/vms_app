@@ -9,8 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
 /// 페이지 전환 애니메이션을 반환하는 함수
-Route createSlideTransition(Widget page,
-    {Offset begin = const Offset(1.0, 0.0)}) {
+Route createSlideTransition(Widget page, {Offset begin = const Offset(1.0, 0.0)}) {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -46,16 +45,16 @@ class DioRequest {
 }
 
 /// 경고팝업
-Future<void> warningPop(BuildContext context, String title, Color titleColor,
-    String detail, Color detailColor, String alarmicon, Color shadowcolor) {
+Future<void> warningPop(BuildContext context, String title, Color titleColor, String detail,
+    Color detailColor, String alarmicon, Color shadowcolor) {
   return showGeneralDialog(
     context: context,
     barrierDismissible: false,
     barrierLabel: '',
     barrierColor: Colors.transparent,
     transitionDuration: Duration(milliseconds: getSize300()),
-    pageBuilder: (BuildContext context, Animation<double> animation,
-        Animation<double> secondaryAnimation) {
+    pageBuilder:
+        (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
       return Stack(
         children: [
           /// ✅ 전체 화면을 덮는 배경 추가
@@ -91,8 +90,7 @@ Future<void> warningPop(BuildContext context, String title, Color titleColor,
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: getSize10().toDouble(),
-                        offset: Offset(
-                            getSize0().toDouble(), getSize4().toDouble()),
+                        offset: Offset(getSize0().toDouble(), getSize4().toDouble()),
                       ),
                     ],
                   ),
@@ -104,10 +102,10 @@ Future<void> warningPop(BuildContext context, String title, Color titleColor,
                         children: [
                           SvgPicture.asset(alarmicon, width: 60, height: 60),
                           SizedBox(height: getSize8().toDouble()),
-                          TextWidgetString(title, getTextcenter(), getSize20(),
-                              getTextbold(), titleColor),
-                          TextWidgetString(detail, getTextcenter(), getSize14(),
-                              getTextbold(), detailColor),
+                          TextWidgetString(
+                              title, getTextcenter(), getSize20(), getTextbold(), titleColor),
+                          TextWidgetString(
+                              detail, getTextcenter(), getSize14(), getTextbold(), detailColor),
                           SizedBox(height: getSize12().toDouble()),
 
                           SizedBox(height: getSize32().toDouble()),
@@ -132,8 +130,7 @@ Future<void> warningPop(BuildContext context, String title, Color titleColor,
                                         ),
                                       ),
                                       elevation: getSize0().toDouble(),
-                                      padding: EdgeInsets.all(
-                                          getSize18().toDouble()),
+                                      padding: EdgeInsets.all(getSize18().toDouble()),
                                     ),
                                     child: Center(
                                       child: TextWidgetString(
@@ -164,22 +161,16 @@ Future<void> warningPop(BuildContext context, String title, Color titleColor,
 }
 
 /// 경고팝업
-Future<void> warningPopdetail(
-    BuildContext context,
-    String title,
-    Color titleColor,
-    String detail,
-    Color detailColor,
-    String alarmicon,
-    Color shadowcolor) {
+Future<void> warningPopdetail(BuildContext context, String title, Color titleColor, String detail,
+    Color detailColor, String alarmicon, Color shadowcolor) {
   return showGeneralDialog(
     context: context,
     barrierDismissible: false,
     barrierLabel: '',
     barrierColor: Colors.transparent,
     transitionDuration: Duration(milliseconds: getSize300()),
-    pageBuilder: (BuildContext context, Animation<double> animation,
-        Animation<double> secondaryAnimation) {
+    pageBuilder:
+        (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
       return Stack(
         children: [
           /// ✅ 전체 화면을 덮는 배경 추가
@@ -215,8 +206,7 @@ Future<void> warningPopdetail(
                       BoxShadow(
                         color: Colors.black26,
                         blurRadius: getSize10().toDouble(),
-                        offset: Offset(
-                            getSize0().toDouble(), getSize4().toDouble()),
+                        offset: Offset(getSize0().toDouble(), getSize4().toDouble()),
                       ),
                     ],
                   ),
@@ -228,10 +218,10 @@ Future<void> warningPopdetail(
                         children: [
                           SvgPicture.asset(alarmicon, width: 60, height: 60),
                           SizedBox(height: getSize8().toDouble()),
-                          TextWidgetString(title, getTextcenter(), getSize20(),
-                              getTextbold(), titleColor),
-                          TextWidgetString(detail, getTextcenter(), getSize14(),
-                              getTextbold(), detailColor),
+                          TextWidgetString(
+                              title, getTextcenter(), getSize20(), getTextbold(), titleColor),
+                          TextWidgetString(
+                              detail, getTextcenter(), getSize14(), getTextbold(), detailColor),
                           SizedBox(height: getSize12().toDouble()),
 
                           /// Table 추가
@@ -240,17 +230,13 @@ Future<void> warningPopdetail(
                             child: Table(
                               border: TableBorder(
                                 top: BorderSide(
-                                    color: getColorgray_Type7(),
-                                    width: getSize1().toDouble()),
+                                    color: getColorgray_Type7(), width: getSize1().toDouble()),
                                 bottom: BorderSide(
-                                    color: getColorgray_Type7(),
-                                    width: getSize1().toDouble()),
+                                    color: getColorgray_Type7(), width: getSize1().toDouble()),
                                 horizontalInside: BorderSide(
-                                    color: getColorgray_Type7(),
-                                    width: getSize1().toDouble()),
+                                    color: getColorgray_Type7(), width: getSize1().toDouble()),
                                 verticalInside: BorderSide(
-                                    color: getColorgray_Type7(),
-                                    width: getSize1().toDouble()),
+                                    color: getColorgray_Type7(), width: getSize1().toDouble()),
                               ),
                               columnWidths: const {
                                 0: IntrinsicColumnWidth(),
@@ -262,72 +248,47 @@ Future<void> warningPopdetail(
                               },
                               children: [
                                 TableRow(
-                                  decoration: BoxDecoration(
-                                      color: getColorgray_Type10()),
+                                  decoration: BoxDecoration(color: getColorgray_Type10()),
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '날짜',
-                                          getTextcenter(),
-                                          getSize16(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('날짜', getTextcenter(), getSize16(),
+                                          getText600(), getColorblack_type1()),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '시작시간',
-                                          getTextcenter(),
-                                          getSize16(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('시작시간', getTextcenter(), getSize16(),
+                                          getText600(), getColorblack_type1()),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '종료시간',
-                                          getTextcenter(),
-                                          getSize16(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('종료시간', getTextcenter(), getSize16(),
+                                          getText600(), getColorblack_type1()),
                                     ),
                                   ],
                                 ),
                                 TableRow(
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '2025.01.10',
-                                          getTextcenter(),
-                                          getSize14(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('2025.01.10', getTextcenter(),
+                                          getSize14(), getText600(), getColorblack_type1()),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '09:00:00',
-                                          getTextcenter(),
-                                          getSize14(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('09:00:00', getTextcenter(),
+                                          getSize14(), getText600(), getColorblack_type1()),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: getSize8().toDouble()),
-                                      child: TextWidgetString(
-                                          '14:00:00',
-                                          getTextcenter(),
-                                          getSize14(),
-                                          getText600(),
-                                          getColorblack_type1()),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+                                      child: TextWidgetString('14:00:00', getTextcenter(),
+                                          getSize14(), getText600(), getColorblack_type1()),
                                     ),
                                   ],
                                 ),
@@ -357,8 +318,7 @@ Future<void> warningPopdetail(
                                         ),
                                       ),
                                       elevation: getSize0().toDouble(),
-                                      padding: EdgeInsets.all(
-                                          getSize18().toDouble()),
+                                      padding: EdgeInsets.all(getSize18().toDouble()),
                                     ),
                                     child: Center(
                                       child: TextWidgetString(

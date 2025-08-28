@@ -25,8 +25,8 @@ class _CmdViewState extends State<CmdInformationView> {
       appBar: AppBar(
         title: const AppBarLayerView('회원가입'),
         leading: IconButton(
-          icon: svgload('assets/kdn/usm/img/arrow-left.svg',
-              getSize24().toDouble(), getSize24().toDouble()),
+          icon: svgload(
+              'assets/kdn/usm/img/arrow-left.svg', getSize24().toDouble(), getSize24().toDouble()),
           onPressed: () {
             Navigator.pop(
                 context,
@@ -68,67 +68,48 @@ class _CmdViewState extends State<CmdInformationView> {
                         ),
                         Padding(
                           padding: EdgeInsets.only(left: getSize8().toDouble()),
-                          child: svgload(
-                              'assets/kdn/usm/img/Frame_three_off.svg',
-                              getSize32().toDouble(),
-                              getSize32().toDouble()),
+                          child: svgload('assets/kdn/usm/img/Frame_three_off.svg',
+                              getSize32().toDouble(), getSize32().toDouble()),
                         )
                       ]),
                     ),
 
                     // 제목
-                    TextWidgetString('K-VMS', getTextcenter(), getSize32(),
-                        getText700(), getColorblack_type2()),
-                    TextWidgetString('약관동의', getTextcenter(), getSize32(),
-                        getText700(), getColorblack_type2()),
+                    TextWidgetString(
+                        'K-VMS', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
+                    TextWidgetString(
+                        '약관동의', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
 
                     // 소제목
                     Padding(
                       padding: EdgeInsets.only(
-                          top: getSize12().toDouble(),
-                          bottom: getSize40().toDouble()),
-                      child: TextWidgetString(
-                          '회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
-                          getTextcenter(),
-                          getSize12(),
-                          getText700(),
-                          getColorgray_Type2()),
+                          top: getSize12().toDouble(), bottom: getSize40().toDouble()),
+                      child: TextWidgetString('회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
+                          getTextcenter(), getSize12(), getText700(), getColorgray_Type2()),
                     ),
 
                     // 약관타입
                     Padding(
-                        padding:
-                            EdgeInsets.only(bottom: getSize20().toDouble()),
+                        padding: EdgeInsets.only(bottom: getSize20().toDouble()),
                         child: Row(children: [
-                          TextWidgetString(
-                              '${CmdList[0].terms_nm}',
-                              getTextcenter(),
-                              getSize20(),
-                              getText700(),
-                              getColorblack_type1()),
+                          TextWidgetString('${CmdList[0].terms_nm}', getTextcenter(), getSize20(),
+                              getText700(), getColorblack_type1()),
                           Padding(
-                              padding:
-                                  EdgeInsets.only(left: getSize4().toDouble()),
-                              child: TextWidgetString(
-                                  '필수',
-                                  getTextcenter(),
-                                  getSize12(),
-                                  getText700(),
-                                  getColorsky_Type2())),
+                              padding: EdgeInsets.only(left: getSize4().toDouble()),
+                              child: TextWidgetString('필수', getTextcenter(), getSize12(),
+                                  getText700(), getColorsky_Type2())),
                         ])),
 
                     // 약관 전체내용
                     Container(
                       width: double.infinity,
-                      height: MediaQuery.of(context).size.height *
-                          0.55, // 화면 높이의 50%로 제한
+                      height: MediaQuery.of(context).size.height * 0.55, // 화면 높이의 50%로 제한
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: getColorgray_Type4(), // 테두리 색상
                           width: getSize1().toDouble(), // 테두리 두께
                         ),
-                        borderRadius: BorderRadius.circular(
-                            getSize4().toDouble()), // 테두리 둥글게
+                        borderRadius: BorderRadius.circular(getSize4().toDouble()), // 테두리 둥글게
                       ),
                       padding: EdgeInsets.all(getSize20().toDouble()), // 내부 여백
                       child: SingleChildScrollView(

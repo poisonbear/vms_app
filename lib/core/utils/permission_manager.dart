@@ -8,11 +8,9 @@ import 'package:permission_handler/permission_handler.dart';
 
 class NotificationRequestUtil {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  static const String _kNotificationServicesDisabledMessage =
-      '알림 서비스가 비활성화되어 있습니다.';
+  static const String _kNotificationServicesDisabledMessage = '알림 서비스가 비활성화되어 있습니다.';
   static const String _kPermissionDeniedMessage = '알림 권한이 거부되었습니다.';
-  static const String _kPermissionDeniedForeverMessage =
-      '알림 권한이 영구적으로 거부되었습니다.';
+  static const String _kPermissionDeniedForeverMessage = '알림 권한이 영구적으로 거부되었습니다.';
   static const String _kPermissionGrantedMessage = '알림 권한이 허용되었습니다.';
   static bool _openedSettings = false; //알림 상태 플래그
 
@@ -27,15 +25,13 @@ class NotificationRequestUtil {
       print('✅ 알림 권한이 허용되었습니다.');
     } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
       print('❌ 알림 권한이 거부되었습니다.');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.notDetermined) {
+    } else if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
       print('⚠️ 알림 권한이 아직 결정되지 않았습니다.');
     }
   }
 
   //알림 권한
-  static Future<void> requestPermissionUntilGranted(
-      BuildContext context) async {
+  static Future<void> requestPermissionUntilGranted(BuildContext context) async {
     // 먼저 현재 권한 상태 확인
     NotificationSettings settings = await _messaging.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
@@ -86,10 +82,8 @@ class NotificationRequestUtil {
     } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
       await _showPermissionDeniedPopup(context, _kPermissionDeniedMessage);
       return false;
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.notDetermined) {
-      await _showPermissionDeniedPopup(
-          context, _kPermissionDeniedForeverMessage);
+    } else if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
+      await _showPermissionDeniedPopup(context, _kPermissionDeniedForeverMessage);
       return false;
     }
 
@@ -97,8 +91,7 @@ class NotificationRequestUtil {
   }
 
 // ✅ 권한 거부 팝업
-  static Future<void> _showPermissionDeniedPopup(
-      BuildContext context, String message) async {
+  static Future<void> _showPermissionDeniedPopup(BuildContext context, String message) async {
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -111,13 +104,11 @@ class NotificationRequestUtil {
               onPressed: () async {
                 _openedSettings = true;
                 await openAppSettings();
-                await Future.delayed(
-                    AnimationConstants.autoScrollDelay); // 설정 앱에서 돌아올 시간
+                await Future.delayed(AnimationConstants.autoScrollDelay); // 설정 앱에서 돌아올 시간
 
                 NotificationSettings settings =
                     await FirebaseMessaging.instance.requestPermission();
-                if (settings.authorizationStatus ==
-                    AuthorizationStatus.authorized) {
+                if (settings.authorizationStatus == AuthorizationStatus.authorized) {
                   print('알림 권한 허용 확인됨 → 팝업 닫기');
                   Navigator.of(context).pop();
                   _openedSettings = false;
@@ -142,8 +133,7 @@ class NotificationRequestUtil {
 // ✅ 권한 재요청 팝업
   static Future<void> _showRetryPermissionPopup(BuildContext context) async {
     // 시작하기 전에 권한 다시 확인
-    NotificationSettings currentSettings =
-        await _messaging.getNotificationSettings();
+    NotificationSettings currentSettings = await _messaging.getNotificationSettings();
     if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
       print('✅ 이미 알림 권한이 허용됨 - 팝업 표시하지 않음');
       return; // 이미 권한이 있으면 팝업 표시하지 않음
@@ -164,10 +154,8 @@ class NotificationRequestUtil {
                 await Future.delayed(AnimationConstants.autoScrollDelay);
 
                 // getNotificationSettings() 사용하여 권한만 확인
-                NotificationSettings settings =
-                    await _messaging.getNotificationSettings();
-                if (settings.authorizationStatus ==
-                    AuthorizationStatus.authorized) {
+                NotificationSettings settings = await _messaging.getNotificationSettings();
+                if (settings.authorizationStatus == AuthorizationStatus.authorized) {
                   Navigator.of(context).pop(); // ✅ 팝업 닫기
                   _openedSettings = false; // ✅ 플래그 리셋
                 }
@@ -205,22 +193,17 @@ class _PositionItem {
 
 // 위치 정보 권한 설정
 class PointRequestUtil {
-  static final GeolocatorPlatform _geolocatorPlatform =
-      GeolocatorPlatform.instance;
-  static const String _kLocationServicesDisabledMessage =
-      '위치 서비스가 비활성화되어 있습니다.';
+  static final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+  static const String _kLocationServicesDisabledMessage = '위치 서비스가 비활성화되어 있습니다.';
   static const String _kPermissionDeniedMessage = '위치 권한이 거부되었습니다.';
-  static const String _kPermissionDeniedForeverMessage =
-      '위치 권한이 영구적으로 거부되었습니다.';
+  static const String _kPermissionDeniedForeverMessage = '위치 권한이 영구적으로 거부되었습니다.';
   static const String _kPermissionGrantedMessage = '위치 권한이 허용되었습니다.';
 
   static bool _openedSettings = false; // 위치 설정 플래그 추가
 
-  static Future<void> requestPermissionUntilGranted(
-      BuildContext context) async {
+  static Future<void> requestPermissionUntilGranted(BuildContext context) async {
     LocationPermission permission = await _geolocatorPlatform.checkPermission();
-    if (permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always) {
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
       print('✅ 이미 위치 권한이 허용되어 있습니다.');
       return;
     }
@@ -280,8 +263,7 @@ class PointRequestUtil {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      await _showPermissionDeniedPopup(
-          context, _kPermissionDeniedForeverMessage);
+      await _showPermissionDeniedPopup(context, _kPermissionDeniedForeverMessage);
       return false;
     }
 
@@ -318,8 +300,7 @@ class PointRequestUtil {
   }
 
   // ✅ 위치 권한 요청 팝업
-  static Future<void> _showPermissionDeniedPopup(
-      BuildContext context, String message) async {
+  static Future<void> _showPermissionDeniedPopup(BuildContext context, String message) async {
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -338,8 +319,7 @@ class PointRequestUtil {
                     bool granted = false;
                     for (int i = 0; i < 5; i++) {
                       await Future.delayed(const Duration(seconds: 1));
-                      final permission =
-                          await _geolocatorPlatform.checkPermission();
+                      final permission = await _geolocatorPlatform.checkPermission();
                       if (permission == LocationPermission.whileInUse ||
                           permission == LocationPermission.always) {
                         granted = true;
@@ -371,8 +351,7 @@ class PointRequestUtil {
 
   // ✅ 위치 권한 재요청 팝업
   static Future<void> _showRetryPermissionPopup(BuildContext context) async {
-    LocationPermission currentPermission =
-        await _geolocatorPlatform.checkPermission();
+    LocationPermission currentPermission = await _geolocatorPlatform.checkPermission();
     if (currentPermission == LocationPermission.whileInUse ||
         currentPermission == LocationPermission.always) {
       print('✅ 이미 위치 권한이 허용됨 - 팝업 표시하지 않음');
@@ -415,7 +394,6 @@ class UpdatePoint {
       distanceFilter: 0,
     );
 
-    return _geolocatorPlatform.getPositionStream(
-        locationSettings: locationSettings);
+    return _geolocatorPlatform.getPositionStream(locationSettings: locationSettings);
   }
 }

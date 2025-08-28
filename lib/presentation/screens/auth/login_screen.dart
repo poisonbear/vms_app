@@ -25,11 +25,9 @@ class LoginView extends StatefulWidget {
 
 class _CmdViewState extends State<LoginView> {
   final TextEditingController idController = TextEditingController(); // 아이디 입력값
-  final TextEditingController passwordController =
-      TextEditingController(); // 비밀번호 입력값
+  final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력값
   final String apiUrl = dotenv.env['kdn_loginForm_key'] ?? ''; // 로그인  url
-  final String apiUrl2 =
-      dotenv.env['kdn_usm_select_role_data_key'] ?? ''; // 사용자 역할 권한  url
+  final String apiUrl2 = dotenv.env['kdn_usm_select_role_data_key'] ?? ''; // 사용자 역할 권한  url
   bool auto_login = false; // 자동 로그인
   late FirebaseMessaging messaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -71,8 +69,8 @@ class _CmdViewState extends State<LoginView> {
 
     try {
       // 토큰 생성
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: id, password: password);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
 
       // ✅ Firebase JWT 토큰 가져오기
       String? firebaseToken = await userCredential.user?.getIdToken();
@@ -143,14 +141,10 @@ class _CmdViewState extends State<LoginView> {
         } else {}
 
         Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => mainView(username: username)));
+            context, MaterialPageRoute(builder: (context) => mainView(username: username)));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  '로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
+          SnackBar(content: Text('로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -215,12 +209,8 @@ class _CmdViewState extends State<LoginView> {
                           // K-VMS 타이틀
                           Padding(
                             padding: const EdgeInsets.only(bottom: 60),
-                            child: TextWidgetString(
-                                'K-VMS',
-                                getTextcenter(),
-                                getSize32(),
-                                getTextbold(),
-                                getColorblack_type1()),
+                            child: TextWidgetString('K-VMS', getTextcenter(), getSize32(),
+                                getTextbold(), getColorblack_type1()),
                           ),
 
                           // 로그인 박스
@@ -237,22 +227,15 @@ class _CmdViewState extends State<LoginView> {
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.white, width: 1),
+                                  border: Border.all(color: Colors.white, width: 1),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
-                                    TextWidgetString(
-                                        '시스템 로그인',
-                                        getTextcenter(),
-                                        getSize24(),
-                                        getTextbold(),
-                                        getColorblack_type1()),
+                                    TextWidgetString('시스템 로그인', getTextcenter(), getSize24(),
+                                        getTextbold(), getColorblack_type1()),
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 20),
+                                      padding: const EdgeInsets.only(bottom: 20),
                                       child: TextWidgetString(
                                           '시스템 사용을 위해 로그인을 해주시기 바랍니다.',
                                           getTextcenter(),
@@ -262,62 +245,46 @@ class _CmdViewState extends State<LoginView> {
                                     ),
                                     // 아이디 입력
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.only(bottom: 12),
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
                                               BorderRadius.circular(DesignConstants.radiusS),
                                         ),
-                                        child: inputWidget(
-                                            getSize266(),
-                                            getSize48(),
-                                            idController,
-                                            '아이디 입력',
-                                            getColorgray_Type7()),
+                                        child: inputWidget(getSize266(), getSize48(), idController,
+                                            '아이디 입력', getColorgray_Type7()),
                                       ),
                                     ),
                                     // 비밀번호 입력
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 20),
+                                      padding: const EdgeInsets.only(bottom: 20),
                                       child: Container(
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
                                               BorderRadius.circular(DesignConstants.radiusS),
                                         ),
-                                        child: inputWidget(
-                                            getSize266(),
-                                            getSize48(),
-                                            passwordController,
-                                            '비밀번호 입력',
-                                            getColorgray_Type7(),
+                                        child: inputWidget(getSize266(), getSize48(),
+                                            passwordController, '비밀번호 입력', getColorgray_Type7(),
                                             obscureText: true),
                                       ),
                                     ),
                                     // 로그인 버튼
                                     Padding(
-                                      padding:
-                                          const EdgeInsets.only(bottom: 20),
+                                      padding: const EdgeInsets.only(bottom: 20),
                                       child: SizedBox(
                                         width: getSize266().toDouble(),
                                         height: getSize48().toDouble(),
                                         child: ElevatedButton(
                                           onPressed: submitForm,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                getColorsky_Type2(),
+                                            backgroundColor: getColorsky_Type2(),
                                             shape: getTextradius6(),
                                             elevation: 0,
                                           ),
-                                          child: TextWidgetString(
-                                              '로그인 하기',
-                                              getTextcenter(),
-                                              getSize16(),
-                                              getTextbold(),
-                                              getColorwhite_type1()),
+                                          child: TextWidgetString('로그인 하기', getTextcenter(),
+                                              getSize16(), getTextbold(), getColorwhite_type1()),
                                         ),
                                       ),
                                     ),
@@ -329,25 +296,19 @@ class _CmdViewState extends State<LoginView> {
                                           Navigator.push(
                                             context,
                                             PageRouteBuilder(
-                                              pageBuilder: (context, animation,
-                                                      secondaryAnimation) =>
-                                                  const CmdChoiceView(),
-                                              transitionsBuilder: (context,
-                                                  animation,
-                                                  secondaryAnimation,
-                                                  child) {
+                                              pageBuilder:
+                                                  (context, animation, secondaryAnimation) =>
+                                                      const CmdChoiceView(),
+                                              transitionsBuilder:
+                                                  (context, animation, secondaryAnimation, child) {
                                                 const begin = Offset(1.0, 0.0);
                                                 const end = Offset.zero;
                                                 const curve = Curves.ease;
-                                                var tween = Tween(
-                                                        begin: begin, end: end)
-                                                    .chain(CurveTween(
-                                                        curve: curve));
-                                                var offsetAnimation =
-                                                    animation.drive(tween);
+                                                var tween = Tween(begin: begin, end: end)
+                                                    .chain(CurveTween(curve: curve));
+                                                var offsetAnimation = animation.drive(tween);
                                                 return SlideTransition(
-                                                    position: offsetAnimation,
-                                                    child: child);
+                                                    position: offsetAnimation, child: child);
                                               },
                                             ),
                                           );
@@ -358,12 +319,8 @@ class _CmdViewState extends State<LoginView> {
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            TextWidgetString(
-                                                '회원가입하기',
-                                                getTextcenter(),
-                                                getSize12(),
-                                                getTextbold(),
-                                                getColorblack_type1()),
+                                            TextWidgetString('회원가입하기', getTextcenter(), getSize12(),
+                                                getTextbold(), getColorblack_type1()),
                                             const SizedBox(width: DesignConstants.spacing4),
                                             SvgPicture.asset(
                                               'assets/kdn/usm/img/chevron-right.svg',

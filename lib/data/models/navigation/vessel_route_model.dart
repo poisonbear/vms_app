@@ -18,10 +18,8 @@ class VesselRouteResponse {
     final List<dynamic> predList = json['pred'] ?? [];
     final List<dynamic> pastList = json['past'] ?? [];
     return VesselRouteResponse(
-      pred:
-          predList.map((item) => PredRouteSearchModel.fromJson(item)).toList(),
-      past:
-          pastList.map((item) => PastRouteSearchModel.fromJson(item)).toList(),
+      pred: predList.map((item) => PredRouteSearchModel.fromJson(item)).toList(),
+      past: pastList.map((item) => PastRouteSearchModel.fromJson(item)).toList(),
     );
   }
 }

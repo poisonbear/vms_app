@@ -22,8 +22,7 @@ class ErrorHandler {
         } else if (statusCode == 403) {
           return AuthException(message, 'FORBIDDEN');
         } else if (statusCode == 404) {
-          return ServerException(message,
-              statusCode: statusCode, code: 'NOT_FOUND');
+          return ServerException(message, statusCode: statusCode, code: 'NOT_FOUND');
         } else if (statusCode != null && statusCode >= 500) {
           return ServerException('서버 내부 오류가 발생했습니다', statusCode: statusCode);
         } else {

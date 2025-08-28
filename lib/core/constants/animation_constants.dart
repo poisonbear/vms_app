@@ -9,7 +9,7 @@ class AnimationConstants {
   static const Duration durationNormal = Duration(milliseconds: 500);
   static const Duration durationSlow = Duration(milliseconds: 700);
   static const Duration durationVerySlow = Duration(milliseconds: 1000);
-  
+
   // 특수 용도
   static const Duration splashDuration = Duration(seconds: 3);
   static const Duration autoScrollDelay = Duration(seconds: 2);

@@ -17,12 +17,12 @@ class FormatConstants {
   static const int decimalPlaces1 = 1;
   static const int decimalPlaces2 = 2;
   static const int coordinateDecimalPlaces = 6;
-  
+
   // ============ Validation Patterns ============
   static const String mmsiPattern = r'^\d{9}$';
   static const String phonePattern = r'^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$';
   static const String emailPattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-  
+
   // ============ Input Lengths ============
   static const int mmsiLength = 9;
   static const int minPasswordLength = 8;
