@@ -57,7 +57,7 @@ class NavigationProvider extends BaseProvider {
     String? shipName,
   }) async {
     _isInitialized = true;
-    
+
     final result = await executeAsync(() async {
       return await _getNavigationHistory.execute(
         startDate: startDate,
@@ -66,7 +66,7 @@ class NavigationProvider extends BaseProvider {
         shipName: shipName,
       );
     }, errorMessage: '데이터 로드 중 오류 발생');
-    
+
     if (result != null) {
       _rosList = result;
       notifyListeners();
@@ -145,10 +145,16 @@ class NavigationProvider extends BaseProvider {
           : '${visibilityValue.toStringAsFixed(0)} m';
     }
 
-    if (visibilityValue <= valm4) return '${(valm4/1000).toStringAsFixed(1)}km 이하';
-    if (visibilityValue <= valm3) return '${(valm3/1000).toStringAsFixed(1)}~${(valm4/1000).toStringAsFixed(1)}km';
-    if (visibilityValue <= valm2) return '${(valm2/1000).toStringAsFixed(1)}~${(valm3/1000).toStringAsFixed(1)}km';
-    if (visibilityValue <= valm1) return '${(valm1/1000).toStringAsFixed(1)}~${(valm2/1000).toStringAsFixed(1)}km';
-    return '${(valm1/1000).toStringAsFixed(1)}km 초과';
+    if (visibilityValue <= valm4) return '${(valm4 / 1000).toStringAsFixed(1)}km 이하';
+    if (visibilityValue <= valm3) {
+      return '${(valm3 / 1000).toStringAsFixed(1)}~${(valm4 / 1000).toStringAsFixed(1)}km';
+    }
+    if (visibilityValue <= valm2) {
+      return '${(valm2 / 1000).toStringAsFixed(1)}~${(valm3 / 1000).toStringAsFixed(1)}km';
+    }
+    if (visibilityValue <= valm1) {
+      return '${(valm1 / 1000).toStringAsFixed(1)}~${(valm2 / 1000).toStringAsFixed(1)}km';
+    }
+    return '${(valm1 / 1000).toStringAsFixed(1)}km 초과';
   }
 }

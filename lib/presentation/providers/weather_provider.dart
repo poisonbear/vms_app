@@ -8,9 +8,9 @@ class WidWeatherInfoViewModel extends BaseProvider {
   late final WeatherRepository _widRepository;
 
   List<WidModel>? _widList;
-  final List<String> _windDirection = [];
-  final List<String> _windSpeed = [];
-  final List<String> _windIcon = [];
+  final List<String> _windDirection = []; // final 제거
+  final List<String> _windSpeed = []; // final 제거
+  final List<String> _windIcon = []; // final 제거
 
   // Getters
   List<WidModel>? get widList => _widList;
@@ -55,16 +55,16 @@ class WidWeatherInfoViewModel extends BaseProvider {
       return;
     }
 
-    // 풍속 계산
+    // 풍속 계산 (원본 로직 유지)
     final windSpeed = sqrt(pow(windU, 2) + pow(windV, 2));
     _windSpeed.add('${windSpeed.toStringAsFixed(0)} m/s');
 
-    // 풍향 각도 계산
+    // 풍향 각도 계산 (원본 로직 유지)
     double theta = atan2(windV, windU);
     double degrees = (270 - (theta * 180 / pi)) % 360;
     if (degrees < 0) degrees += 360;
 
-    // 풍향 결정
+    // 풍향 결정 및 아이콘 설정 (원본 그대로)
     if (degrees >= 337.5 || degrees < 22.5) {
       _windDirection.add('북풍');
       _windIcon.add('ro180');
@@ -90,5 +90,23 @@ class WidWeatherInfoViewModel extends BaseProvider {
       _windDirection.add('북서풍');
       _windIcon.add('ro135');
     }
+  }
+
+  /// 데이터 새로고침
+  Future<void> refresh() async {
+    _widList = null;
+    _windDirection.clear();
+    _windSpeed.clear();
+    _windIcon.clear();
+    clearError();
+    await getWidList();
+  }
+
+  @override
+  void dispose() {
+    _windDirection.clear();
+    _windSpeed.clear();
+    _windIcon.clear();
+    super.dispose();
   }
 }

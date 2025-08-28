@@ -29,7 +29,7 @@ class VesselProvider with ChangeNotifier {
 
       // Repository 직접 호출 (UseCase 패턴 제거 - 현재는 단순 구조 유지)
       _vessels = await _vesselRepository.getVesselList(regDt: regDt, mmsi: mmsi);
-      
+
       // 또는 UseCase 패턴을 사용하려면:
       // final params = SearchVesselParams(regDt: regDt, mmsi: mmsi);
       // _vessels = await _searchVessel.execute(params);
