@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'package:vms_app/core/constants/constants.dart';
-import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -233,12 +232,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // ✅ setRole 메서드가 String을 받는다면 JSON 문자열로 변환
       // 역할 정보 설정
-      if (result.isNotEmpty && result[0]["role"] != null) {
-        userState.setRole(result[0]["role"].toString());
+      if (result.isNotEmpty && result[0]['role'] != null) {
+        userState.setRole(result[0]['role'].toString());
       }
-      if (result.isNotEmpty && result[0]["mmsi"] != null) {
-        userState.setMmsi(result[0]["mmsi"] as int?);
-      };
+      if (result.isNotEmpty && result[0]['mmsi'] != null) {
+        userState.setMmsi(result[0]['mmsi'] as int?);
+      }
       // 또는 setRoleData 같은 다른 메서드가 있을 수 있습니다
       // userState.setRoleData(result);
 

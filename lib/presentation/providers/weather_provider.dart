@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';

@@ -5,7 +5,6 @@ import 'package:vms_app/domain/usecases/navigation/get_navigation_history.dart';
 import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart'
     as weather_usecase;
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
-import 'package:vms_app/data/models/navigation/navigation_model.dart';
 
 class NavigationProvider extends BaseProvider {
   late final GetNavigationHistory _getNavigationHistory;

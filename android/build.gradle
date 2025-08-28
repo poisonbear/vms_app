@@ -11,14 +11,18 @@ allprojects {
         mavenCentral()
     }
 
-    // Play Services 버전 강제 지정
+    // Play Services 버전 통합 관리
+    ext {
+        playServicesVersion = '21.5.0'
+    }
+    
     configurations.all {
         resolutionStrategy {
-            force 'com.google.android.gms:play-services-measurement:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-api:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-base:21.5.0'
-            force 'com.google.android.gms:play-services-measurement-impl:21.5.0'
-            force 'com.google.firebase:firebase-analytics:21.5.0'
+            force "com.google.android.gms:play-services-measurement:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-api:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-base:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-impl:${playServicesVersion}"
+            force "com.google.firebase:firebase-analytics:${playServicesVersion}"
         }
     }
 }
@@ -28,12 +32,14 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 
-    // namespace 자동 설정
+    // namespace 설정 개선
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
                 if (namespace == null) {
-                    namespace project.group ?: "com.example.${project.name.replace('-', '_')}"
+                    def groupId = project.group ?: "com.example"
+                    def projectName = project.name.replace('-', '_').toLowerCase()
+                    namespace = "${groupId}.${projectName}"
                 }
             }
         }

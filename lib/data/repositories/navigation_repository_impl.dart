@@ -47,7 +47,7 @@ class NavigationRepositoryImpl implements NavigationRepository {
   }
 
   @override
-  Future<List<String>> getNavigationWarnings() {
+  Future<List<String>?> getNavigationWarnings() {
     return _dataSource.getNavigationWarnings();
   }
 }

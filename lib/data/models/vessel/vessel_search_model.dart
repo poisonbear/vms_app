@@ -1,93 +1,81 @@
-//클래스 정의 및 멤버변수선언
+import 'package:vms_app/core/utils/json_parser.dart';
+
 class VesselSearchModel {
-  int? mmsi;
-  double? lttd;
-  double? lntd;
-  double? sog;
-  double? cog;
-  double? hdg;
-  String? ship_nm;
-  String? ship_knd;
-  String? cd_nm;
-  int? loc_crlpt_a;
-  int? loc_crlpt_b;
-  int? loc_crlpt_c;
-  int? loc_crlpt_d;
-  double? draft;
-  String? destn;
-  String? escapeRouteGeojson;
+  final int? mmsi;
+  final double? lttd;
+  final double? lntd;
+  final double? sog;
+  final double? cog;
+  final double? hdg;
+  final String? ship_nm;
+  final String? ship_knd;
+  final String? cd_nm;
+  final int? loc_crlpt_a;
+  final int? loc_crlpt_b;
+  final int? loc_crlpt_c;
+  final int? loc_crlpt_d;
+  final double? draft;
+  final String? destn;
+  final String? escapeRouteGeojson;
 
-  //생성자 작성 객체만들때 값을 전달해서 변수를 초기화 해주는 역할 ex) var ship = GisModel(mmsi: 123456789, shipName: "가람호");
-  VesselSearchModel(
-      {this.mmsi,
-      this.lttd,
-      this.lntd,
-      this.sog,
-      this.cog,
-      this.hdg,
-      this.ship_nm,
-      this.ship_knd,
-      this.cd_nm,
-      this.loc_crlpt_a,
-      this.loc_crlpt_b,
-      this.loc_crlpt_c,
-      this.loc_crlpt_d,
-      this.draft,
-      this.destn,
-      this.escapeRouteGeojson});
+  const VesselSearchModel({
+    this.mmsi,
+    this.lttd,
+    this.lntd,
+    this.sog,
+    this.cog,
+    this.hdg,
+    this.ship_nm,
+    this.ship_knd,
+    this.cd_nm,
+    this.loc_crlpt_a,
+    this.loc_crlpt_b,
+    this.loc_crlpt_c,
+    this.loc_crlpt_d,
+    this.draft,
+    this.destn,
+    this.escapeRouteGeojson,
+  });
 
-  //JSON을 받아서 VesselSearchModel 객체로 변환하는 함수
   factory VesselSearchModel.fromJson(Map<String, dynamic> json) {
     return VesselSearchModel(
-        // 정수 타입 안전하게 변환
-        mmsi: json['mmsi'] is int
-            ? json['mmsi']
-            : int.tryParse(json['mmsi']?.toString() ?? ''),
+      mmsi: JsonParser.parseInt(json['mmsi']),
+      lttd: JsonParser.parseDouble(json['lttd']),
+      lntd: JsonParser.parseDouble(json['lntd']),
+      sog: JsonParser.parseDouble(json['sog']),
+      cog: JsonParser.parseDouble(json['cog']),
+      hdg: JsonParser.parseDouble(json['hdg']),
+      ship_nm: JsonParser.parseString(json['ship_nm']),
+      ship_knd: JsonParser.parseString(json['ship_knd']),
+      cd_nm: JsonParser.parseString(json['cd_nm']),
+      loc_crlpt_a: JsonParser.parseInt(json['loc_crlpt_a']),
+      loc_crlpt_b: JsonParser.parseInt(json['loc_crlpt_b']),
+      loc_crlpt_c: JsonParser.parseInt(json['loc_crlpt_c']),
+      loc_crlpt_d: JsonParser.parseInt(json['loc_crlpt_d']),
+      draft: JsonParser.parseDouble(json['draft']),
+      destn: JsonParser.parseString(json['destn']),
+      escapeRouteGeojson: JsonParser.parseString(json['escape_route_geojson']),
+    );
+  }
 
-        // 실수 타입 안전하게 변환
-        lttd: json['lttd'] is double
-            ? json['lttd']
-            : double.tryParse(json['lttd']?.toString() ?? ''),
-        lntd: json['lntd'] is double
-            ? json['lntd']
-            : double.tryParse(json['lntd']?.toString() ?? ''),
-        sog: json['sog'] is double
-            ? json['sog']
-            : double.tryParse(json['sog']?.toString() ?? ''),
-        cog: json['cog'] is double
-            ? json['cog']
-            : double.tryParse(json['cog']?.toString() ?? ''),
-        hdg: json['hdg'] is double
-            ? json['hdg']
-            : double.tryParse(json['hdg']?.toString() ?? ''),
-
-        // 문자열 타입 안전하게 변환
-        ship_nm: json['ship_nm']?.toString(),
-        ship_knd: json['ship_knd']?.toString(),
-        cd_nm: json['cd_nm']?.toString(),
-        // 정수 타입 안전하게 변환
-        loc_crlpt_a: json['loc_crlpt_a'] is int
-            ? json['loc_crlpt_a']
-            : int.tryParse(json['loc_crlpt_a']?.toString() ?? ''),
-        loc_crlpt_b: json['loc_crlpt_b'] is int
-            ? json['loc_crlpt_b']
-            : int.tryParse(json['loc_crlpt_b']?.toString() ?? ''),
-        loc_crlpt_c: json['loc_crlpt_c'] is int
-            ? json['loc_crlpt_c']
-            : int.tryParse(json['loc_crlpt_c']?.toString() ?? ''),
-        loc_crlpt_d: json['loc_crlpt_d'] is int
-            ? json['loc_crlpt_d']
-            : int.tryParse(json['loc_crlpt_d']?.toString() ?? ''),
-
-        // 실수 타입 안전하게 변환
-        draft: json['draft'] is double
-            ? json['draft']
-            : double.tryParse(json['draft']?.toString() ?? ''),
-
-        // 문자열 타입 안전하게 변환
-        destn: json['destn']?.toString(),
-
-        //퇴각항로
-        escapeRouteGeojson: json['escape_route_geojson']?.toString());
+  Map<String, dynamic> toJson() {
+    return {
+      'mmsi': mmsi,
+      'lttd': lttd,
+      'lntd': lntd,
+      'sog': sog,
+      'cog': cog,
+      'hdg': hdg,
+      'ship_nm': ship_nm,
+      'ship_knd': ship_knd,
+      'cd_nm': cd_nm,
+      'loc_crlpt_a': loc_crlpt_a,
+      'loc_crlpt_b': loc_crlpt_b,
+      'loc_crlpt_c': loc_crlpt_c,
+      'loc_crlpt_d': loc_crlpt_d,
+      'draft': draft,
+      'destn': destn,
+      'escape_route_geojson': escapeRouteGeojson,
+    };
   }
 }

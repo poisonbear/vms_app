@@ -3,22 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/errors/app_exceptions.dart';
 import 'package:vms_app/core/errors/error_handler.dart';
 
-/// 모든 Provider의 기본 클래스 - 개선된 버전
+/// 취소 가능한 비동기 작업을 위한 간단한 구현
+class CancelableOperation<T> {
+  final Future<T> _future;
+  bool _isCanceled = false;
+  
+  CancelableOperation.fromFuture(this._future);
+  
+  Future<T> get value => _future;
+  bool get isCanceled => _isCanceled;
+  
+  void cancel() {
+    _isCanceled = true;
+  }
+}
+
+/// 모든 Provider의 기본 클래스 - 메모리 누수 방지 개선
 abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _errorMessage = '';
   bool _isDisposed = false;
-
+  
   // 진행 중인 비동기 작업 추적
   final Set<CancelableOperation> _pendingOperations = {};
+  
+  // Timer 관리
+  final Set<Timer> _activeTimers = {};
+  
+  // StreamSubscription 관리  
+  final List<StreamSubscription> _subscriptions = [];
 
-  // 공통 Getter
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   bool get hasError => _errorMessage.isNotEmpty;
   bool get isDisposed => _isDisposed;
 
-  /// 로딩 상태 설정
   @protected
   void setLoading(bool loading) {
     if (_isDisposed) return;
@@ -28,7 +47,6 @@ abstract class BaseProvider extends ChangeNotifier {
     }
   }
 
-  /// 에러 메시지 설정
   @protected
   void setError(String message) {
     if (_isDisposed) return;
@@ -38,7 +56,6 @@ abstract class BaseProvider extends ChangeNotifier {
     }
   }
 
-  /// 에러 클리어
   @protected
   void clearError() {
     if (_isDisposed) return;
@@ -48,12 +65,31 @@ abstract class BaseProvider extends ChangeNotifier {
     }
   }
 
-  /// 안전한 상태 업데이트
   @protected
   void safeNotifyListeners() {
     if (!_isDisposed) {
       notifyListeners();
     }
+  }
+
+  /// Timer 추가 및 관리
+  @protected
+  Timer addTimer(Duration duration, void Function() callback) {
+    late Timer timer;
+    timer = Timer(duration, () {
+      if (!_isDisposed) {
+        callback();
+        _activeTimers.remove(timer);
+      }
+    });
+    _activeTimers.add(timer);
+    return timer;
+  }
+
+  /// StreamSubscription 추가 및 관리
+  @protected
+  void addSubscription(StreamSubscription subscription) {
+    _subscriptions.add(subscription);
   }
 
   /// 비동기 작업 실행 래퍼 - 개선된 버전
@@ -66,7 +102,6 @@ abstract class BaseProvider extends ChangeNotifier {
   }) async {
     if (_isDisposed) return null;
 
-    final completer = Completer<T?>();
     final cancelable = CancelableOperation.fromFuture(
       _executeAsyncInternal(
         operation,
@@ -80,7 +115,6 @@ abstract class BaseProvider extends ChangeNotifier {
 
     try {
       final result = await cancelable.value;
-      completer.complete(result);
       return result;
     } finally {
       _pendingOperations.remove(cancelable);
@@ -94,29 +128,21 @@ abstract class BaseProvider extends ChangeNotifier {
     Function(AppException)? onError,
   }) async {
     try {
-      if (showLoading) {
-        _isLoading = true;
-        _errorMessage = '';
-        safeNotifyListeners();
-      }
-
+      if (showLoading) setLoading(true);
+      clearError();
+      
       final result = await operation();
-
-      if (showLoading) {
-        _isLoading = false;
-        safeNotifyListeners();
-      }
-
+      
+      if (showLoading) setLoading(false);
       return result;
     } catch (e) {
-      _isLoading = false;
-
+      if (_isDisposed) return null;
+      
+      setLoading(false);
       final appException = ErrorHandler.handleError(e);
-      _errorMessage = errorMessage ?? ErrorHandler.getUserMessage(appException);
-
+      setError(errorMessage ?? ErrorHandler.getUserMessage(appException));
+      
       onError?.call(appException);
-
-      safeNotifyListeners();
       return null;
     }
   }
@@ -127,49 +153,37 @@ abstract class BaseProvider extends ChangeNotifier {
     T Function() operation, {
     String? errorMessage,
   }) {
-    if (_isDisposed) return null;
-
     try {
-      clearError();
       return operation();
     } catch (e) {
       final appException = ErrorHandler.handleError(e);
-      _errorMessage = errorMessage ?? ErrorHandler.getUserMessage(appException);
-      safeNotifyListeners();
+      setError(errorMessage ?? ErrorHandler.getUserMessage(appException));
       return null;
     }
   }
 
-  /// Provider 리소스 정리
   @override
   void dispose() {
     _isDisposed = true;
-
-    // 모든 진행 중인 비동기 작업 취소
+    
+    // 모든 비동기 작업 취소
     for (final operation in _pendingOperations) {
       operation.cancel();
     }
     _pendingOperations.clear();
-
-    super.dispose();
-  }
-}
-
-/// 취소 가능한 비동기 작업
-class CancelableOperation<T> {
-  final Future<T> _future;
-  bool _isCanceled = false;
-
-  CancelableOperation.fromFuture(this._future);
-
-  Future<T> get value async {
-    if (_isCanceled) {
-      throw StateError('Operation was canceled');
+    
+    // 모든 타이머 취소
+    for (final timer in _activeTimers) {
+      timer.cancel();
     }
-    return _future;
-  }
-
-  void cancel() {
-    _isCanceled = true;
+    _activeTimers.clear();
+    
+    // 모든 StreamSubscription 취소
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
+    
+    super.dispose();
   }
 }

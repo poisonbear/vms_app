@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/data/models/navigation/route_search_model.dart';
 import 'package:vms_app/domain/repositories/route_search_repository.dart';

@@ -24,8 +24,7 @@ class ErrorHandler {
         } else if (statusCode == 403) {
           return AuthException(message, 'FORBIDDEN');
         } else if (statusCode == 404) {
-          return ServerException(message,
-              statusCode: statusCode, code: 'NOT_FOUND');
+          return ServerException(message, statusCode: statusCode, code: 'NOT_FOUND');
         } else if (statusCode != null && statusCode >= 500) {
           return ServerException('서버 내부 오류가 발생했습니다', statusCode: statusCode);
         } else {
@@ -61,7 +60,7 @@ class ErrorHandler {
       case 503:
         return '서비스를 일시적으로 사용할 수 없습니다';
       default:
-        return statusCode != null
+        return statusCode != null 
             ? '서버 오류가 발생했습니다 (코드: $statusCode)'
             : '서버와의 통신 중 문제가 발생했습니다';
     }
@@ -76,7 +75,7 @@ class ErrorHandler {
     } else if (error is FormatException) {
       return DataParsingException('데이터 형식이 올바르지 않습니다: ${error.message}');
     } else if (error is TypeError) {
-      return DataParsingException('데이터 타입 오류가 발생했습니다');
+      return const DataParsingException('데이터 타입 오류가 발생했습니다');
     } else if (error.toString().contains('SocketException')) {
       return const NetworkException('네트워크 연결을 확인해주세요', 'SOCKET_ERROR');
     } else {
@@ -105,26 +104,30 @@ class ErrorHandler {
 
     // 예외 타입별 기본 메시지
     if (exception is NetworkException) {
-      return exception.message.isNotEmpty
-          ? exception.message
+      return exception.message.isNotEmpty 
+          ? exception.message 
           : '네트워크 연결을 확인해주세요';
     } else if (exception is ServerException) {
-      return exception.message.isNotEmpty
-          ? exception.message
+      return exception.message.isNotEmpty 
+          ? exception.message 
           : '서버와의 통신 중 문제가 발생했습니다';
     } else if (exception is AuthException) {
-      return exception.message.isNotEmpty ? exception.message : '인증이 필요합니다';
+      return exception.message.isNotEmpty 
+          ? exception.message 
+          : '인증이 필요합니다';
     } else if (exception is DataParsingException) {
       return '데이터를 불러오는 중 문제가 발생했습니다';
     } else if (exception is PermissionException) {
       return '필요한 권한이 없습니다';
     } else if (exception is ValidationException) {
-      return exception.message.isNotEmpty ? exception.message : '입력값을 확인해주세요';
+      return exception.message.isNotEmpty 
+          ? exception.message 
+          : '입력값을 확인해주세요';
     } else if (exception is CacheException) {
       return '캐시 처리 중 오류가 발생했습니다';
     } else {
-      return exception.message.isNotEmpty
-          ? exception.message
+      return exception.message.isNotEmpty 
+          ? exception.message 
           : '오류가 발생했습니다. 잠시 후 다시 시도해주세요';
     }
   }
