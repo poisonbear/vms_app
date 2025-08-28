@@ -69,10 +69,12 @@ Widget inputWidget(
     child: TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
+      style: const TextStyle(
+          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
+        hintStyle: TextStyle(
+            fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
         labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
@@ -89,17 +91,24 @@ Widget inputWidget(
 }
 
 // 텍스트 입력값을 받을 때 - .svg 파일 필요 할 때
-Widget inputWidgetSvg(int widthsize, int heightsize, TextEditingController controller, String title,
-    Color color, String svgPath) {
+Widget inputWidgetSvg(
+    int widthsize,
+    int heightsize,
+    TextEditingController controller,
+    String title,
+    Color color,
+    String svgPath) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
     child: TextField(
       controller: controller,
-      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
+      style: const TextStyle(
+          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
+        hintStyle: TextStyle(
+            fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
         labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
@@ -124,15 +133,16 @@ Widget inputWidgetSvg(int widthsize, int heightsize, TextEditingController contr
 }
 
 // 텍스트를 비활성화 할 때
-Widget inputWidget_deactivate(
-    int widthsize, int heightsize, TextEditingController controller, String title, Color color,
+Widget inputWidget_deactivate(int widthsize, int heightsize,
+    TextEditingController controller, String title, Color color,
     {bool isEnabled = true, bool isReadOnly = false}) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
     child: TextField(
       controller: controller,
-      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
+      style: const TextStyle(
+          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       enabled: isEnabled, // 비활성화 여부 설정
       readOnly: isReadOnly, //읽기 여부 설정
       decoration: InputDecoration(
@@ -164,12 +174,14 @@ void showTopSnackBar(BuildContext context, String message) {
         color: Colors.transparent,
         child: Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: DesignConstants.spacing16, vertical: DesignConstants.spacing12),
+              horizontal: DesignConstants.spacing16,
+              vertical: DesignConstants.spacing12),
           decoration: BoxDecoration(
             color: getColorgray_Type8(),
             borderRadius: BorderRadius.circular(DesignConstants.radiusM),
             boxShadow: [
-              BoxShadow(color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
+              BoxShadow(
+                  color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
             ],
           ),
           child: Row(
@@ -180,7 +192,8 @@ void showTopSnackBar(BuildContext context, String message) {
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

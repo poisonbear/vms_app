@@ -40,16 +40,26 @@ class VesselSearchModel {
   factory VesselSearchModel.fromJson(Map<String, dynamic> json) {
     return VesselSearchModel(
         // 정수 타입 안전하게 변환
-        mmsi: json['mmsi'] is int ? json['mmsi'] : int.tryParse(json['mmsi']?.toString() ?? ''),
+        mmsi: json['mmsi'] is int
+            ? json['mmsi']
+            : int.tryParse(json['mmsi']?.toString() ?? ''),
 
         // 실수 타입 안전하게 변환
-        lttd:
-            json['lttd'] is double ? json['lttd'] : double.tryParse(json['lttd']?.toString() ?? ''),
-        lntd:
-            json['lntd'] is double ? json['lntd'] : double.tryParse(json['lntd']?.toString() ?? ''),
-        sog: json['sog'] is double ? json['sog'] : double.tryParse(json['sog']?.toString() ?? ''),
-        cog: json['cog'] is double ? json['cog'] : double.tryParse(json['cog']?.toString() ?? ''),
-        hdg: json['hdg'] is double ? json['hdg'] : double.tryParse(json['hdg']?.toString() ?? ''),
+        lttd: json['lttd'] is double
+            ? json['lttd']
+            : double.tryParse(json['lttd']?.toString() ?? ''),
+        lntd: json['lntd'] is double
+            ? json['lntd']
+            : double.tryParse(json['lntd']?.toString() ?? ''),
+        sog: json['sog'] is double
+            ? json['sog']
+            : double.tryParse(json['sog']?.toString() ?? ''),
+        cog: json['cog'] is double
+            ? json['cog']
+            : double.tryParse(json['cog']?.toString() ?? ''),
+        hdg: json['hdg'] is double
+            ? json['hdg']
+            : double.tryParse(json['hdg']?.toString() ?? ''),
 
         // 문자열 타입 안전하게 변환
         ship_nm: json['ship_nm']?.toString(),

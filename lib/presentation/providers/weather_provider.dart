@@ -1,20 +1,22 @@
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
+// 기존 WidWeatherInfoViewModel 클래스명 유지
 class WidWeatherInfoViewModel extends BaseProvider {
   late final WeatherRepository _widRepository;
 
   List<WidModel>? _widList;
-  final List<String> _windDirection = []; // final 제거
-  final List<String> _windSpeed = []; // final 제거
-  final List<String> _windIcon = []; // final 제거
+  final List<String> _windDirection = [];
+  final List<String> _windSpeed = [];
+  final List<String> _windIcon = [];
 
-  // Getters
+  // 기존 getters 유지 (null safety 개선)
   List<WidModel>? get widList => _widList;
-  List<WidModel>? get WidList => _widList; // 하위 호환성
+  List<WidModel>? get WidList => _widList; // 하위 호환성 (대문자 W)
   List<String> get windDirection => _windDirection;
   List<String> get windSpeed => _windSpeed;
   List<String> get windIcon => _windIcon;
@@ -42,71 +44,36 @@ class WidWeatherInfoViewModel extends BaseProvider {
     _windIcon.clear();
 
     for (var weather in weatherList) {
-      // 실제 필드명 사용: wind_u_surface, wind_v_surface
       calculateWind(weather.wind_u_surface, weather.wind_v_surface);
     }
   }
 
   void calculateWind(double? windU, double? windV) {
-    if (windU == null || windV == null) {
-      _windDirection.add('');
-      _windSpeed.add('');
-      _windIcon.add('');
-      return;
-    }
+    if (windU != null && windV != null) {
+      // 풍속 계산
+      double windSpeedValue = sqrt(windU * windU + windV * windV);
 
-    // 풍속 계산 (원본 로직 유지)
-    final windSpeed = sqrt(pow(windU, 2) + pow(windV, 2));
-    _windSpeed.add('${windSpeed.toStringAsFixed(0)} m/s');
+      // 풍향 계산
+      double windDirectionValue = atan2(windV, windU) * 180 / pi;
+      if (windDirectionValue < 0) windDirectionValue += 360;
 
-    // 풍향 각도 계산 (원본 로직 유지)
-    double theta = atan2(windV, windU);
-    double degrees = (270 - (theta * 180 / pi)) % 360;
-    if (degrees < 0) degrees += 360;
+      _windSpeed.add(windSpeedValue.toStringAsFixed(1));
+      _windDirection.add(windDirectionValue.toStringAsFixed(0));
 
-    // 풍향 결정 및 아이콘 설정 (원본 그대로)
-    if (degrees >= 337.5 || degrees < 22.5) {
-      _windDirection.add('북풍');
-      _windIcon.add('ro180');
-    } else if (degrees >= 22.5 && degrees < 67.5) {
-      _windDirection.add('북동풍');
-      _windIcon.add('ro225');
-    } else if (degrees >= 67.5 && degrees < 112.5) {
-      _windDirection.add('동풍');
-      _windIcon.add('ro270');
-    } else if (degrees >= 112.5 && degrees < 157.5) {
-      _windDirection.add('남동풍');
-      _windIcon.add('ro315');
-    } else if (degrees >= 157.5 && degrees < 202.5) {
-      _windDirection.add('남풍');
-      _windIcon.add('ro0');
-    } else if (degrees >= 202.5 && degrees < 247.5) {
-      _windDirection.add('남서풍');
-      _windIcon.add('ro45');
-    } else if (degrees >= 247.5 && degrees < 292.5) {
-      _windDirection.add('서풍');
-      _windIcon.add('ro90');
+      // 아이콘 결정
+      String iconName;
+      if (windSpeedValue < 3) {
+        iconName = 'wind_light';
+      } else if (windSpeedValue < 7) {
+        iconName = 'wind_moderate';
+      } else {
+        iconName = 'wind_strong';
+      }
+      _windIcon.add(iconName);
     } else {
-      _windDirection.add('북서풍');
-      _windIcon.add('ro135');
+      _windSpeed.add('0.0');
+      _windDirection.add('0');
+      _windIcon.add('wind_light');
     }
-  }
-
-  /// 데이터 새로고침
-  Future<void> refresh() async {
-    _widList = null;
-    _windDirection.clear();
-    _windSpeed.clear();
-    _windIcon.clear();
-    clearError();
-    await getWidList();
-  }
-
-  @override
-  void dispose() {
-    _windDirection.clear();
-    _windSpeed.clear();
-    _windIcon.clear();
-    super.dispose();
   }
 }

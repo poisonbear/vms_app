@@ -232,7 +232,13 @@ class _SplashScreenState extends State<SplashScreen> {
       final userState = Provider.of<UserState>(context, listen: false);
 
       // ✅ setRole 메서드가 String을 받는다면 JSON 문자열로 변환
-      userState.setRole(jsonEncode(result));
+      // 역할 정보 설정
+      if (result.isNotEmpty && result[0]["role"] != null) {
+        userState.setRole(result[0]["role"].toString());
+      }
+      if (result.isNotEmpty && result[0]["mmsi"] != null) {
+        userState.setMmsi(result[0]["mmsi"] as int?);
+      };
       // 또는 setRoleData 같은 다른 메서드가 있을 수 있습니다
       // userState.setRoleData(result);
 

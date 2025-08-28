@@ -6,7 +6,8 @@ abstract class AppException implements Exception {
   const AppException(this.message, [this.code]);
 
   @override
-  String toString() => '$runtimeType: $message${code != null ? ' (Code: $code)' : ''}';
+  String toString() =>
+      '$runtimeType: $message${code != null ? ' (Code: $code)' : ''}';
 }
 
 /// 네트워크 관련 예외
@@ -18,7 +19,8 @@ class NetworkException extends AppException {
 class ServerException extends AppException {
   final int? statusCode;
 
-  const ServerException(String message, {this.statusCode, String? code}) : super(message, code);
+  const ServerException(String message, {this.statusCode, String? code})
+      : super(message, code);
 }
 
 /// 데이터 파싱 예외

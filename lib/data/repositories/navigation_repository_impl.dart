@@ -5,25 +5,49 @@ import 'package:vms_app/domain/repositories/navigation_repository.dart';
 class NavigationRepositoryImpl implements NavigationRepository {
   final RosSource _dataSource;
 
-  // ✅ 생성자를 통한 의존성 주입
   NavigationRepositoryImpl(this._dataSource);
 
+  // 기존 메서드 유지 (UseCase에서 사용)
   @override
-  Future<List<RosModel>> getRosList(
-      {String? startDate, String? endDate, int? mmsi, String? shipName}) {
+  Future<List<RosModel>> getRosList({
+    String? startDate,
+    String? endDate,
+    int? mmsi,
+    String? shipName,
+  }) {
     return _dataSource.getRosList(
-        startDate: startDate, endDate: endDate, mmsi: mmsi, shipName: shipName);
+      startDate: startDate,
+      endDate: endDate,
+      mmsi: mmsi,
+      shipName: shipName,
+    );
   }
 
-  //날씨 정보(파고, 시정) 가져오기
+  // 누락된 getNavigationHistory 메서드 구현 (인터페이스에서 요구)
+  @override
+  Future<List<dynamic>> getNavigationHistory({
+    String? startDate,
+    String? endDate,
+    int? mmsi,
+    String? shipName,
+  }) {
+    // getRosList와 동일한 구현 (하위 호환성)
+    return getRosList(
+      startDate: startDate,
+      endDate: endDate,
+      mmsi: mmsi,
+      shipName: shipName,
+    ).then((list) => list.cast<dynamic>());
+  }
+
+  // 추가 메서드들
   @override
   Future<WeatherInfo?> getWeatherInfo() {
     return _dataSource.getWeatherInfo();
   }
 
-  // 항행경보 알림 데이터 가져오기
   @override
-  Future<List<String>?> getNavigationWarnings() {
+  Future<List<String>> getNavigationWarnings() {
     return _dataSource.getNavigationWarnings();
   }
 }
