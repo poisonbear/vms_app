@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
 
 // svg 파일 불러오기
 Widget svgload(svgrul, height, width) {
@@ -69,11 +69,11 @@ Widget inputWidget(
     child: TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(fontSize: 16, decorationThickness: 0),
+      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(fontSize: 16, color: color), // 힌트 스타일
-        labelStyle: const TextStyle(fontSize: 16),
+        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
+        labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
         ),
@@ -101,11 +101,11 @@ Widget inputWidgetSvg(
     height: heightsize.toDouble(),
     child: TextField(
       controller: controller,
-      style: const TextStyle(fontSize: 16, decorationThickness: 0),
+      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(fontSize: 16, color: color), // 힌트 스타일
-        labelStyle: const TextStyle(fontSize: 16),
+        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
+        labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
         ),
@@ -137,13 +137,13 @@ Widget inputWidget_deactivate(int widthsize, int heightsize,
     height: heightsize.toDouble(),
     child: TextField(
       controller: controller,
-      style: const TextStyle(fontSize: 16, decorationThickness: 0),
+      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       enabled: isEnabled, // 비활성화 여부 설정
       readOnly: isReadOnly, //읽기 여부 설정
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(fontSize: 16, color: color),
-        labelStyle: const TextStyle(fontSize: 16),
+        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color),
+        labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color),
         ),
@@ -168,10 +168,10 @@ void showTopSnackBar(BuildContext context, String message) {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16, vertical: DesignConstants.spacing12),
           decoration: BoxDecoration(
             color: getColorgray_Type8(),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(DesignConstants.radiusM),
             boxShadow: [
               BoxShadow(
                   color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
@@ -181,7 +181,7 @@ void showTopSnackBar(BuildContext context, String message) {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.info_outline, color: Colors.white),
-              const SizedBox(width: 10),
+              const SizedBox(width: DesignConstants.spacing10),
               Expanded(
                 child: Text(
                   message,
@@ -197,7 +197,7 @@ void showTopSnackBar(BuildContext context, String message) {
   );
 
   overlay.insert(overlayEntry);
-  Future.delayed(const Duration(seconds: 3), () {
+  Future.delayed(AnimationConstants.splashDuration, () {
     overlayEntry.remove();
   });
 }

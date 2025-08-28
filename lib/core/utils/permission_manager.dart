@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:vms_app/core/constants/constants.dart';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -111,7 +112,7 @@ class NotificationRequestUtil {
                 _openedSettings = true;
                 await openAppSettings();
                 await Future.delayed(
-                    const Duration(seconds: 2)); // 설정 앱에서 돌아올 시간
+                    AnimationConstants.autoScrollDelay); // 설정 앱에서 돌아올 시간
 
                 NotificationSettings settings =
                     await FirebaseMessaging.instance.requestPermission();
@@ -160,7 +161,7 @@ class NotificationRequestUtil {
               onPressed: () async {
                 _openedSettings = true;
                 await openAppSettings();
-                await Future.delayed(const Duration(seconds: 2));
+                await Future.delayed(AnimationConstants.autoScrollDelay);
 
                 // getNotificationSettings() 사용하여 권한만 확인
                 NotificationSettings settings =
@@ -228,7 +229,7 @@ class PointRequestUtil {
     while (!permissionGranted) {
       // 🔄 설정 앱 다녀온 경우 먼저 확인
       if (_openedSettings) {
-        await Future.delayed(const Duration(seconds: 2));
+        await Future.delayed(AnimationConstants.autoScrollDelay);
         permission = await _geolocatorPlatform.checkPermission();
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {

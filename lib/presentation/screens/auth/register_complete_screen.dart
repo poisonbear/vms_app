@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';

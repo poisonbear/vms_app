@@ -1,9 +1,8 @@
 import 'package:collection/collection.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
@@ -70,11 +69,11 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
         child: Container(
           height: 550,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+                topLeft: Radius.circular(DesignConstants.radiusXL), topRight: Radius.circular(DesignConstants.radiusXL)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -107,7 +106,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: DesignConstants.spacing10),
               Row(
                 children: [
                   TextWidgetString(
@@ -119,7 +118,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: DesignConstants.spacing10),
               Expanded(
                 child: TableCalendar(
                   locale: 'ko_KR',
@@ -139,7 +138,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                     formatButtonVisible: false,
                     titleCentered: true,
                     titleTextStyle:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        TextStyle(fontSize: DesignConstants.fontSizeXL, fontWeight: FontWeight.bold),
                   ),
                   calendarStyle: CalendarStyle(
                     selectedDecoration: BoxDecoration(
@@ -162,7 +161,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
-                              fontSize: 16,
+                              fontSize: DesignConstants.fontSizeM,
                             ),
                           ),
                           TextWidgetString('오늘', getTextleft(), getSize14(),
@@ -243,7 +242,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                               Text(
                                 getHolidayName(holiday),
                                 style: const TextStyle(
-                                  fontSize: 10,
+                                  fontSize: DesignConstants.fontSizeXXS,
                                   color: Colors.red,
                                   fontWeight: FontWeight.bold,
                                 ),

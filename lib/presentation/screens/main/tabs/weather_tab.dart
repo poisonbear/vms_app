@@ -1,11 +1,10 @@
 import 'dart:math';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/providers/weather_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
@@ -33,8 +32,8 @@ Widget mainViewWindy(context, {Function? onClose}) {
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(DesignConstants.radiusXL),
+            topRight: Radius.circular(DesignConstants.radiusXL),
           ),
         ),
         child: Column(
@@ -233,10 +232,10 @@ Widget mainViewWindy(context, {Function? onClose}) {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0),
+                                              horizontal: DesignConstants.spacing8),
                                           child: DottedBorder(
                                             borderType: BorderType.RRect,
-                                            radius: const Radius.circular(6),
+                                            radius: const Radius.circular(DesignConstants.radiusS),
                                             dashPattern: const [6, 3],
                                             color: getColorgray_Type7(),
                                             strokeWidth: 1,

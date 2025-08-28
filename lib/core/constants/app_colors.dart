@@ -157,9 +157,9 @@ TextAlign getTextright() {
 
 //테두리
 RoundedRectangleBorder getTextradius6() {
-  return RoundedRectangleBorder(borderRadius: BorderRadius.circular(6));
+  return RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0));
 }
 
 BorderRadius getTextradius6_direct() {
-  return BorderRadius.circular(6);
+  return BorderRadius.circular(10.0);
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -12,8 +13,6 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/core/utils/permission_manager.dart';
 import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
@@ -163,7 +162,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadVesselDataAndUpdateMap(); // 최초 데이터 로드 및 이동
       // 3초마다 데이터 갱신
-      _vesselUpdateTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _vesselUpdateTimer = Timer.periodic(AnimationConstants.autoScrollDelay, (timer) {
         _loadVesselDataAndUpdateMap(); // 주기적 데이터 로드
       });
     });
@@ -171,7 +170,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     // 터빈진입 && 해저케이블진입 깜빡임 애니메이션 컨트롤러 초기화
     _flashController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: AnimationConstants.durationNormal,
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           _flashController.reverse();
@@ -184,7 +183,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
     // 중요: 화면이 완전히 렌더링된 후 권한 요청
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 1000), () {
+      Future.delayed(AnimationConstants.durationVerySlow, () {
         _requestPermissionsSequentially();
       });
     });
@@ -227,7 +226,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     Provider.of<NavigationProvider>(context, listen: false).getWeatherInfo();
 
     // 파고 알람 데이터 30초마다 데이터 갱신
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(AnimationConstants.weatherUpdateInterval, (timer) {
       // 기존 값 저장
       // final prevWave = Provider.of<NavigationProvider>(context, listen: false).wave;
       // final prevVisibility = Provider.of<NavigationProvider>(context, listen: false).visibility;
@@ -256,7 +255,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
           child: Text(
             label,
             style: TextStyle(
-                fontSize: 14,
+                fontSize: DesignConstants.fontSizeS,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey[800]),
           ),
@@ -266,7 +265,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
           child: Text(
             value,
             style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
+                fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.w500, color: Colors.black),
           ),
         ),
       ],
@@ -297,7 +296,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     padding: EdgeInsets.all(getSize20().toDouble()),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,
@@ -415,14 +414,14 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
                                           // 선박 위치 갱신 타이머 재시작
                                           _vesselUpdateTimer = Timer.periodic(
-                                              const Duration(seconds: 2),
+                                              AnimationConstants.autoScrollDelay,
                                               (timer) {
                                             _loadVesselDataAndUpdateMap();
                                           });
 
                                           // 3초마다 데이터 갱신하는 타이머 시작
                                           _routeUpdateTimer = Timer.periodic(
-                                              const Duration(seconds: 2),
+                                              AnimationConstants.autoScrollDelay,
                                               (timer) {
                                             try {
                                               if (_isTrackingEnabled) {
@@ -535,7 +534,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
       await _updateCurrentLocation();
     } else {
       // 위치 권한이 없는 경우에만 요청
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(AnimationConstants.durationNormal);
       await PointRequestUtil.requestPermissionUntilGranted(context);
       await _updateCurrentLocation();
     }
@@ -547,7 +546,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
       print('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {
       // 알림 권한이 없는 경우에만 요청
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(AnimationConstants.durationNormal);
       await NotificationRequestUtil.requestPermissionUntilGranted(context);
       await _requestNotificationPermission();
     }
@@ -579,7 +578,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     });
 
     // 선박 위치 갱신 타이머가 없으면 재시작
-    _vesselUpdateTimer ??= Timer.periodic(const Duration(seconds: 2), (timer) {
+    _vesselUpdateTimer ??= Timer.periodic(AnimationConstants.autoScrollDelay, (timer) {
       _loadVesselDataAndUpdateMap();
     });
   }
@@ -684,11 +683,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   width: 60,
                   height: 60,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: DesignConstants.spacing8),
                 Text(
                   title, // 서버에서 받은 제목
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: DesignConstants.fontSizeXL,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFDF2B2E),
                     height: 1.0,
@@ -697,13 +696,13 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: DesignConstants.spacing8),
                 SizedBox(
                   width: 300,
                   child: Text(
                     message, // 서버에서 받은 메시지
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: DesignConstants.fontSizeS,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF999999),
                       height: 1.0,
@@ -728,9 +727,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10),
+                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                         side: const BorderSide(
                             color: Color(0xFF5CA1F6), width: 1),
                       ),
@@ -741,7 +740,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       '알람 종료하기',
                       style: TextStyle(
                         color: Color(0xFF5CA1F6),
-                        fontSize: 14,
+                        fontSize: DesignConstants.fontSizeS,
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.visible,
@@ -783,11 +782,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   width: 60,
                   height: 60,
                 ),
-                const SizedBox(height: 8), // 간격
+                const SizedBox(height: DesignConstants.spacing8), // 간격
                 const Text(
                   '터빈 구역 진입 금지 경고',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: DesignConstants.fontSizeXL,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFDF2B2E),
                     height: 1.0,
@@ -796,13 +795,13 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8), // 간격
+                const SizedBox(height: DesignConstants.spacing8), // 간격
                 const SizedBox(
                   width: 300, // 너비를 더 키움
                   child: Text(
                     '터빈 진입 금지 구역입니다. 지금 바로 우회하세요.',
                     style: TextStyle(
-                      fontSize: 12, // 폰트 크기 약간 줄임
+                      fontSize: DesignConstants.fontSizeXS, // 폰트 크기 약간 줄임
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF999999),
                       height: 1.0,
@@ -827,9 +826,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10), // 패딩 수정
+                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                         side: const BorderSide(
                             color: Color(0xFF5CA1F6), width: 1),
                       ),
@@ -840,7 +839,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       '알람 종료하기',
                       style: TextStyle(
                         color: Color(0xFF5CA1F6),
-                        fontSize: 14, // 폰트 크기 약간 줄임
+                        fontSize: DesignConstants.fontSizeS, // 폰트 크기 약간 줄임
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.visible, // 텍스트가 잘리지 않도록
@@ -882,11 +881,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   width: 60,
                   height: 60,
                 ),
-                const SizedBox(height: 8), // 간격
+                const SizedBox(height: DesignConstants.spacing8), // 간격
                 const Text(
                   '해저케이블 구역 진입 경보',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: DesignConstants.fontSizeXL,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFFDF2B2E),
                     height: 1.0,
@@ -895,13 +894,13 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8), // 간격
+                const SizedBox(height: DesignConstants.spacing8), // 간격
                 const SizedBox(
                   width: 300, // 너비를 더 키움
                   child: Text(
                     '헤저케이블 구역입니다. 지금 바로 우회하세요.',
                     style: TextStyle(
-                      fontSize: 12, // 폰트 크기 약간 줄임
+                      fontSize: DesignConstants.fontSizeXS, // 폰트 크기 약간 줄임
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF999999),
                       height: 1.0,
@@ -926,9 +925,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 10), // 패딩 수정
+                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                         side: const BorderSide(
                             color: Color(0xFF5CA1F6), width: 1),
                       ),
@@ -939,7 +938,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       '알람 종료하기',
                       style: TextStyle(
                         color: Color(0xFF5CA1F6),
-                        fontSize: 14, // 폰트 크기 약간 줄임
+                        fontSize: DesignConstants.fontSizeS, // 폰트 크기 약간 줄임
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.visible, // 텍스트가 잘리지 않도록
@@ -1065,7 +1064,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(),
-                      SizedBox(height: 16),
+                      SizedBox(height: DesignConstants.spacing16),
                       Text('현재 위치를 가져오는 중...'),
                     ],
                   );
@@ -1075,7 +1074,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     children: [
                       const Text('현재 위치를 가져올 수 없습니다.',
                           style: TextStyle(color: Colors.red)),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('닫기'),
@@ -1089,11 +1088,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     children: [
                       const Text('실시간 위치',
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
+                              fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: DesignConstants.spacing16),
                       Text('위도: ${position.latitude}'),
                       Text('경도: ${position.longitude}'),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('닫기'),
@@ -1125,7 +1124,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(),
-                      SizedBox(height: 16),
+                      SizedBox(height: DesignConstants.spacing16),
                       Text('현재 위치를 가져오는 중...'),
                     ],
                   );
@@ -1135,7 +1134,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     children: [
                       const Text('현재 위치를 가져올 수 없습니다.',
                           style: TextStyle(color: Colors.red)),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('닫기'),
@@ -1149,11 +1148,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                     children: [
                       const Text('현재 위치',
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
+                              fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: DesignConstants.spacing16),
                       Text('위도: ${position.latitude}'),
                       Text('경도: ${position.longitude}'),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: DesignConstants.spacing20),
                       ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: const Text('닫기'),
@@ -1630,7 +1629,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                           );
                                         },
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: DesignConstants.spacing12),
                                     ],
                                   );
                                 }
@@ -1654,7 +1653,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                   // 관리자 전용 기능
                                 },
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: DesignConstants.spacing12),
                             ],
                             // 현재 위치 버튼 - Builder로 감싸서 MultiProvider의 하위 컨텍스트 전달
                             Builder(
@@ -1727,7 +1726,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 );
                               },
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: DesignConstants.spacing12),
                             // 실시간 위치 딜레이 있음
                             CircularButton(
                               svgPath: 'assets/kdn/home/img/ico_home.svg',
@@ -1747,7 +1746,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 //_stopRouteUpdates();                  // 항로 업데이트 중지 및 데이터 초기화
                               },
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: DesignConstants.spacing12),
                           ],
                         ),
                       ],
@@ -1759,7 +1758,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       return Container(
                         height: 52,
                         alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing12),
                         decoration: BoxDecoration(
                           color: getColorred_type1(),
                         ),
@@ -1776,7 +1775,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 text: viewModel.combinedNavigationWarnings,
                                 style: TextStyle(
                                   color: getColorwhite_type1(),
-                                  fontSize: 16,
+                                  fontSize: DesignConstants.fontSizeM,
                                   fontWeight: getText700(),
                                 ),
                                 scrollAxis: Axis.horizontal,
@@ -2038,7 +2037,7 @@ Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize,
             left: 0,
             top: 0,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
+              duration: AnimationConstants.durationQuick,
               width:
                   isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
               height: heightsize.toDouble(),

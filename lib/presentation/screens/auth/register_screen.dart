@@ -3,10 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
@@ -694,22 +693,22 @@ class _MembershipviewState extends State<Membershipview> {
                                 filled: true,
                                 fillColor: getColorwhite_type1(),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                                   borderSide: BorderSide(
                                       color: getColorgray_Type7(), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                                   borderSide: BorderSide(
                                       color: getColorgray_Type7(), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                                   borderSide: BorderSide(
                                       color: getColorgray_Type7(), width: 1),
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
+                                    horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
                               ),
                             ),
                             PopupMenuButton<String>(

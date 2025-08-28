@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/presentation/providers/terms/location_terms_provider.dart';
 import 'package:vms_app/presentation/providers/terms/marketing_terms_provider.dart';

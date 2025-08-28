@@ -1,6 +1,7 @@
 // lib/main.dart
 
 import 'dart:async';
+import 'package:vms_app/core/constants/constants.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,8 +16,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/core/di/injection.dart'; // ✅ DI 추가
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/firebase_options.dart';
@@ -162,7 +161,7 @@ class _SplashScreenState extends State<SplashScreen> {
   final dioRequest = DioRequest();
 
   Future<void> _checkLoginStatus() async {
-    await Future.delayed(const Duration(seconds: 3)); // 스플래시 화면 3초 유지
+    await Future.delayed(AnimationConstants.splashDuration); // 스플래시 화면 3초 유지
 
     // 권한 확인 및 요청
     await PermissionManager.requestPermissions();
@@ -289,7 +288,7 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 200,
               height: 200,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: DesignConstants.spacing20),
             // 로딩 인디케이터
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(getColorwhite_type1()),

@@ -1,12 +1,11 @@
 import 'dart:convert';
+import 'package:vms_app/core/constants/constants.dart';
 import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
 /// 페이지 전환 애니메이션을 반환하는 함수
@@ -87,7 +86,7 @@ Future<void> warningPop(BuildContext context, String title, Color titleColor,
                   padding: EdgeInsets.all(getSize20().toDouble()),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,
@@ -211,7 +210,7 @@ Future<void> warningPopdetail(
                   padding: EdgeInsets.all(getSize20().toDouble()),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black26,

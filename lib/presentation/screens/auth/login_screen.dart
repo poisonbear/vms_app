@@ -3,13 +3,12 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
@@ -201,7 +200,7 @@ class _CmdViewState extends State<LoginView> {
               color: Colors.transparent,
               child: Center(
                 child: AnimatedPadding(
-                  duration: const Duration(milliseconds: 100), // 부드러운 애니메이션
+                  duration: AnimationConstants.durationInstant, // 부드러운 애니메이션
                   padding: EdgeInsets.only(
                     bottom: keyboardHeight > 0 ? keyboardHeight : 0,
                   ),
@@ -209,7 +208,7 @@ class _CmdViewState extends State<LoginView> {
                     reverse: false, // 스크롤 방향
                     physics: const NeverScrollableScrollPhysics(), // 스크롤 비활성화
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -269,7 +268,7 @@ class _CmdViewState extends State<LoginView> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                              BorderRadius.circular(6),
+                                              BorderRadius.circular(DesignConstants.radiusS),
                                         ),
                                         child: inputWidget(
                                             getSize266(),
@@ -287,7 +286,7 @@ class _CmdViewState extends State<LoginView> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                              BorderRadius.circular(6),
+                                              BorderRadius.circular(DesignConstants.radiusS),
                                         ),
                                         child: inputWidget(
                                             getSize266(),
@@ -365,7 +364,7 @@ class _CmdViewState extends State<LoginView> {
                                                 getSize12(),
                                                 getTextbold(),
                                                 getColorblack_type1()),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: DesignConstants.spacing4),
                                             SvgPicture.asset(
                                               'assets/kdn/usm/img/chevron-right.svg',
                                               height: 16,
@@ -402,7 +401,7 @@ class _CmdViewState extends State<LoginView> {
                   '시스템 문의 : 061-930-4567',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: DesignConstants.fontSizeXS,
                     fontWeight: FontWeight.bold,
                     shadows: [
                       Shadow(
@@ -413,7 +412,7 @@ class _CmdViewState extends State<LoginView> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: DesignConstants.spacing8),
                 SvgPicture.asset(
                   'assets/kdn/usm/img/login_footer_logo.svg',
                   height: 20.0,

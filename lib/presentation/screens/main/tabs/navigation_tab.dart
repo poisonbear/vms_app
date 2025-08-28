@@ -1,12 +1,11 @@
 import 'package:vms_app/presentation/providers/auth_provider.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/screens/main/tabs/navigation_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
@@ -109,12 +108,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                   height: MediaQuery.of(context).size.height * 0.81,
                   width: double.infinity,
                   padding:
-                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                      const EdgeInsets.symmetric(vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
                   decoration: const BoxDecoration(
                     color: Color(0xFFF5F5F5),
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(DesignConstants.radiusXL),
+                      topRight: Radius.circular(DesignConstants.radiusXL),
                     ),
                   ),
                   child: Column(
@@ -544,7 +543,7 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(),
-                      SizedBox(height: 16),
+                      SizedBox(height: DesignConstants.spacing16),
                       Text('항행 경로 데이터를 불러오는 중...'),
                     ],
                   ),
@@ -621,7 +620,7 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
               ),
               backgroundColor: Colors.white,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(DesignConstants.radiusXL)),
               ),
             );
           } catch (e) {
@@ -717,12 +716,12 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
   return Container(
     height: 80,
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+    padding: const EdgeInsets.symmetric(vertical: DesignConstants.spacing12, horizontal: DesignConstants.spacing16),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
+        topLeft: Radius.circular(DesignConstants.radiusXL),
+        topRight: Radius.circular(DesignConstants.radiusXL),
       ),
       boxShadow: [
         BoxShadow(
@@ -742,7 +741,7 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
               Text(
                 '$shipName (MMSI: $mmsi)',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: DesignConstants.fontSizeM,
                   fontWeight: FontWeight.bold,
                   color: getColorblack_type2(),
                 ),
@@ -751,7 +750,7 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
               Text(
                 'DATE: $formattedTime ($timeRange)',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: DesignConstants.fontSizeS,
                   color: getColorgray_Type8(),
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -772,7 +771,7 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
               ),
               backgroundColor: Colors.transparent,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(DesignConstants.radiusXL)),
               ),
             );
           },

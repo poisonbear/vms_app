@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/core/constants/app_colors.dart';
-import 'package:vms_app/core/constants/app_sizes.dart';
 import 'package:vms_app/core/network/dio_client.dart'; // createSlideTransition 함수 정의 파일 import
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/profile/edit_profile_screen.dart';
@@ -194,11 +193,11 @@ class _MembershipClearViewState extends State<MemberInformationView> {
                           });
                         },
                         child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
+                          duration: AnimationConstants.durationQuick,
                           width: getSize70().toDouble(),
                           height: getSize36().toDouble(),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(DesignConstants.radiusXL),
                             border: Border.all(
                               // ✅ 테두리 색 변경 가능
                               color: _isSwitched
@@ -212,7 +211,7 @@ class _MembershipClearViewState extends State<MemberInformationView> {
                           child: Stack(
                             children: [
                               AnimatedPositioned(
-                                duration: const Duration(milliseconds: 150),
+                                duration: AnimationConstants.durationFast,
                                 curve: Curves.easeInOut,
                                 left: _isSwitched
                                     ? getSize30().toDouble()

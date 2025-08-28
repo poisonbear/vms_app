@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 
 class FindAccountView extends StatefulWidget {
   const FindAccountView({super.key});
@@ -98,7 +99,7 @@ class _FindAccountViewState extends State<FindAccountView>
                       '아이디/비밀번호 찾기',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: DesignConstants.fontSizeXL,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF333333),
                         fontFamily: 'Pretendard',
@@ -118,7 +119,7 @@ class _FindAccountViewState extends State<FindAccountView>
             children: [
               // TabBar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
                 child: TabBar(
                   controller: _tabController,
                   indicator: const UnderlineTabIndicator(
@@ -132,7 +133,7 @@ class _FindAccountViewState extends State<FindAccountView>
                   labelColor: const Color(0xFF333333),
                   unselectedLabelColor: const Color(0xFFD1D1D1),
                   labelStyle: const TextStyle(
-                    fontSize: 16,
+                    fontSize: DesignConstants.fontSizeM,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'Pretendard',
                   ),
@@ -142,7 +143,7 @@ class _FindAccountViewState extends State<FindAccountView>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: DesignConstants.spacing16),
 
               // 콘텐츠 영역 - 스크롤 가능
               Expanded(
@@ -199,25 +200,25 @@ class _FindAccountViewState extends State<FindAccountView>
           const Text(
             '이메일 인증',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: DesignConstants.fontSizeXXL,
               fontWeight: FontWeight.w700,
               color: Color(0xFF333333),
               fontFamily: 'Pretendard',
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: DesignConstants.spacing4),
           const Text(
             '가입 시 이메일을 입력하여 주시기 바랍니다.',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: DesignConstants.fontSizeXS,
               fontWeight: FontWeight.w700,
               color: Color(0xFF999999),
               fontFamily: 'Pretendard',
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: DesignConstants.spacing16),
           SizedBox(
             height: 48,
             child: TextField(
@@ -225,18 +226,18 @@ class _FindAccountViewState extends State<FindAccountView>
               decoration: InputDecoration(
                 hintText: '@포함한 이메일 입력',
                 hintStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: DesignConstants.fontSizeS,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
               ),
@@ -261,7 +262,7 @@ class _FindAccountViewState extends State<FindAccountView>
               const Text(
                 '아이디',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: DesignConstants.fontSizeL,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF333333),
                   fontFamily: 'Pretendard',
@@ -275,7 +276,7 @@ class _FindAccountViewState extends State<FindAccountView>
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: DesignConstants.spacing8),
           SizedBox(
             height: 48,
             child: TextField(
@@ -283,47 +284,47 @@ class _FindAccountViewState extends State<FindAccountView>
               decoration: InputDecoration(
                 hintText: '아이디를 입력해주세요',
                 hintStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: DesignConstants.fontSizeS,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFFB0B0B0), // 이메일 힌트와 동일한 회색으로 변경
                   fontFamily: 'Pretendard',
                 ),
                 // suffixIcon 제거함
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: DesignConstants.spacing20),
           const Text(
             '이메일 입력',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: DesignConstants.fontSizeXXL,
               fontWeight: FontWeight.w700,
               color: Color(0xFF333333),
               fontFamily: 'Pretendard',
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: DesignConstants.spacing4),
           const Text(
             '가입 시 이메일을 입력하여 주시기 바랍니다.',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: DesignConstants.fontSizeXS,
               fontWeight: FontWeight.w700,
               color: Color(0xFF999999),
               fontFamily: 'Pretendard',
               height: 1.0,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: DesignConstants.spacing16),
           SizedBox(
             height: 48,
             child: TextField(
@@ -331,18 +332,18 @@ class _FindAccountViewState extends State<FindAccountView>
               decoration: InputDecoration(
                 hintText: '@포함한 이메일 입력',
                 hintStyle: const TextStyle(
-                  fontSize: 14,
+                  fontSize: DesignConstants.fontSizeS,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
                 ),
               ),
@@ -368,7 +369,7 @@ class _FindAccountViewState extends State<FindAccountView>
             backgroundColor:
                 isActive ? const Color(0xFF5CA1F6) : const Color(0xFFCCCCCC),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(DesignConstants.radiusS),
             ),
             padding: EdgeInsets.zero, // 내부 padding 제거
           ),
@@ -376,7 +377,7 @@ class _FindAccountViewState extends State<FindAccountView>
             child: Text(
               buttonText,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: DesignConstants.fontSizeM,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'Pretendard',
                 color: Colors.white,
