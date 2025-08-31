@@ -80,14 +80,12 @@ void _injectUseCases() {
 
   // Navigation UseCases
   getIt.registerLazySingleton<GetNavigationHistory>(
-    () => GetNavigationHistory(getIt<WeatherRepository>()),
+    () => GetNavigationHistory(getIt<NavigationRepository>()),
   );
 
   // Weather UseCases
-  // ⚠️ 확인 필요: NavigationRepository가 맞나요?
-  // 만약 WeatherRepository를 사용해야 한다면 수정 필요
   getIt.registerLazySingleton<GetWeatherInfo>(
-    () => GetWeatherInfo(getIt<WeatherRepository>()),
+    () => GetWeatherInfo(getIt<NavigationRepository>()),
   );
 
   // Vessel UseCases

@@ -35,7 +35,7 @@ Future<void> initInjection() async {
 
 /// DataSource 레이어 주입
 void _injectDataSources() {
-  // Remote DataSources
+  // Remote DataSources - 싱글톤으로 등록
   getIt.registerLazySingleton<CmdSource>(() => CmdSource());
   getIt.registerLazySingleton<RosSource>(() => RosSource());
   getIt.registerLazySingleton<VesselSearchSource>(() => VesselSearchSource());
@@ -94,12 +94,20 @@ void _injectUseCases() {
   );
 }
 
-/// DI 컨테이너 리셋 (테스트용)
-void resetInjection() {
-  getIt.reset();
+/// GetIt 초기화 상태 확인
+bool isInjectionInitialized() {
+  try {
+    // 주요 의존성이 등록되었는지 확인
+    getIt<TermsRepository>();
+    getIt<NavigationRepository>();
+    getIt<VesselRepository>();
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
-/// 특정 타입이 등록되어 있는지 확인
-bool isRegistered<T extends Object>() {
-  return getIt.isRegistered<T>();
+/// GetIt 리셋 (테스트용)
+void resetInjection() {
+  getIt.reset();
 }
