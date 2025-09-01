@@ -1,0 +1,268 @@
+import 'package:flutter/foundation.dart';
+import 'package:vms_app/core/di/injection.dart';
+import 'package:vms_app/data/models/terms/terms_model.dart';
+import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
+import 'package:vms_app/presentation/providers/base/base_provider.dart';
+
+/// 통합 약관 Provider
+/// API에서 받아온 약관을 정밀한 키워드로 구분하여 정확한 매핑
+class TermsProvider extends BaseProvider {
+  late final GetTermsList _getTermsList;
+
+  // 전체 약관 리스트
+  List<CmdModel>? _allTermsList;
+  
+  // 각 약관별 getter - 더 정밀한 키워드로 매핑
+  CmdModel? get serviceTerms => _getTermsByTitle(['서비스'], excludeKeywords: ['위치', '기반']);
+  CmdModel? get privacyPolicy => _getTermsByTitle(['개인정보'], excludeKeywords: ['위치', '기반']);
+  CmdModel? get locationTerms => _getTermsByTitle(['위치', '기반']);
+  CmdModel? get marketingTerms => _getTermsByTitle(['마케팅']);
+  
+  // 전체 약관 리스트 getter
+  List<CmdModel>? get allTerms => _allTermsList;
+  
+  // 하위 호환성을 위한 deprecated getters
+  @deprecated
+  List<CmdModel>? get cmdList => _allTermsList;
+  
+  @deprecated
+  List<CmdModel>? get CmdList => _allTermsList;
+
+  // 약관 동의 상태 관리
+  final Map<TermsType, bool> _agreementStatus = {
+    TermsType.service: false,
+    TermsType.privacy: false,
+    TermsType.location: false,
+    TermsType.marketing: false,
+  };
+
+  Map<TermsType, bool> get agreementStatus => Map.unmodifiable(_agreementStatus);
+  
+  // 전체 동의 상태
+  bool get isAllAgreed => _agreementStatus.values.every((agreed) => agreed);
+  
+  // 필수 약관 동의 상태 (마케팅 제외)
+  bool get isRequiredAgreed => 
+      _agreementStatus[TermsType.service]! &&
+      _agreementStatus[TermsType.privacy]! &&
+      _agreementStatus[TermsType.location]!;
+
+  TermsProvider() {
+    _getTermsList = getIt<GetTermsList>();
+    loadAllTerms();
+  }
+
+  /// 모든 약관을 한 번에 로드
+  Future<void> loadAllTerms() async {
+    await executeAsync<void>(
+      () async {
+        final result = await _getTermsList.execute();
+        
+        result.fold(
+          onSuccess: (list) {
+            _allTermsList = list;
+            _logDetailedApiResponse(list);
+            _validateTermsList();
+            safeNotifyListeners();
+          },
+          onFailure: (error) {
+            _allTermsList = [];
+            throw error;
+          },
+        );
+      },
+      errorMessage: '약관을 불러오는 중 오류가 발생했습니다',
+      showLoading: true,
+    );
+  }
+
+  /// 상세한 API 응답 로깅
+  void _logDetailedApiResponse(List<CmdModel> list) {
+    debugPrint('');
+    debugPrint('🔍🔍🔍 === 상세 약관 API 응답 분석 === 🔍🔍🔍');
+    debugPrint('총 ${list.length}개 약관 수신');
+    debugPrint('');
+    
+    for (int i = 0; i < list.length; i++) {
+      final terms = list[i];
+      debugPrint('📄 [$i] ━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      debugPrint('   ID: ${terms.id}');
+      debugPrint('   제목: "${terms.terms_nm}"');
+      debugPrint('   날짜: ${terms.terms_dt}');
+      
+      // 내용 미리보기 (더 길게)
+      final content = terms.terms_ctt ?? '';
+      final preview = content.length > 100 ? content.substring(0, 100) : content;
+      debugPrint('   내용: "$preview${content.length > 100 ? "..." : ""}"');
+      debugPrint('');
+    }
+    
+    debugPrint('🎯 === 매핑 시도 결과 === 🎯');
+    
+    // 각 타입별 매핑 시도하면서 상세 로그
+    _tryMapTerm('서비스 이용약관', ['서비스'], ['위치', '기반']);
+    _tryMapTerm('개인정보 처리방침', ['개인정보'], ['위치', '기반']);
+    _tryMapTerm('위치기반 서비스', ['위치', '기반'], []);
+    _tryMapTerm('마케팅 활용 동의', ['마케팅'], []);
+    
+    debugPrint('🎯🎯🎯 ========================= 🎯🎯🎯');
+    debugPrint('');
+  }
+
+  /// 매핑 시도 과정 로깅
+  void _tryMapTerm(String termName, List<String> includeKeywords, List<String> excludeKeywords) {
+    debugPrint('🔍 "$termName" 매핑 시도...');
+    debugPrint('   포함 키워드: $includeKeywords');
+    debugPrint('   제외 키워드: $excludeKeywords');
+    
+    if (_allTermsList == null) {
+      debugPrint('   ❌ _allTermsList가 null');
+      return;
+    }
+    
+    for (int i = 0; i < _allTermsList!.length; i++) {
+      final terms = _allTermsList![i];
+      final title = terms.terms_nm?.toLowerCase() ?? '';
+      
+      debugPrint('   [$i] "${terms.terms_nm}" 검사중...');
+      
+      // 포함 키워드 체크
+      bool allIncludeFound = includeKeywords.every((keyword) {
+        final found = title.contains(keyword.toLowerCase());
+        debugPrint('      포함 "$keyword": $found');
+        return found;
+      });
+      
+      // 제외 키워드 체크
+      bool anyExcludeFound = excludeKeywords.any((keyword) {
+        final found = title.contains(keyword.toLowerCase());
+        debugPrint('      제외 "$keyword": $found');
+        return found;
+      });
+      
+      if (allIncludeFound && !anyExcludeFound) {
+        debugPrint('   ✅ 매핑 성공: "$termName" ← "${terms.terms_nm}"');
+        return;
+      }
+    }
+    
+    debugPrint('   ❌ 매핑 실패: "$termName"에 해당하는 약관을 찾을 수 없음');
+  }
+
+  /// 약관 리스트 유효성 검증
+  void _validateTermsList() {
+    if (_allTermsList == null || _allTermsList!.isEmpty) {
+      setError('약관 정보를 찾을 수 없습니다');
+      return;
+    }
+    
+    // 필수 약관들이 모두 찾아졌는지 확인
+    final missingTerms = <String>[];
+    if (serviceTerms == null) missingTerms.add('서비스 이용약관');
+    if (privacyPolicy == null) missingTerms.add('개인정보 처리방침');
+    if (locationTerms == null) missingTerms.add('위치기반 서비스 약관');
+    
+    if (missingTerms.isNotEmpty) {
+      debugPrint('❌ 누락된 약관: ${missingTerms.join(", ")}');
+      setError('필수 약관을 찾을 수 없습니다: ${missingTerms.join(", ")}');
+    } else {
+      debugPrint('✅ 모든 필수 약관 매핑 성공');
+    }
+  }
+
+  /// 제목 키워드로 약관 찾기 (제외 키워드 포함)
+  CmdModel? _getTermsByTitle(List<String> includeKeywords, {List<String> excludeKeywords = const []}) {
+    if (_allTermsList == null) return null;
+    
+    for (final terms in _allTermsList!) {
+      final title = terms.terms_nm?.toLowerCase() ?? '';
+      
+      // 모든 포함 키워드가 제목에 포함되어 있는지 확인
+      bool allIncludeFound = includeKeywords.every((keyword) => 
+        title.contains(keyword.toLowerCase())
+      );
+      
+      // 제외 키워드가 제목에 포함되어 있는지 확인
+      bool anyExcludeFound = excludeKeywords.any((keyword) => 
+        title.contains(keyword.toLowerCase())
+      );
+      
+      if (allIncludeFound && !anyExcludeFound) {
+        return terms;
+      }
+    }
+    
+    return null;
+  }
+
+  /// 특정 타입의 약관 가져오기
+  CmdModel? getTermsByType(TermsType type) {
+    switch (type) {
+      case TermsType.service:
+        return serviceTerms;
+      case TermsType.privacy:
+        return privacyPolicy;
+      case TermsType.location:
+        return locationTerms;
+      case TermsType.marketing:
+        return marketingTerms;
+    }
+  }
+
+  /// 타입별 약관명 가져오기 (UI 표시용)
+  String getTermsTitle(TermsType type) {
+    switch (type) {
+      case TermsType.service:
+        return '서비스 이용약관';
+      case TermsType.privacy:
+        return '개인정보수집/이용 동의';
+      case TermsType.location:
+        return '위치기반 서비스 이용약관';
+      case TermsType.marketing:
+        return '마케팅 활용 동의';
+    }
+  }
+
+  /// 약관 동의 상태 변경
+  void updateAgreement(TermsType type, bool agreed) {
+    executeSafe(() {
+      _agreementStatus[type] = agreed;
+      safeNotifyListeners();
+    });
+  }
+
+  /// 전체 약관 동의/해제
+  void updateAllAgreements(bool agreed) {
+    executeSafe(() {
+      _agreementStatus.forEach((key, _) {
+        _agreementStatus[key] = agreed;
+      });
+      safeNotifyListeners();
+    });
+  }
+
+  /// 약관 데이터 초기화
+  void clearTerms() {
+    executeSafe(() {
+      _allTermsList = null;
+      _agreementStatus.forEach((key, _) {
+        _agreementStatus[key] = false;
+      });
+      safeNotifyListeners();
+    });
+  }
+
+  /// 약관 새로고침
+  Future<void> refreshTerms() async {
+    clearTerms();
+    await loadAllTerms();
+  }
+}
+
+/// 약관 타입 enum
+enum TermsType {
+  service,  // 서비스 이용약관
+  privacy,  // 개인정보 처리방침
+  location, // 위치기반 서비스
+  marketing // 마케팅 활용 동의
+}
