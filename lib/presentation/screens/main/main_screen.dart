@@ -1627,8 +1627,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                     // myVessel 객체가 유효하면 그 좌표를 사용하여 지도 중심을 이동합니다.
                                     if (myVessel != null) {
                                       final vesselPoint = LatLng(
-                                        myVessel?.lttd ?? 35.3790988, // 위도 (null이면 기본값 사용)
-                                        myVessel?.lntd ?? 126.167763, // 경도 (null이면 기본값 사용)
+                                        myVessel.lttd ?? 35.3790988, // 위도 (null이면 기본값 사용)
+                                        myVessel.lntd ?? 126.167763, // 경도 (null이면 기본값 사용)
                                       );
 
                                       // Builder 내의 context는 MultiProvider 자식이므로 Provider 접근이 가능합니다.

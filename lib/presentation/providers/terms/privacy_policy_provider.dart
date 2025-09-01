@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/data/models/terms/terms_model.dart';
 import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';

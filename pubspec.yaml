@@ -59,6 +59,7 @@ dependencies:
 
 
   collection: any
+  path: any
 dev_dependencies:
   get_it: ^7.6.0
   flutter_test:

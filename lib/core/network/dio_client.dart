@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -6,7 +5,6 @@ import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/constants/app_durations.dart';
 import 'package:vms_app/core/constants/network_constants.dart';
 import 'package:vms_app/core/utils/logger.dart';
-import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
 /// Dio HTTP 클라이언트 래퍼
 class DioRequest {
