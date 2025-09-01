@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:vms_app/core/errors/app_exceptions.dart';
-import 'package:vms_app/core/constants/app_messages.dart';
 
 /// 통합된 에러 핸들러
 class ErrorHandler {
@@ -10,10 +9,10 @@ class ErrorHandler {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return const NetworkException(ErrorMessages.timeout, 'TIMEOUT');
+        return const NetworkException('연결 시간이 초과되었습니다', 'TIMEOUT');
 
       case DioExceptionType.connectionError:
-        return const NetworkException(ErrorMessages.network, 'NO_NETWORK');
+        return const NetworkException('네트워크 연결을 확인해주세요', 'NO_NETWORK');
 
       case DioExceptionType.badResponse:
         final statusCode = error.response?.statusCode;
@@ -27,7 +26,7 @@ class ErrorHandler {
         } else if (statusCode == 404) {
           return ServerException(message, statusCode: statusCode, code: 'NOT_FOUND');
         } else if (statusCode != null && statusCode >= 500) {
-          return ServerException(ErrorMessages.server, statusCode: statusCode);
+          return ServerException('서버 내부 오류가 발생했습니다', statusCode: statusCode);
         } else {
           return ServerException(message, statusCode: statusCode);
         }
@@ -40,29 +39,30 @@ class ErrorHandler {
     }
   }
 
-  /// HTTP 상태 코드에 따른 에러 메시지
   static String _getServerErrorMessage(int? statusCode) {
     switch (statusCode) {
       case 400:
         return '잘못된 요청입니다';
       case 401:
-        return ErrorMessages.unauthorized;
+        return '인증이 필요합니다';
       case 403:
-        return ErrorMessages.forbidden;
+        return '접근 권한이 없습니다';
       case 404:
-        return ErrorMessages.notFound;
+        return '요청한 정보를 찾을 수 없습니다';
       case 408:
-        return ErrorMessages.timeout;
+        return '요청 시간이 초과되었습니다';
       case 429:
         return '너무 많은 요청이 발생했습니다';
       case 500:
+        return '서버 오류가 발생했습니다';
       case 502:
+        return '게이트웨이 오류가 발생했습니다';
       case 503:
-        return ErrorMessages.server;
+        return '서비스를 일시적으로 사용할 수 없습니다';
       default:
         return statusCode != null 
             ? '서버 오류가 발생했습니다 (코드: $statusCode)'
-            : ErrorMessages.server;
+            : '서버와의 통신 중 문제가 발생했습니다';
     }
   }
 
@@ -73,11 +73,11 @@ class ErrorHandler {
     } else if (error is DioException) {
       return handleDioError(error);
     } else if (error is FormatException) {
-      return DataParsingException('${ErrorMessages.dataFormat}: ${error.message}');
+      return DataParsingException('데이터 형식이 올바르지 않습니다: ${error.message}');
     } else if (error is TypeError) {
-      return const DataParsingException(ErrorMessages.dataFormat);
+      return const DataParsingException('데이터 타입 오류가 발생했습니다');
     } else if (error.toString().contains('SocketException')) {
-      return const NetworkException(ErrorMessages.network, 'SOCKET_ERROR');
+      return const NetworkException('네트워크 연결을 확인해주세요', 'SOCKET_ERROR');
     } else {
       return GeneralAppException(error.toString(), 'GENERAL_ERROR');
     }
@@ -89,16 +89,16 @@ class ErrorHandler {
     if (exception.code != null) {
       switch (exception.code) {
         case 'TIMEOUT':
-          return ErrorMessages.timeout;
+          return '연결 시간이 초과되었습니다. 다시 시도해주세요';
         case 'NO_NETWORK':
         case 'SOCKET_ERROR':
-          return ErrorMessages.network;
+          return '네트워크 연결을 확인해주세요';
         case 'UNAUTHORIZED':
-          return ErrorMessages.unauthorized;
+          return '인증이 필요합니다. 다시 로그인해주세요';
         case 'FORBIDDEN':
-          return ErrorMessages.forbidden;
+          return '접근 권한이 없습니다';
         case 'NOT_FOUND':
-          return ErrorMessages.notFound;
+          return '요청한 정보를 찾을 수 없습니다';
       }
     }
 
@@ -106,17 +106,17 @@ class ErrorHandler {
     if (exception is NetworkException) {
       return exception.message.isNotEmpty 
           ? exception.message 
-          : ErrorMessages.network;
+          : '네트워크 연결을 확인해주세요';
     } else if (exception is ServerException) {
       return exception.message.isNotEmpty 
           ? exception.message 
-          : ErrorMessages.server;
+          : '서버와의 통신 중 문제가 발생했습니다';
     } else if (exception is AuthException) {
       return exception.message.isNotEmpty 
           ? exception.message 
-          : ErrorMessages.unauthorized;
+          : '인증이 필요합니다';
     } else if (exception is DataParsingException) {
-      return ErrorMessages.dataFormat;
+      return '데이터를 불러오는 중 문제가 발생했습니다';
     } else if (exception is PermissionException) {
       return '필요한 권한이 없습니다';
     } else if (exception is ValidationException) {
@@ -128,7 +128,7 @@ class ErrorHandler {
     } else {
       return exception.message.isNotEmpty 
           ? exception.message 
-          : ErrorMessages.general;
+          : '오류가 발생했습니다. 잠시 후 다시 시도해주세요';
     }
   }
 }

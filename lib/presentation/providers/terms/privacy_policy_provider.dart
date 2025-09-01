@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/data/models/terms/terms_model.dart';
 import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
+import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
-class PrivacyPolicyProvider with ChangeNotifier {
+class PrivacyPolicyProvider extends BaseProvider {
   late final GetTermsList _getTermsList;
 
-  // 변수명 수정: _CmdList -> _cmdList
   List<CmdModel>? _cmdList;
-
-  // Getter 수정: CmdList -> cmdList
   List<CmdModel>? get cmdList => _cmdList;
 
-  // 하위 호환성
+  // 하위 호환성을 위한 deprecated getter
   @deprecated
   List<CmdModel>? get CmdList => cmdList;
 
@@ -22,12 +20,36 @@ class PrivacyPolicyProvider with ChangeNotifier {
   }
 
   Future<void> getCmdList() async {
-    List<CmdModel> fetchedList = await _getTermsList.execute();
-    if (fetchedList.length > 1) {
-      _cmdList = [fetchedList[1]];
-    } else {
-      _cmdList = [];
-    }
-    notifyListeners();
+    await executeAsync<void>(
+      () async {
+        final result = await _getTermsList.execute();
+        
+        result.fold(
+          onSuccess: (list) {
+            // 개인정보 처리방침 (두 번째 약관)
+            if (list.length > 1) {
+              _cmdList = [list[1]];
+            } else {
+              _cmdList = [];
+              setError('개인정보 처리방침을 찾을 수 없습니다');
+            }
+            safeNotifyListeners();
+          },
+          onFailure: (error) {
+            _cmdList = [];
+            throw error; // BaseProvider가 처리
+          },
+        );
+      },
+      errorMessage: '약관을 불러오는 중 오류가 발생했습니다',
+      showLoading: true,
+    );
+  }
+
+  void clearTerms() {
+    executeSafe(() {
+      _cmdList = null;
+      safeNotifyListeners();
+    });
   }
 }

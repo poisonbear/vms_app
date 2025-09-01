@@ -1,50 +1,63 @@
 import 'package:vms_app/core/utils/logger.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/core/errors/result.dart';
+import 'package:vms_app/core/errors/app_exceptions.dart';
+import 'package:vms_app/core/errors/error_handler.dart';
+import 'package:vms_app/core/constants/app_durations.dart';
 
 class VesselSearchSource {
-  //dioRequest 객체 생성 HTTP클라이언트를 wrap한 클래스 내부에 dio.get(..) 있음.
   final dioRequest = DioRequest();
 
-  Future<List<VesselSearchModel>> getVesselList({String? regDt, int? mmsi}) async {
+  Future<Result<List<VesselSearchModel>, AppException>> getVesselList({
+    String? regDt,
+    int? mmsi,
+  }) async {
     try {
       final String apiUrl = dotenv.env['kdn_gis_select_vessel_List'] ?? '';
-
-      //서버에 전달할 요청 데이터 준비(해당 값이 HTTP 요청의 body에 들어감
-      final Map<String, dynamic> queryParams = {'mmsi': mmsi, 'reg_dt': regDt};
-
-      //응답 대기 시간(100초) 설정
-      final options = Options(
-        receiveTimeout: const Duration(seconds: 100),
-      );
-
-      //GET 방식으로 요청 보냄.
-      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
-
-      // 로그 출력
-      //logger.d("[API URL] : ${apiUrl}");
-      //logger.d("[Response] : ${response.data}");
-
-      //Map일 경우 ex "mmsi": [ { "id": 1, "name": "선박A" }, { "id": 2, "name": "선박B" }]
-      if (response.data is Map) {
-        final List items = response.data['mmsi'] ?? [];
-        return items.map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
+      
+      if (apiUrl.isEmpty) {
+        return const Failure(
+          GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'),
+        );
       }
 
-      //List일 경우 [ { "id": 1, "name": "선박A" },{ "id": 2, "name": "선박B" }]
-      if (response.data is List) {
-        return (response.data as List)
+      final Map<String, dynamic> queryParams = {
+        if (mmsi != null) 'mmsi': mmsi,
+        if (regDt != null) 'reg_dt': regDt,
+      };
+
+      final options = DioRequest.createOptions(
+        timeout: AppDurations.apiLongTimeout,
+      );
+
+      final response = await dioRequest.dio.get(
+        apiUrl,
+        data: queryParams,
+        options: options,
+      );
+
+      List<VesselSearchModel> vessels = [];
+
+      if (response.data is Map) {
+        final List items = response.data['mmsi'] ?? [];
+        vessels = items
+            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
+            .toList();
+      } else if (response.data is List) {
+        vessels = (response.data as List)
             .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
             .toList();
       }
 
-      return [];
+      logger.d('Vessel list fetched: ${vessels.length} items');
+      return Success(vessels);
+      
     } catch (e) {
-      //예외 처리
-      logger.e('오류 발생. 관리자에게 문의 바랍니다. $e');
-      return [];
+      logger.e('Vessel API Error: $e');
+      final exception = ErrorHandler.handleError(e);
+      return Failure(exception);
     }
   }
 }

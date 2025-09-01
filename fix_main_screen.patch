@@ -1,0 +1,5 @@
+--- a/lib/presentation/screens/main/main_screen.dart
++++ b/lib/presentation/screens/main/main_screen.dart
+@@ -1,2 +1,2 @@
+-                                    if (myVessel != null || myVessel != '') {
++                                    if (myVessel != null) {

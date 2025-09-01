@@ -2072,15 +2072,7 @@ Widget _warningPopOnDetail(
     child: GestureDetector(
       onTap: () {
         // 버튼 클릭 시 동작 추가
-warningPopdetail(
-          context,
-          title,
-          titleColor,
-          detail,
-          detailColor,
-          '',
-          alarmicon,
-          shadowcolor);
+        warningPopdetail(context, title, titleColor, detail, detailColor, alarmicon, shadowcolor);
       },
       child: Stack(
         alignment: Alignment.center,

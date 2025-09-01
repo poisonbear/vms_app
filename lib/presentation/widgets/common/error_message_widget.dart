@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/constants/constants.dart';
 
 /// 에러 메시지를 표시하는 공통 위젯
 class ErrorMessageWidget extends StatelessWidget {
@@ -23,20 +22,29 @@ class ErrorMessageWidget extends StatelessWidget {
             size: 64,
             color: Colors.red[300],
           ),
-          const SizedBox(height: DesignConstants.spacing16),
+          const SizedBox(height: 16),
           Text(
             message,
             style: TextStyle(
-              fontSize: DesignConstants.fontSizeM,
+              fontSize: 16,
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
-            const SizedBox(height: DesignConstants.spacing16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('다시 시도'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                '다시 시도',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ],

@@ -2,25 +2,19 @@
 class EnvKeys {
   EnvKeys._();
 
-  // API 관련
-  static const String baseUrl = 'BASE_URL';
-  static const String apiKey = 'API_KEY';
-  static const String apiVersion = 'API_VERSION';
-
-  // 약관 API
-  static const String cmdSelectTerms = 'CMD_SELECT_TERMS';
-  static const String cmdGetTerms = 'CMD_GET_TERMS';
-
-  // 항행 API
-  static const String rosSelectNavigation = 'kdn_ros_select_navigation_Info';
-  static const String rosSelectVisibility = 'kdn_ros_select_visibility_Info';
-  static const String rosSelectWarnings = 'kdn_ros_select_navigation_warn_Info';
-
-  // 선박 API
-  static const String gisSelectVessel = 'kdn_gis_select_vessel_Info';
-  static const String gisSelectRoute = 'kdn_gis_select_vessel_Route';
-
-  // 지도 관련
-  static const String mapApiKey = 'MAP_API_KEY';
-  static const String mapTileUrl = 'MAP_TILE_URL';
+  // API URLs
+  static const String loginUrl = 'kdn_loginForm_key';
+  static const String userRoleUrl = 'kdn_usm_select_role_data_key';
+  static const String termsUrl = 'kdn_usm_select_cmd_key';
+  static const String vesselListUrl = 'kdn_gis_select_vessel_List';
+  static const String weatherInfoUrl = 'kdn_wid_select_weather_Info';
+  static const String memberInfoUrl = 'kdn_usm_select_member_info_data';
+  static const String updateMembershipUrl = 'kdn_usm_update_membership_key';
+  
+  // Firebase
+  static const String firebaseApiKey = 'firebase_api_key';
+  static const String firebaseProjectId = 'firebase_project_id';
+  
+  // Other
+  static const String mapboxToken = 'mapbox_access_token';
 }
