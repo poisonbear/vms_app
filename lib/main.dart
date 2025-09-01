@@ -1,28 +1,51 @@
 // lib/main.dart
 
 import 'dart:async';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/di/injection.dart'; // ✅ DI 추가
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/security/app_initializer.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/network/dio_client.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/firebase_options.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -165,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Firebase 토큰 가져오기
     fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
-    print('Firebase Token: $fcmToken');
+    AppLogger.d('Firebase Token: $fcmToken');
 
     // SharedPreferences에 토큰 저장
     widget.prefs.setString('firebase_token', fcmToken);
@@ -175,8 +198,8 @@ class _SplashScreenState extends State<SplashScreen> {
     String? savedId = widget.prefs.getString('saved_id');
     String? savedPw = widget.prefs.getString('saved_pw');
 
-    print('자동 로그인 상태: $isAutoLogin');
-    print('저장된 ID: $savedId');
+    AppLogger.d('자동 로그인 상태: $isAutoLogin');
+    AppLogger.d('저장된 ID: $savedId');
 
     if (isAutoLogin == true && savedId != null && savedPw != null) {
       // 자동 로그인이 활성화되어 있고 저장된 정보가 있으면
@@ -246,7 +269,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // MMSI 설정 (UserState에 해당 메서드가 있는 경우)
       // userState.setMMSI(mmsi);
     } catch (e) {
-      print('자동 로그인 실패: $e');
+      AppLogger.e('자동 로그인 실패: $e');
       // 자동 로그인 실패 시 로그인 화면으로
       if (!mounted) return;
       Navigator.pushReplacement(
@@ -272,7 +295,7 @@ class _SplashScreenState extends State<SplashScreen> {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      print('Firebase 토큰 업데이트 실패: $e');
+      AppLogger.e('Firebase 토큰 업데이트 실패: $e');
     }
   }
 

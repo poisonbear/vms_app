@@ -1,29 +1,55 @@
 import 'dart:async';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:convert';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:math';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:intl/intl.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:marquee/marquee.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/network/dio_client.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/utils/permission_manager.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/main/tabs/navigation_tab.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/profile/profile_screen.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 //GeoJSON 파싱 함수
 List<LatLng> parseGeoJsonLineString(String geoJsonStr) {
@@ -493,7 +519,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     LocationPermission locationPermission = await Geolocator.checkPermission();
     if (locationPermission == LocationPermission.whileInUse ||
         locationPermission == LocationPermission.always) {
-      print('✅ 이미 위치 권한이 허용되어 있습니다.');
+      AppLogger.d('✅ 이미 위치 권한이 허용되어 있습니다.');
       // 위치 권한이 이미 있으면 바로 위치 업데이트
       await _updateCurrentLocation();
     } else {
@@ -506,7 +532,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     // 알림 권한 확인
     NotificationSettings notifSettings = await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ 이미 알림 권한이 허용되어 있습니다.');
+      AppLogger.d('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {
       // 알림 권한이 없는 경우에만 요청
       await Future.delayed(AnimationConstants.durationNormal);
@@ -555,11 +581,11 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ 알림 권한 허용됨');
+      AppLogger.d('✅ 알림 권한 허용됨');
     } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      print('❌ 알림 권한 거부됨');
+      AppLogger.d('❌ 알림 권한 거부됨');
     } else {
-      print('⚠️ 알림 권한 상태: ${settings.authorizationStatus}');
+      AppLogger.d('⚠️ 알림 권한 상태: ${settings.authorizationStatus}');
     }
   }
 

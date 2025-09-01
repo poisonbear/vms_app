@@ -1,10 +1,17 @@
 import 'dart:async';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:io';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 class NotificationRequestUtil {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -22,11 +29,11 @@ class NotificationRequestUtil {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ 알림 권한이 허용되었습니다.');
+      AppLogger.d('✅ 알림 권한이 허용되었습니다.');
     } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
-      print('❌ 알림 권한이 거부되었습니다.');
+      AppLogger.d('❌ 알림 권한이 거부되었습니다.');
     } else if (settings.authorizationStatus == AuthorizationStatus.notDetermined) {
-      print('⚠️ 알림 권한이 아직 결정되지 않았습니다.');
+      AppLogger.d('⚠️ 알림 권한이 아직 결정되지 않았습니다.');
     }
   }
 
@@ -35,7 +42,7 @@ class NotificationRequestUtil {
     // 먼저 현재 권한 상태 확인
     NotificationSettings settings = await _messaging.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ 이미 알림 권한이 허용되어 있습니다.');
+      AppLogger.d('✅ 이미 알림 권한이 허용되어 있습니다.');
       return; // 이미 권한이 있으면 바로 반환
     }
 
@@ -44,7 +51,7 @@ class NotificationRequestUtil {
       // 매번 루프 시작할 때 권한 상태 재확인
       settings = await _messaging.getNotificationSettings();
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('✅ 알림 권한이 허용되었습니다.');
+        AppLogger.d('✅ 알림 권한이 허용되었습니다.');
         return; // 권한이 있으면 즉시 반환
       }
 
@@ -52,7 +59,7 @@ class NotificationRequestUtil {
       if (hasPermission) {
         permissionGranted = true;
         _openedSettings = false;
-        print('✅ 알림 권한이 허용되었습니다.');
+        AppLogger.d('✅ 알림 권한이 허용되었습니다.');
       } else {
         // 설정앱에서 돌아온 후 권한 상태 확인
         if (_openedSettings) {
@@ -77,7 +84,7 @@ class NotificationRequestUtil {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print(_kPermissionGrantedMessage);
+      AppLogger.d(_kPermissionGrantedMessage);
       return true;
     } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
       await _showPermissionDeniedPopup(context, _kPermissionDeniedMessage);
@@ -109,11 +116,11 @@ class NotificationRequestUtil {
                 NotificationSettings settings =
                     await FirebaseMessaging.instance.requestPermission();
                 if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-                  print('알림 권한 허용 확인됨 → 팝업 닫기');
+                  AppLogger.d('알림 권한 허용 확인됨 → 팝업 닫기');
                   Navigator.of(context).pop();
                   _openedSettings = false;
                 } else {
-                  print('아직도 권한 거부됨 → 팝업 유지');
+                  AppLogger.d('아직도 권한 거부됨 → 팝업 유지');
                 }
               },
               child: const Text('설정 열기'),
@@ -135,7 +142,7 @@ class NotificationRequestUtil {
     // 시작하기 전에 권한 다시 확인
     NotificationSettings currentSettings = await _messaging.getNotificationSettings();
     if (currentSettings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('✅ 이미 알림 권한이 허용됨 - 팝업 표시하지 않음');
+      AppLogger.d('✅ 이미 알림 권한이 허용됨 - 팝업 표시하지 않음');
       return; // 이미 권한이 있으면 팝업 표시하지 않음
     }
 
@@ -204,7 +211,7 @@ class PointRequestUtil {
   static Future<void> requestPermissionUntilGranted(BuildContext context) async {
     LocationPermission permission = await _geolocatorPlatform.checkPermission();
     if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-      print('✅ 이미 위치 권한이 허용되어 있습니다.');
+      AppLogger.d('✅ 이미 위치 권한이 허용되어 있습니다.');
       return;
     }
 
@@ -216,7 +223,7 @@ class PointRequestUtil {
         permission = await _geolocatorPlatform.checkPermission();
         if (permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always) {
-          print('✅ 위치 권한 허용됨 (설정 복귀 후)');
+          AppLogger.d('✅ 위치 권한 허용됨 (설정 복귀 후)');
           permissionGranted = true;
           _openedSettings = false;
           return;
@@ -228,14 +235,14 @@ class PointRequestUtil {
       if (hasPermission) {
         permissionGranted = true;
         _openedSettings = false;
-        print('✅ 위치 권한 허용됨 (직접 요청)');
+        AppLogger.d('✅ 위치 권한 허용됨 (직접 요청)');
         return;
       } else {
         // 🔄 권한 여전히 없을 경우 → 안내 반복
         permission = await _geolocatorPlatform.checkPermission();
         if (permission != LocationPermission.whileInUse &&
             permission != LocationPermission.always) {
-          print('❗ 위치 권한 없음 - 거부 팝업 재표시');
+          AppLogger.d('❗ 위치 권한 없음 - 거부 팝업 재표시');
           await _showPermissionDeniedPopup(context, _kPermissionDeniedMessage);
           continue;
         }
@@ -267,7 +274,7 @@ class PointRequestUtil {
       return false;
     }
 
-    print(_kPermissionGrantedMessage);
+    AppLogger.d(_kPermissionGrantedMessage);
     return true;
   }
 
@@ -330,7 +337,7 @@ class PointRequestUtil {
                     if (granted) {
                       Navigator.of(context).pop();
                     } else {
-                      print('❌ 여전히 권한 없음 - 팝업 유지됨');
+                      AppLogger.d('❌ 여전히 권한 없음 - 팝업 유지됨');
                     }
                   },
                   child: const Text('설정 열기'),
@@ -354,7 +361,7 @@ class PointRequestUtil {
     LocationPermission currentPermission = await _geolocatorPlatform.checkPermission();
     if (currentPermission == LocationPermission.whileInUse ||
         currentPermission == LocationPermission.always) {
-      print('✅ 이미 위치 권한이 허용됨 - 팝업 표시하지 않음');
+      AppLogger.d('✅ 이미 위치 권한이 허용됨 - 팝업 표시하지 않음');
       return;
     }
 

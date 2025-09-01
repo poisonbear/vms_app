@@ -3,17 +3,17 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
-
 class LoginView extends StatefulWidget {
   const LoginView({
     super.key,
@@ -103,12 +103,12 @@ class _CmdViewState extends State<LoginView> {
           },
         ),
       );
-      print('=== 로그인 응답 디버깅 시작 ===');
-      print('➡️ 로그인 요청 API URL: $apiUrl');
-      print('✅ Firebase JWT 토큰: $firebaseToken');
-      print('✅ Authorization 헤더: Bearer $firebaseToken');
-      print(response.data);
-      print(response.statusCode);
+      AppLogger.i('=== 로그인 응답 디버깅 시작 ===');
+      AppLogger.d('➡️ 로그인 요청 API URL: $apiUrl');
+      AppLogger.d('✅ Firebase JWT 토큰: $firebaseToken');
+      AppLogger.d('✅ Authorization 헤더: Bearer $firebaseToken');
+      AppLogger.d('Response data: ${response.data}');
+      AppLogger.d('Response status code: ${response.statusCode}');
       if (response.statusCode == 200) {
         // 요청 성공
         String username = response.data['username'];
@@ -131,7 +131,7 @@ class _CmdViewState extends State<LoginView> {
         );
 
         if (roleResponse.statusCode == 200) {
-          print('$roleResponse');
+          AppLogger.d("Role response: ${roleResponse.data}");
           String role = roleResponse.data['role'];
           int? mmsi = roleResponse.data['mmsi'];
 

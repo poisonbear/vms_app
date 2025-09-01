@@ -1,7 +1,11 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:encrypt/encrypt.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:crypto/crypto.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:convert';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 class SecureApiManager {
   static const _storage = FlutterSecureStorage();
@@ -62,7 +66,7 @@ class SecureApiManager {
       if (encryptedValue == null) return '';
       return _decrypt(encryptedValue);
     } catch (e) {
-      print('Error getting secure endpoint: $e');
+      AppLogger.e('Error getting secure endpoint: $e');
       return '';
     }
   }

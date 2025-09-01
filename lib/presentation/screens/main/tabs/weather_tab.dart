@@ -1,12 +1,21 @@
 import 'dart:math';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/weather_provider.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 // 택스트 위젯 - string
 Widget mainViewWindy(context, {Function? onClose}) {
@@ -340,7 +349,7 @@ Widget mainViewWindy(context, {Function? onClose}) {
 Future<Widget> svgload(
     String svgurl, double height, double width, String windIcon, String windSpeed) async {
   try {
-    print('SVG 로딩: url=$svgurl, windIcon=$windIcon, windSpeed=$windSpeed');
+    AppLogger.d('SVG 로딩: url=$svgurl, windIcon=$windIcon, windSpeed=$windSpeed');
 
     // 기본값 사용
     final speedStr = windSpeed.isEmpty ? '0' : windSpeed.replaceAll('m/s', '').trim();
@@ -408,7 +417,7 @@ Future<Widget> svgload(
       fit: BoxFit.contain,
     );
   } catch (e) {
-    print('SVG 로딩 오류: $e');
+    AppLogger.e('SVG 로딩 오류: $e');
     // 오류 발생시 기본 위젯 반환
     return Container(
       height: height,

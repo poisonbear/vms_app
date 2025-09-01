@@ -10,7 +10,7 @@ class AppInitializer {
       
       if (!(await secureManager.hasKey('login_api'))) {
         await secureManager.initializeSecureEndpoints();
-        print('Secure endpoints initialized');
+        AppLogger.d('Secure endpoints initialized');
       }
       
       AppLogger.i('Security initialization complete');

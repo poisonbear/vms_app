@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 /// API 엔드포인트 중앙 관리
 class ApiEndpoints {
@@ -33,7 +34,7 @@ class ApiEndpoints {
   static String _getEndpoint(String key) {
     final endpoint = dotenv.env[key];
     if (endpoint == null) {
-      print('Warning: API endpoint $key not found in .env');
+      AppLogger.w('Warning: API endpoint $key not found in .env');
     }
     return endpoint ?? '';
   }
