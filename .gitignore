@@ -29,3 +29,22 @@ ios/Flutter/Flutter.podspec
 build/
 .dart_tool/
 .idea/
+
+# 보안 관련 파일
+*.keystore
+*.jks
+key.properties
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist
+
+# 환경 파일
+.env
+.env.*
+
+# 로그 파일
+*.log
+logs/
+
+# 백업 파일
+backup_*/
+*.bak

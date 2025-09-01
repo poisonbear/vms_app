@@ -1,254 +1,88 @@
 import 'dart:async';
-import 'dart:developer' as developer;
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
 /// 메모리 누수 체크 유틸리티
 class MemoryLeakChecker {
-  static final Map<String, int> _objectCounts = {};
+  static final Map<String, int> _instanceCounts = {};
+  static Timer? _periodicChecker;
   
-  /// 객체 생성 추적
-  static void trackObjectCreation(String className) {
-    _objectCounts[className] = (_objectCounts[className] ?? 0) + 1;
-    _logMemoryStatus();
+  /// 인스턴스 추적 시작
+  static void trackInstance(String className) {
+    if (kReleaseMode) return;
+    
+    _instanceCounts[className] = (_instanceCounts[className] ?? 0) + 1;
+    AppLogger.v('Instance created: $className (count: ${_instanceCounts[className]})');
   }
   
-  /// 객체 소멸 추적
-  static void trackObjectDisposal(String className) {
-    _objectCounts[className] = (_objectCounts[className] ?? 1) - 1;
-    if (_objectCounts[className]! <= 0) {
-      _objectCounts.remove(className);
-    }
-    _logMemoryStatus();
-  }
-  
-  /// 메모리 상태 로깅
-  static void _logMemoryStatus() {
-    developer.log(
-      'Active objects: ${_objectCounts.toString()}',
-      name: 'MemoryLeak',
-    );
-  }
-  
-  /// 메모리 누수 의심 객체 확인
-  static void checkForLeaks() {
-    final suspiciousObjects = _objectCounts.entries
-        .where((entry) => entry.value > 5)
-        .toList();
-        
-    if (suspiciousObjects.isNotEmpty) {
-      developer.log(
-        '⚠️ Potential memory leaks detected:',
-        name: 'MemoryLeak',
-      );
-      for (final entry in suspiciousObjects) {
-        developer.log(
-          '  ${entry.key}: ${entry.value} instances',
-          name: 'MemoryLeak',
-        );
+  /// 인스턴스 해제 추적
+  static void releaseInstance(String className) {
+    if (kReleaseMode) return;
+    
+    if (_instanceCounts.containsKey(className)) {
+      _instanceCounts[className] = (_instanceCounts[className]! - 1);
+      if (_instanceCounts[className]! <= 0) {
+        _instanceCounts.remove(className);
       }
+      AppLogger.v('Instance released: $className (remaining: ${_instanceCounts[className] ?? 0})');
     }
   }
   
-  /// 현재 메모리 상태 반환
-  static Map<String, int> getCurrentStatus() {
-    return Map.from(_objectCounts);
+  /// 주기적 메모리 체크 시작
+  static void startPeriodicCheck({Duration interval = const Duration(minutes: 1)}) {
+    if (kReleaseMode) return;
+    
+    _periodicChecker?.cancel();
+    _periodicChecker = Timer.periodic(interval, (_) {
+      printMemoryReport();
+    });
+    
+    AppLogger.i('Memory leak checker started');
   }
   
-  /// 메모리 상태 리셋
+  /// 메모리 체크 중지
+  static void stopPeriodicCheck() {
+    _periodicChecker?.cancel();
+    _periodicChecker = null;
+    AppLogger.i('Memory leak checker stopped');
+  }
+  
+  /// 메모리 리포트 출력
+  static void printMemoryReport() {
+    if (kReleaseMode) return;
+    
+    if (_instanceCounts.isEmpty) {
+      AppLogger.d('No tracked instances');
+      return;
+    }
+    
+    final report = StringBuffer();
+    report.writeln('=== Memory Report ===');
+    _instanceCounts.forEach((className, count) {
+      if (count > 0) {
+        report.writeln('$className: $count instances');
+      }
+    });
+    report.writeln('====================');
+    
+    // Flutter 환경에서 안전하게 출력
+    if (kDebugMode) {
+      debugPrint(report.toString());
+    } else {
+      AppLogger.d(report.toString());
+    }
+  }
+  
+  /// 특정 클래스의 인스턴스 수 가져오기
+  static int getInstanceCount(String className) {
+    return _instanceCounts[className] ?? 0;
+  }
+  
+  /// 모든 추적 정보 초기화
   static void reset() {
-    _objectCounts.clear();
-    developer.log('Memory leak checker reset', name: 'MemoryLeak');
-  }
-}
-
-/// 자동 dispose mixin
-mixin AutoDisposeMixin<T extends StatefulWidget> on State<T> {
-  final List<StreamSubscription> _subscriptions = [];
-  final List<Timer> _timers = [];
-  final List<AnimationController> _animationControllers = [];
-  final List<TextEditingController> _textControllers = [];
-  final List<ScrollController> _scrollControllers = [];
-  final List<FocusNode> _focusNodes = [];
-  
-  /// StreamSubscription 추가
-  @protected
-  void addSubscription(StreamSubscription subscription) {
-    _subscriptions.add(subscription);
-  }
-  
-  /// Timer 추가
-  @protected
-  void addTimer(Timer timer) {
-    _timers.add(timer);
-  }
-  
-  /// AnimationController 추가
-  @protected
-  void addAnimationController(AnimationController controller) {
-    _animationControllers.add(controller);
-  }
-  
-  /// TextEditingController 추가
-  @protected
-  void addTextController(TextEditingController controller) {
-    _textControllers.add(controller);
-  }
-  
-  /// ScrollController 추가
-  @protected
-  void addScrollController(ScrollController controller) {
-    _scrollControllers.add(controller);
-  }
-  
-  /// FocusNode 추가
-  @protected
-  void addFocusNode(FocusNode node) {
-    _focusNodes.add(node);
-  }
-  
-  @override
-  void initState() {
-    super.initState();
-    // 개발 모드에서만 메모리 추적
-    assert(() {
-      MemoryLeakChecker.trackObjectCreation(widget.runtimeType.toString());
-      return true;
-    }());
-  }
-  
-  @override
-  void dispose() {
-    // 개발 모드에서만 메모리 추적
-    assert(() {
-      MemoryLeakChecker.trackObjectDisposal(widget.runtimeType.toString());
-      return true;
-    }());
-    
-    // 모든 구독 취소
-    for (final subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
-    
-    // 모든 타이머 취소
-    for (final timer in _timers) {
-      if (timer.isActive) {
-        timer.cancel();
-      }
-    }
-    _timers.clear();
-    
-    // 모든 애니메이션 컨트롤러 dispose
-    for (final controller in _animationControllers) {
-      controller.dispose();
-    }
-    _animationControllers.clear();
-    
-    // 모든 텍스트 컨트롤러 dispose
-    for (final controller in _textControllers) {
-      controller.dispose();
-    }
-    _textControllers.clear();
-    
-    // 모든 스크롤 컨트롤러 dispose
-    for (final controller in _scrollControllers) {
-      controller.dispose();
-    }
-    _scrollControllers.clear();
-    
-    // 모든 포커스 노드 dispose
-    for (final node in _focusNodes) {
-      node.dispose();
-    }
-    _focusNodes.clear();
-    
-    super.dispose();
-  }
-}
-
-/// 메모리 사용량 모니터링 위젯
-class MemoryMonitor extends StatefulWidget {
-  final Widget child;
-  final bool showOverlay;
-
-  const MemoryMonitor({
-    super.key,
-    required this.child,
-    this.showOverlay = false,
-  });
-
-  @override
-  State<MemoryMonitor> createState() => _MemoryMonitorState();
-}
-
-class _MemoryMonitorState extends State<MemoryMonitor> {
-  Timer? _timer;
-  Map<String, int> _memoryStatus = {};
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.showOverlay) {
-      _timer = Timer.periodic(const Duration(seconds: 2), (_) {
-        setState(() {
-          _memoryStatus = MemoryLeakChecker.getCurrentStatus();
-        });
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!widget.showOverlay || _memoryStatus.isEmpty) {
-      return widget.child;
-    }
-
-    return Stack(
-      children: [
-        widget.child,
-        Positioned(
-          top: 50,
-          right: 10,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Memory Monitor',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                ..._memoryStatus.entries.map((entry) {
-                  final isLeak = entry.value > 5;
-                  return Text(
-                    '${entry.key}: ${entry.value}',
-                    style: TextStyle(
-                      color: isLeak ? Colors.red : Colors.green,
-                      fontSize: 10,
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
+    _instanceCounts.clear();
+    _periodicChecker?.cancel();
+    _periodicChecker = null;
+    AppLogger.d('Memory leak checker reset');
   }
 }

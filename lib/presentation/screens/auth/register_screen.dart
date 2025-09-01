@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -181,7 +180,7 @@ class _MembershipviewState extends State<Membershipview> {
         showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
       }
     } catch (e) {
-      log('아이디 중복 확인 오류: $e');
+      print('아이디 중복 확인 오류: $e');
       setState(() {
         isIdAvailable = null;
       });
@@ -294,8 +293,8 @@ class _MembershipviewState extends State<Membershipview> {
           const SnackBar(content: Text('회원가입 실패. 다시 시도해주세요.')),
         );
       }
-    } catch (e, stackTrace) {
-      log('회원가입 중 에러 발생: $e', stackTrace: stackTrace);
+    } catch (e) {
+      print('회원가입 중 에러 발생: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('에러 발생: $e')),
       );
