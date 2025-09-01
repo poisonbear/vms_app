@@ -115,7 +115,7 @@ class _MembershipviewState extends State<Membershipview> {
       if (mmsi.isEmpty) {
         isValms = true; // 빈 값은 일단 유효한 것으로 처리 (필수 체크는 submitForm에서)
       } else {
-        RegExp regex = RegExp(r'^\d{9}$');
+        RegExp regex = RegExp(ValidationConstants.mmsiPattern);
         isValms = regex.hasMatch(mmsi);
       }
     });
@@ -128,7 +128,7 @@ class _MembershipviewState extends State<Membershipview> {
       if (phone.isEmpty) {
         isValphone = true; // 빈 값은 일단 유효한 것으로 처리 (필수 체크는 submitForm에서)
       } else {
-        RegExp regex = RegExp(r'^\d{11}$');
+        RegExp regex = RegExp(ValidationConstants.phonePattern);
         isValphone = regex.hasMatch(phone);
       }
     });
@@ -177,7 +177,7 @@ class _MembershipviewState extends State<Membershipview> {
       // 결과에 따른 메시지 표시 (선택사항)
       if (isIdAvailable == 0) {
         showTopSnackBar(context, '사용 가능한 아이디입니다.');
-      } else if (isIdAvailable == 1) {
+      } else if (isIdAvailable == ValidationConstants.idNotAvailable) {
         showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
       }
     } catch (e) {
@@ -212,7 +212,7 @@ class _MembershipviewState extends State<Membershipview> {
       return;
     }
 
-    if (isIdAvailable == 1) {
+    if (isIdAvailable == ValidationConstants.idNotAvailable) {
       showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
       return;
     }
@@ -463,7 +463,7 @@ class _MembershipviewState extends State<Membershipview> {
                   child: TextWidgetString('사용가능한 아이디 입니다.', getTextcenter(), getSize12(),
                       getText700(), getColorgreen_Type1()),
                 )
-              else if (isIdAvailable == 1)
+              else if (isIdAvailable == ValidationConstants.idNotAvailable)
                 Padding(
                   padding:
                       EdgeInsets.only(top: getSize8().toDouble(), bottom: getSize8().toDouble()),

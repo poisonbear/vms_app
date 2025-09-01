@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:path/path.dart' as path;
 
 void main() async {
-  AppLogger.i('이미지 최적화 시작...');
+  AppLogger.i(StringConstants.startOptimization);
   
-  final assetsDir = Directory('assets');
+  final assetsDir = Directory(StringConstants.assetsDir);
   if (!assetsDir.existsSync()) {
-    AppLogger.d('assets 디렉토리가 없습니다.');
+    AppLogger.d(StringConstants.noAssetsDir);
     return;
   }
   
@@ -16,21 +17,21 @@ void main() async {
       .listSync(recursive: true)
       .where((file) => 
           file is File &&
-          (file.path.endsWith('.png') || 
-           file.path.endsWith('.jpg') || 
-           file.path.endsWith('.jpeg')))
+          (file.path.endsWith(StringConstants.pngExtension) || 
+           file.path.endsWith(StringConstants.jpgExtension) || 
+           file.path.endsWith(StringConstants.jpegExtension)))
       .toList();
   
-  AppLogger.d('발견된 이미지: ${imageFiles.length}개');
+  AppLogger.d('${StringConstants.foundImages}: ${imageFiles.length}${StringConstants.unitBytes}');
   
   for (var file in imageFiles) {
     final fileSize = (file as File).lengthSync();
-    final fileSizeKB = (fileSize / 1024).toStringAsFixed(2);
-    AppLogger.d('  - ${path.basename(file.path)}: ${fileSizeKB}KB');
+    final fileSizeKB = (fileSize / NumericConstants.bytesPerKB).toStringAsFixed(ValidationConstants.debugDecimalPlaces);
+    AppLogger.d('  - ${path.basename(file.path)}: $fileSizeKB${StringConstants.unitKB}');
     
     // 100KB 이상인 이미지 경고
-    if (fileSize > 100 * 1024) {
-      AppLogger.d('    ⚠️  큰 이미지 파일! 최적화 필요');
+    if (fileSize > ValidationConstants.maxImageFileSizeBytes) {
+      AppLogger.d('    ${StringConstants.largeFileWarning}');
     }
   }
   

@@ -1,3 +1,5 @@
+import 'package:vms_app/core/constants/constants.dart';
+
 /// 항행 정보 도메인 엔티티
 class NavigationEntity {
   final int mmsi;
@@ -19,23 +21,26 @@ class NavigationEntity {
   });
 
   /// 정박 중 여부
-  bool get isAnchored => speed < 0.5;
+  bool get isAnchored => speed < NumericConstants.movingSpeedThreshold;
 
   /// 이동 중 여부
-  bool get isMoving => speed >= 0.5;
+  bool get isMoving => speed >= NumericConstants.movingSpeedThreshold;
 
   /// 고속 항행 여부
-  bool get isHighSpeed => speed > 20.0;
+  bool get isHighSpeed => speed > NumericConstants.highSpeedThreshold;
 
   /// 위치 유효성 검증
   bool get hasValidPosition =>
-      latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
+      latitude >= NumericConstants.latitudeMin && 
+      latitude <= NumericConstants.latitudeMax && 
+      longitude >= NumericConstants.longitudeMin && 
+      longitude <= NumericConstants.longitudeMax;
 
   /// 항행 상태 문자열
   String get status {
-    if (isAnchored) return '정박 중';
-    if (isHighSpeed) return '고속 항행';
-    if (isMoving) return '항행 중';
-    return '알 수 없음';
+    if (isAnchored) return StringConstants.statusAnchored;
+    if (isHighSpeed) return StringConstants.statusHighSpeed;
+    if (isMoving) return StringConstants.statusMoving;
+    return StringConstants.statusUnknown;
   }
 }
