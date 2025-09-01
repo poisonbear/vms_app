@@ -131,7 +131,7 @@ class _CmdViewState extends State<LoginView> {
         );
 
         if (roleResponse.statusCode == 200) {
-          AppLogger.d("Role response: ${roleResponse.data}");
+          AppLogger.d('Role response: ${roleResponse.data}');
           String role = roleResponse.data['role'];
           int? mmsi = roleResponse.data['mmsi'];
 

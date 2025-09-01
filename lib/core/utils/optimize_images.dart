@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:path/path.dart' as path;
-import 'package:vms_app/core/utils/app_logger.dart';
 
 void main() async {
   AppLogger.i('이미지 최적화 시작...');

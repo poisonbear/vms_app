@@ -1,17 +1,11 @@
 import 'dart:async';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:io';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 
 class NotificationRequestUtil {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;

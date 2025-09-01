@@ -1,27 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/network/dio_client.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 
 class Membershipview extends StatefulWidget {
   final DateTime nowTime;

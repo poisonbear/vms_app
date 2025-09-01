@@ -1,21 +1,13 @@
 import 'dart:math';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/weather_provider.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 
 // 택스트 위젯 - string
 Widget mainViewWindy(context, {Function? onClose}) {

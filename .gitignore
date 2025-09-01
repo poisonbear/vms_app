@@ -48,3 +48,15 @@ logs/
 # 백업 파일
 backup_*/
 *.bak
+
+# Firebase 설정 파일 (중요!)
+**/google-services.json
+**/GoogleService-Info.plist
+.env
+*.keystore
+*.jks
+
+# 백업 파일
+*.backup
+*.bak
+*_backup_*
