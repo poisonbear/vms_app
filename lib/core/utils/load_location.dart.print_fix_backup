@@ -3,7 +3,6 @@ import 'dart:io' show Platform;
 import 'package:baseflow_plugin_template/baseflow_plugin_template.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 
 /// Defines the main theme color.
 final MaterialColor themeMaterialColor =
@@ -172,7 +171,7 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
     // 위치 권한 확인
     final hasPermission = await _handlePermission();
     if (!hasPermission) {
-      AppLogger.d('위치 권한이 없습니다.');
+      print('위치 권한이 없습니다.');
       return null; // 권한이 없으면 null 반환
     }
 
@@ -180,7 +179,7 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
     final position = await _geolocatorPlatform.getCurrentPosition();
 
     // 위도 및 경도 출력
-    AppLogger.d('현재 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+    print('현재 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}');
 
     // 리스트에 위치 정보 추가
     _updatePositionList(
@@ -188,8 +187,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       '현재 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}',
     );
 
-    AppLogger.d('반환할 위치값');
-    AppLogger.d('Position: lat=${position.latitude}, lng=${position.longitude}');
+    print('반환할 위치값');
+    print(position);
 
     return position; // Position 객체 반환
   }
@@ -299,7 +298,7 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
         _positionStreamSubscription?.cancel();
         _positionStreamSubscription = null;
       }).listen((position) {
-        AppLogger.d('실시간 위치 업데이트 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+        print('실시간 위치 업데이트 - 위도: ${position.latitude}, 경도: ${position.longitude}');
         _updatePositionList(
           _PositionItemType.position,
           '실시간 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}',
@@ -314,8 +313,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
       _positionStreamSubscription!.pause();
     }
 
-    AppLogger.d('실시간 좌표');
-    AppLogger.d('Position stream started');
+    print('실시간 좌표');
+    print(_geolocatorPlatform.getPositionStream());
 
     return _geolocatorPlatform.getPositionStream();
   }

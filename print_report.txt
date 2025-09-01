@@ -1,0 +1,21 @@
+print() 문 검사 리포트
+생성 시간: 2025년 09월  1일 월 오후  2:36:54
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+총 print() 문: 7개
+주석 처리된 print(): 0개
+AppLogger 사용: 76개
+
+파일별 상세 내역:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+lib/core/utils/load_location.dart:7
+
+상세 위치:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+lib/core/utils/load_location.dart:174:      print('위치 권한이 없습니다.');
+lib/core/utils/load_location.dart:182:    print('현재 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+lib/core/utils/load_location.dart:190:    print('반환할 위치값');
+lib/core/utils/load_location.dart:191:    print(position);
+lib/core/utils/load_location.dart:301:        print('실시간 위치 업데이트 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+lib/core/utils/load_location.dart:316:    print('실시간 좌표');
+lib/core/utils/load_location.dart:317:    print(_geolocatorPlatform.getPositionStream());
