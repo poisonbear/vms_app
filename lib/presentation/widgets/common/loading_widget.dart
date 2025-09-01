@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/presentation/widgets/common/optimized_widgets.dart';
 
 /// 로딩 인디케이터를 표시하는 공통 위젯
 class LoadingWidget extends StatelessWidget {
@@ -17,7 +18,7 @@ class LoadingWidget extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            OptimizedWidgets.height16,
             Text(
               message!,
               style: TextStyle(
