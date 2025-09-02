@@ -18,15 +18,12 @@ class FormatConstants {
   static const int decimalPlaces2 = 2;
   static const int coordinateDecimalPlaces = 6;
 
-  // ============ Validation Patterns ============
-  static const String mmsiPattern = r'^\d{9}$';
-  static const String phonePattern = r'^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$';
-  static const String emailPattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-
-  // ============ Input Lengths ============
-  static const int mmsiLength = 9;
-  static const int minPasswordLength = 8;
-  static const int maxPasswordLength = 20;
+  // ============ Input Lengths (ValidationConstants로 이동됨) ============
+  // static const int mmsiLength = 9; // → ValidationConstants.mmsiLength
+  // static const int minPasswordLength = 8; // → ValidationConstants.passwordMinLength
+  // static const int maxPasswordLength = 20; // → ValidationConstants.passwordMaxLength
   static const int maxShipNameLength = 50;
   static const int maxUserNameLength = 30;
+  
+  // 참고: 정규식 패턴들은 ValidationPatterns 클래스로 이동되었습니다.
 }

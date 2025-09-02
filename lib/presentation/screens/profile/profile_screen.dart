@@ -14,10 +14,10 @@ class MemberInformationView extends StatefulWidget {
   const MemberInformationView({super.key, required this.username});
 
   @override
-  _MembershipClearViewState createState() => _MembershipClearViewState();
+  _RegisterCompleteViewState createState() => _RegisterCompleteViewState();
 }
 
-class _MembershipClearViewState extends State<MemberInformationView> {
+class _RegisterCompleteViewState extends State<MemberInformationView> {
   bool _isSwitched = false;
 
   @override

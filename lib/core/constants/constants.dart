@@ -13,3 +13,4 @@ export 'env_keys.dart';
 export 'validation_constants.dart';
 export 'numeric_constants.dart';
 export 'string_constants.dart';
+export 'validation_patterns.dart';

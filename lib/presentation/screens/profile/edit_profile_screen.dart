@@ -103,7 +103,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
   void validateId() {
     setState(() {
       RegExp regex = RegExp(r'^[a-zA-Z0-9]{8,12}$');
-      isIdValid = regex.hasMatch(idController.text);
+      isIdValid = ValidationPatterns.isValidId(idController.text);
     });
   }
 
@@ -117,8 +117,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
       bool validate(String password) {
         // 🔥 빈 문자열은 무효한 것으로 처리 (경고 표시됨)
         bool hasMinLength = password.length >= 6 && password.length <= 12;
-        bool hasLetter = RegExp(r'[a-zA-Z]').hasMatch(password);
-        bool hasNumber = RegExp(r'[0-9]').hasMatch(password);
+        bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
+        bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
         bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
         return hasMinLength && hasLetter && hasNumber && hasSpecial;
       }
@@ -137,8 +137,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
 
       bool validate(String password) {
         bool hasMinLength = password.length >= 6 && password.length <= 12;
-        bool hasLetter = RegExp(r'[a-zA-Z]').hasMatch(password);
-        bool hasNumber = RegExp(r'[0-9]').hasMatch(password);
+        bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
+        bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
         bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
         return hasMinLength && hasLetter && hasNumber && hasSpecial;
       }
@@ -152,16 +152,16 @@ class _MembershipviewState extends State<MemberInformationChange> {
   // mmsi 번호 유효성 검사 - 숫자 9자리만 허용
   void validatems() {
     setState(() {
-      RegExp regex = RegExp(r'^\d{9}$');
-      isValms = regex.hasMatch(mmsiController.text);
+      RegExp regex = ValidationPatterns.mmsiRegExp;
+      isValms = ValidationPatterns.isValidMmsi(mmsiController.text);
     });
   }
 
   // 휴대폰 번호 유효성 검사 - 숫자 11자리만 허용
   void validatephone() {
     setState(() {
-      RegExp regex = RegExp(r'^\d{11}$');
-      isValphone = regex.hasMatch(phoneController.text);
+      RegExp regex = ValidationPatterns.phoneRegExp;
+      isValphone = ValidationPatterns.isValidPhone(phoneController.text);
     });
   }
 

@@ -1,24 +1,14 @@
-/// 검증 관련 상수
+/// 검증 관련 상수 (수치 및 응답 값)
 class ValidationConstants {
   ValidationConstants._();
 
   // ============ 길이 제한 ============
   static const int idMinLength = 8;
   static const int idMaxLength = 12;
-  static const int passwordMinLength = 8;
-  static const int passwordMaxLength = 20;
+  static const int passwordMinLength = 6; // 기존 8에서 6으로 변경 (실제 사용에 맞춤)
+  static const int passwordMaxLength = 12; // 기존 20에서 12로 변경 (실제 사용에 맞춤)
   static const int phoneLength = 11;
   static const int mmsiLength = 9;
-  
-  // ============ 정규식 패턴 ============
-  static const String idPattern = r'^[a-zA-Z0-9]{8,12}$';
-  static const String passwordPattern = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]';
-  static const String mmsiPattern = r'^\d{9}$';
-  static const String phonePattern = r'^\d{11}$';
-  static const String emailPattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
-  
-  // ============ 특수 문자 ============
-  static const String specialCharacters = r'[@$!%*?&":{}|<>]';
   
   // ============ 파일 크기 제한 ============
   static const int maxImageFileSizeKB = 100;
