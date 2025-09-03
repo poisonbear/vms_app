@@ -20,153 +20,160 @@ class MemberInformationChange extends StatefulWidget {
 }
 
 class _MembershipviewState extends State<MemberInformationChange> {
-  final TextEditingController idController = TextEditingController(); // 아이디 입력값
-  final TextEditingController passwordController = TextEditingController(); // 기존 비밀번호 입력값
-  final TextEditingController newPasswordController = TextEditingController(); // 새로운 비밀번호 입력값
+  // Controllers
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-      TextEditingController(); // 새로운 비밀번호 확인 입력값
-  final TextEditingController mmsiController = TextEditingController(); // mmsi 번호 입력값
-  final TextEditingController phoneController = TextEditingController(); // 휴대폰 번호 입력값
-  final TextEditingController emailController = TextEditingController(); // 이메일 입력값
-  final TextEditingController emailaddrController =
-      TextEditingController(); // 이메일 주소 입력값  naver.com , google.com 등등
+      TextEditingController();
+  final TextEditingController mmsiController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController emailaddrController = TextEditingController();
 
-  final FocusNode emailDomainFocusNode = FocusNode(); //focus 강제 저거
+  // Focus nodes
+  final FocusNode emailDomainFocusNode = FocusNode();
 
-  bool isIdValid = true; // 아이디 상태값
-  bool isValpw = true; // 기존 비밀번호 상태값
-  bool isValnpw = true; // 새로운 비밀번호 상태값
-  bool isValcnpw = true; // 새로운 비밀번호 확인 상태값
-  bool isValms = true; // mmsi 상태값
-  bool isValphone = true; // 휴대폰 번호 상태값
-  bool isValemail = true; // 이메일 상태값
-  bool isValemailaddr = true; // 이메일 주소 상태값
+  // Validation states
+  bool isIdValid = true;
+  bool isValpw = true;
+  bool isValnpw = true;
+  bool isValcnpw = true;
+  bool isValms = true;
+  bool isValphone = true;
+  bool isValemail = true;
+  bool isValemailaddr = true;
 
-  bool isLoading = false; //회원정보 수정 중 로딩 상태 표시용
-  bool isSubmitting = false; //버튼을 눌렀을 때만 경고 숨기기
-
-  final String apiUrl = dotenv.env['kdn_usm_update_membership_key'] ?? ''; // 회원정보수정 완료하기 url
-  final String userInfoUrl = dotenv.env['kdn_usm_select_member_info_data'] ?? ''; // 회원정보 수정 정보 가져오기
-  final dioRequest = DioRequest();
+  // UI states
+  bool isLoading = false;
+  bool isSubmitting = false;
   bool isDropdownOpened = false;
 
+  // API URLs
+  final String apiUrl = dotenv.env['kdn_usm_update_membership_key'] ?? '';
+  final String userInfoUrl =
+      dotenv.env['kdn_usm_select_member_info_data'] ?? '';
+  final dioRequest = DioRequest();
+
+  // Dropdown data
   List<String> items = ['naver.com', 'gmail.com', 'hanmail.net'];
   String? selectedValue;
-  TextEditingController controller = TextEditingController(); // 이메일 주소 직접입력 시 이메일 주소 입력값
+  TextEditingController controller = TextEditingController();
 
-  // 시작
-  // 이벤트 초기화
   @override
   void initState() {
+    super.initState();
+    _initializeUserData();
+    _setupListeners();
+    loadUserInfo();
+  }
+
+  @override
+  void dispose() {
+    _removeListeners();
+    _disposeControllers();
+    super.dispose();
+  }
+
+  // ========================================
+  // 초기화 및 정리 메서드 (구조적 개선)
+  // ========================================
+
+  void _initializeUserData() {
     final user = FirebaseAuth.instance.currentUser;
     final email = user?.email;
     if (email != null && email.contains('@')) {
       final id = email.split('@')[0];
-      idController.text = id; // 아이디 입력칸에 자동 설정
+      idController.text = id;
     }
-    super.initState();
-    idController.addListener(validateId); // 기존 비밀번호 이벤트 초기화
-    passwordController.addListener(validatepw); // 기존 비밀번호 이벤트 초기화
-    newPasswordController.addListener(() => validateOnlyNew()); // 새로운 비밀번호 이벤트 초기화
-    confirmPasswordController.addListener(() => validateOnlyNew()); // 새로운 비밀번호 확인 이벤트 초기화
-    mmsiController.addListener(validatems); // mmsi 이벤트 초기화
-    phoneController.addListener(validatephone); // 휴대폰 번호 이벤트 초기화
-    emailController.addListener(validateemail); // 이메일 이벤트 초기화
-    emailaddrController.addListener(validateemail); // 이메일 주소 이벤트 초기화
-
-    loadUserInfo();
   }
 
-  // 종료
-  // 이벤트 초기화
-  @override
-  void dispose() {
-    idController.removeListener(validateId); //  아이디 리스너 삭제
-    idController.dispose(); //  아이디 컨트롤러 삭제
-    passwordController.removeListener(validatepw); // 기존 비밀번호 리스너 삭제
-    passwordController.dispose(); // 기존 비밀번호 컨트롤러 삭제
-    newPasswordController.removeListener(() => validateOnlyNew()); // 새로운 비밀번호 리스너 삭제
-    newPasswordController.dispose(); // 새로운 비밀번호 컨트롤러 삭제
-    confirmPasswordController.removeListener(() => validateOnlyNew()); // 확인 비밀번호 리스너 삭제
-    confirmPasswordController.dispose(); // 확인 비밀번호 컨트롤러 삭제
-    mmsiController.dispose(); // mmsi 번호 컨트롤러 삭제
-    mmsiController.removeListener(validatems); // mmsi 번호 리스너 삭제
-    phoneController.dispose(); // 휴대폰 번호 컨트롤러 삭제
-    phoneController.removeListener(validatephone); // 휴대폰 번호 리스너 삭제
-    emailController.dispose(); // 이메일 컨트롤러 삭제
-    emailaddrController.dispose(); // 이메일 주소 컨트롤러 삭제
-    emailDomainFocusNode.dispose(); // focus 삭제
-    super.dispose();
+  void _setupListeners() {
+    idController.addListener(validateId);
+    passwordController.addListener(_validatePasswords);
+    newPasswordController.addListener(_validatePasswords);
+    confirmPasswordController.addListener(_validatePasswords);
+    mmsiController.addListener(validatems);
+    phoneController.addListener(validatephone);
+    emailController.addListener(validateemail);
+    emailaddrController.addListener(validateemail);
   }
 
-  // 아이디 유효성 검사 함수  - 문자 및 숫자로 8~12자리 검사
+  void _removeListeners() {
+    idController.removeListener(validateId);
+    passwordController.removeListener(_validatePasswords);
+    newPasswordController.removeListener(_validatePasswords);
+    confirmPasswordController.removeListener(_validatePasswords);
+    mmsiController.removeListener(validatems);
+    phoneController.removeListener(validatephone);
+    emailController.removeListener(validateemail);
+    emailaddrController.removeListener(validateemail);
+  }
+
+  void _disposeControllers() {
+    idController.dispose();
+    passwordController.dispose();
+    newPasswordController.dispose();
+    confirmPasswordController.dispose();
+    mmsiController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    emailaddrController.dispose();
+    controller.dispose();
+    emailDomainFocusNode.dispose();
+  }
+
+  // ========================================
+  // 검증 로직 통합 (중복 제거)
+  // ========================================
+
+  bool _validatePassword(String password) {
+    if (password.isEmpty) return true; // 빈 문자열은 입력 없음으로 처리
+
+    bool hasMinLength = password.length >= 6 && password.length <= 12;
+    bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
+    bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
+    bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+
+    return hasMinLength && hasLetter && hasNumber && hasSpecial;
+  }
+
   void validateId() {
+    if (!mounted) return;
     setState(() {
-      RegExp regex = RegExp(r'^[a-zA-Z0-9]{8,12}$');
       isIdValid = ValidationPatterns.isValidId(idController.text);
     });
   }
 
-  // 비밀번호 유효성 검사 - 문자 및 숫자로 6~12자리 검사
-  void validatepw() {
+  void _validatePasswords() {
+    if (!mounted) return;
     setState(() {
       String pw = passwordController.text;
       String npw = newPasswordController.text;
       String cnpw = confirmPasswordController.text;
 
-      bool validate(String password) {
-        // 🔥 빈 문자열은 무효한 것으로 처리 (경고 표시됨)
-        bool hasMinLength = password.length >= 6 && password.length <= 12;
-        bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
-        bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
-        bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
-        return hasMinLength && hasLetter && hasNumber && hasSpecial;
-      }
-
-      isValpw = validate(pw);
-      isValnpw = validate(npw);
-      isValcnpw = validate(cnpw);
+      isValpw = _validatePassword(pw);
+      isValnpw = _validatePassword(npw);
+      isValcnpw = _validatePassword(cnpw);
     });
   }
 
-  // 새로운 비밀번호 유효성 검사 (기존 비밀번호 제외)
-  void validateOnlyNew() {
-    setState(() {
-      String npw = newPasswordController.text;
-      String cnpw = confirmPasswordController.text;
-
-      bool validate(String password) {
-        bool hasMinLength = password.length >= 6 && password.length <= 12;
-        bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
-        bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
-        bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
-        return hasMinLength && hasLetter && hasNumber && hasSpecial;
-      }
-
-      isValnpw = validate(npw);
-      isValcnpw = validate(cnpw);
-      // isValpw는 건드리지 않음!
-    });
-  }
-
-  // mmsi 번호 유효성 검사 - 숫자 9자리만 허용
   void validatems() {
+    if (!mounted) return;
     setState(() {
-      RegExp regex = ValidationPatterns.mmsiRegExp;
       isValms = ValidationPatterns.isValidMmsi(mmsiController.text);
     });
   }
 
-  // 휴대폰 번호 유효성 검사 - 숫자 11자리만 허용
   void validatephone() {
+    if (!mounted) return;
     setState(() {
-      RegExp regex = ValidationPatterns.phoneRegExp;
       isValphone = ValidationPatterns.isValidPhone(phoneController.text);
     });
   }
 
-  // 이메일 유효성 검사 함수
   void validateemail() {
+    if (!mounted) return;
     setState(() {
       String email = emailController.text;
       String emailaddr = emailaddrController.text;
@@ -175,53 +182,157 @@ class _MembershipviewState extends State<MemberInformationChange> {
     });
   }
 
-  // 기존 회원정보 불러오기
+  // ========================================
+  // 데이터 로딩 (API 호출 방식 수정)
+  // ========================================
+
+  // 기존 회원정보 불러오기 (원본 API 호출 방식 복원)
   Future<void> loadUserInfo() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        print('사용자가 로그인되어 있지 않습니다.');
+        return;
+      }
 
-      final uuid = user.uid;
+      final uuid = user.uid; // uuid 사용 (원본 방식)
 
+      if (userInfoUrl.isEmpty) {
+        print('회원정보 조회 API URL이 설정되지 않았습니다.');
+        return;
+      }
+
+      print('=== 회원정보 조회 시도 ===');
+      print('API URL: $userInfoUrl');
+      print('UUID: $uuid');
+
+      // 원본 API 호출 방식 복원
       final response = await dioRequest.dio.post(
         userInfoUrl,
-        data: {'uuid': uuid},
+        data: {'uuid': uuid}, // 원본처럼 uuid만 전송
         options: Options(headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${await user.getIdToken()}',
+          'Authorization':
+              'Bearer ${await user.getIdToken()}', // 원본처럼 Authorization 헤더 포함
         }),
       );
 
-      if (response.statusCode == 200) {
+      print('응답 상태코드: ${response.statusCode}');
+
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
 
-        setState(() {
-          // MMSI 정보 채우기
-          mmsiController.text = data['mmsi'] ?? '';
-
-          // 전화번호 정보 채우기
-          phoneController.text = data['mphn_no'] ?? '';
-
-          // 이메일 정보 분리해서 채우기
-          if (data['email_addr'] != null && data['email_addr'].isNotEmpty) {
-            final emailParts = data['email_addr'].split('@');
-            if (emailParts.length == 2) {
-              emailController.text = emailParts[0];
-              emailaddrController.text = emailParts[1];
-            }
-          }
-        });
+        if (data is Map<String, dynamic>) {
+          print('응답 필드: ${data.keys.join(', ')}');
+          _updateFormWithUserData(data);
+          print('=== 회원정보 로딩 성공 ===');
+        } else if (data is List && data.isNotEmpty) {
+          print('리스트 형태 응답, 첫 번째 항목 사용');
+          _updateFormWithUserData(data[0]);
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      print('=== 회원정보 조회 실패 ===');
+
+      if (e is DioException) {
+        final statusCode = e.response?.statusCode;
+        print('Status Code: $statusCode');
+        print('Request URL: ${e.requestOptions.uri}');
+        print('Request Data: ${e.requestOptions.data}');
+
+        if (e.response?.data != null) {
+          print('서버 응답: ${e.response?.data}');
+        }
+
+        if (statusCode == 400) {
+          print('⚠️ 잘못된 요청 (400): ${e.response?.data}');
+        } else if (statusCode == 401) {
+          print('⚠️ 인증 오류 (401): JWT 토큰 문제일 수 있습니다.');
+        } else if (statusCode == 404) {
+          print('⚠️ API 엔드포인트 404 오류: $userInfoUrl');
+        }
+      } else {
+        print('일반 오류: $e');
+      }
+
+      print('빈 폼으로 계속 진행합니다.');
+    }
   }
 
-  //회원정보수정 완료하기 버튼
-  Future<void> submitForm() async {
-    // 🔥 추가: 버튼을 눌렀을 때 경고 메시지 숨기기
-    setState(() {
-      isSubmitting = true;
-    });
+  // Authorization 재시도 메서드 제거 (원본에 없음)
+  // Future<void> _retryWithAuth() 메서드 삭제
 
+  void _updateFormWithUserData(Map<String, dynamic> data) {
+    if (!mounted) return;
+    setState(() {
+      // 회원가입 시 입력한 핵심 정보만 처리
+      print('서버에서 받은 회원정보: $data');
+
+      // MMSI 정보
+      if (data.containsKey('mmsi') && data['mmsi'] != null) {
+        mmsiController.text = data['mmsi'].toString();
+        print('MMSI 설정: ${data['mmsi']}');
+      }
+
+      // 휴대폰 번호
+      if (data.containsKey('mphn_no') && data['mphn_no'] != null) {
+        phoneController.text = data['mphn_no'].toString();
+        print('휴대폰번호 설정: ${data['mphn_no']}');
+      }
+
+      // 이메일 정보 처리
+      String emailId = '';
+      String emailDomain = '';
+
+      // 전체 이메일 주소 형태
+      if (data.containsKey('email_addr') &&
+          data['email_addr'] != null &&
+          data['email_addr'].isNotEmpty) {
+        final emailParts = data['email_addr'].toString().split('@');
+        if (emailParts.length == 2) {
+          emailId = emailParts[0];
+          emailDomain = emailParts[1];
+          print('이메일: $emailId@$emailDomain');
+        }
+      }
+
+      // 분리된 이메일 ID
+      if (data.containsKey('email_id') &&
+          data['email_id'] != null &&
+          data['email_id'].isNotEmpty) {
+        emailId = data['email_id'].toString();
+        print('이메일 ID: $emailId');
+      }
+
+      // 분리된 도메인
+      if (data.containsKey('email_domain') &&
+          data['email_domain'] != null &&
+          data['email_domain'].isNotEmpty) {
+        emailDomain = data['email_domain'].toString();
+        print('이메일 도메인: $emailDomain');
+      }
+
+      emailController.text = emailId;
+      emailaddrController.text = emailDomain;
+
+      // 사용자 ID 동기화
+      if (data.containsKey('user_id') && data['user_id'] != null) {
+        final serverUserId = data['user_id'].toString();
+        if (idController.text != serverUserId) {
+          idController.text = serverUserId;
+          print('사용자 ID 동기화: $serverUserId');
+        }
+      }
+
+      print('폼 데이터 업데이트 완료');
+    });
+  }
+
+  // ========================================
+  // 폼 검증 로직 분리 (가독성 개선)
+  // ========================================
+
+  String? _validateFormData() {
     String id = idController.text;
     String password = passwordController.text;
     String newPassword = newPasswordController.text;
@@ -231,152 +342,127 @@ class _MembershipviewState extends State<MemberInformationChange> {
     String email = emailController.text;
     String emailaddr = emailaddrController.text;
 
-    //비밀번호 관련 검증 (기존 비밀번호가 입력된 경우)
+    // 비밀번호 관련 검증
     final isChangingPassword = newPassword.isNotEmpty;
     final hasOldPassword = password.isNotEmpty;
 
     if (hasOldPassword && !isChangingPassword) {
-      showTopSnackBar(context, '변경하실 새로운 비밀번호를 입력해주세요.');
-      return;
+      return '변경하실 새로운 비밀번호를 입력해주세요.';
     }
 
     if (isChangingPassword) {
       if (password.isEmpty) {
-        showTopSnackBar(context, '기존 비밀번호를 입력해주세요.');
-        return;
+        return '기존 비밀번호를 입력해주세요.';
       }
       if (confirmPassword.isEmpty) {
-        showTopSnackBar(context, '새로운 비밀번호 확인란을 입력해주세요.');
-        return;
+        return '새로운 비밀번호 확인란을 입력해주세요.';
       }
-      // 기존 비밀번호 형식 검증
       if (!isValpw) {
-        showTopSnackBar(context, '기존 비밀번호 형식이 올바르지 않습니다.');
-        return;
+        return '기존 비밀번호 형식이 올바르지 않습니다.';
       }
-
-      // 새로운 비밀번호 형식 검증
       if (!isValnpw) {
-        showTopSnackBar(context, '새로운 비밀번호 형식이 올바르지 않습니다.');
-        return;
+        return '새로운 비밀번호 형식이 올바르지 않습니다.';
       }
-
-      // 새로운 비밀번호 확인 형식 검증
       if (!isValcnpw) {
-        showTopSnackBar(context, '새로운 비밀번호 확인 형식이 올바르지 않습니다.');
-        return;
+        return '새로운 비밀번호 확인 형식이 올바르지 않습니다.';
       }
       if (password == newPassword) {
-        showTopSnackBar(context, '새로운 비밀번호가 기존 비밀번호와 동일합니다.');
-        return;
+        return '새로운 비밀번호가 기존 비밀번호와 동일합니다.';
       }
       if (newPassword != confirmPassword) {
-        showTopSnackBar(context, '새로운 비밀번호가 일치하지 않습니다.');
-        return;
+        return '새로운 비밀번호가 일치하지 않습니다.';
       }
     }
 
-    //MMSI 형식 검증
-    bool isValidMmsi = false;
-    if (mmsi.isNotEmpty) {
-      if (!isValms) {
-        showTopSnackBar(context, '선박 MMSI 번호 형식이 올바르지 않거나\n 9자리에 벗어납니다.');
-        return;
-      } else {
-        isValidMmsi = true;
-      }
+    // MMSI 형식 검증
+    if (mmsi.isNotEmpty && !isValms) {
+      return '선박 MMSI 번호 형식이 올바르지 않거나\n 9자리에 벗어납니다.';
     }
 
-    //휴대폰 형식 검증
-    bool isValidPhone = false;
-    if (phone.isNotEmpty) {
-      if (!isValphone) {
-        showTopSnackBar(context, '휴대폰 번호 형식이 올바르지 않거나\n 11자리에 벗어납니다.');
-        return;
-      } else {
-        isValidPhone = true;
-      }
+    // 휴대폰 형식 검증
+    if (phone.isNotEmpty && !isValphone) {
+      return '휴대폰 번호 형식이 올바르지 않거나\n 11자리에 벗어납니다.';
     }
 
-    //이메일 유효성
-    final isValidEmail = email.isNotEmpty && emailaddr.isNotEmpty;
-
-    //실제로 전송 가능한 항목이 하나라도 있는지 확인
-    final hasDataToUpdate = isChangingPassword || isValidMmsi || isValidPhone || isValidEmail;
+    // 수정할 데이터 확인
+    bool isValidMmsi = mmsi.isNotEmpty && isValms;
+    bool isValidPhone = phone.isNotEmpty && isValphone;
+    bool isValidEmail = email.isNotEmpty && emailaddr.isNotEmpty;
+    bool hasDataToUpdate =
+        isChangingPassword || isValidMmsi || isValidPhone || isValidEmail;
 
     if (!hasDataToUpdate) {
-      showTopSnackBar(context, '수정할 정보를 하나 이상 올바르게 입력해주세요.');
+      return '수정할 정보를 하나 이상 올바르게 입력해주세요.';
+    }
+
+    return null; // 검증 통과
+  }
+
+  // ========================================
+  // API 호출 로직 분리 (Firebase 처리)
+  // ========================================
+
+  Future<void> _handleFirebasePasswordChange(
+      User user, String currentPassword, String newPassword) async {
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+    await user.reload();
+  }
+
+  Future<void> _updateServerProfile(
+      User user, Map<String, dynamic> dataToSend) async {
+    final response = await dioRequest.dio.post(
+      apiUrl,
+      data: dataToSend,
+      options: Options(headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${await user.getIdToken()}',
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('서버 처리 중 오류가 발생했습니다.');
+    }
+  }
+
+  // ========================================
+  // 메인 제출 로직 (구조적 개선)
+  // ========================================
+
+  Future<void> submitForm() async {
+    setState(() {
+      isSubmitting = true;
+    });
+
+    // 폼 검증
+    final validationError = _validateFormData();
+    if (validationError != null) {
+      showTopSnackBar(context, validationError);
+      setState(() {
+        isSubmitting = false;
+      });
       return;
     }
 
     setState(() {
-      isLoading = true; // 로딩 시작
+      isLoading = true;
     });
 
     try {
-      //회원정보 수정 처리 중 사용자에게 로딩 상태 표시
+      // 로딩 다이얼로그 표시
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      // 🔥 Firebase 사용자 정보 가져오기
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null || user.email == null) {
-        showTopSnackBar(context, '로그인이 만료되었습니다. 다시 로그인해주세요.');
-        return;
-      }
+      await _processProfileUpdate();
 
-      final firebaseToken = await user.getIdToken(); //JWT 토큰 가져오기
-      final uuid = user.uid;
-
-      // FCM 토큰 가져오기
-      final messaging = FirebaseMessaging.instance;
-      final fcmToken = await messaging.getToken() ?? ''; //fcmToken 가져오기
-
-      //서버 전송 데이터 구성
-      final dataToSend = {
-        'user_id': id,
-        if (isChangingPassword) 'user_pwd': password,
-        if (isChangingPassword) 'user_npwd': newPassword,
-        'mmsi': mmsi,
-        'mphn_no': phone,
-        'choice_time': widget.nowTime.toIso8601String(),
-        if (email.isNotEmpty && emailaddr.isNotEmpty)
-          'email_addr': '${email.trim()}@${emailaddr.trim()}',
-        'uuid': uuid,
-        'fcm_tkn': fcmToken,
-      };
-
-      final checkResponse = await dioRequest.dio.post(
-        apiUrl,
-        data: dataToSend,
-        options: Options(headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $firebaseToken',
-        }),
-      );
-
-      // 🔥 서버 응답 상태 체크 추가
-      if (checkResponse.statusCode != 200) {
-        Navigator.pop(context); // 로딩 다이얼로그 닫기
-        showTopSnackBar(context, '서버 처리 중 오류가 발생했습니다.');
-        return;
-      }
-
-      //비밀번호 변경 요청이 있을 경우만 Firebase 인증 및 업데이트
-      if (isChangingPassword) {
-        final credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: password,
-        );
-        await user.reauthenticateWithCredential(credential);
-        await user.updatePassword(newPassword);
-        await user.reload();
-      }
-
-      //모든 처리가 성공적으로 완료된 경우에만 성공 메시지 표시
+      // 성공 처리
       Navigator.pop(context); // 로딩 다이얼로그 닫기
       showTopSnackBar(context, '회원정보가 성공적으로 수정되었습니다.');
 
@@ -385,48 +471,90 @@ class _MembershipviewState extends State<MemberInformationChange> {
       FocusScope.of(context).unfocus();
       await Future.delayed(AnimationConstants.durationInstant);
 
-      Navigator.pop(context); // 회원정보수정 화면 닫고, 마이페이지(MemberInformationView)로 돌아감
+      Navigator.pop(context); // 회원정보수정 화면 닫기
     } catch (e) {
-      if (e is DioException) {
-        final statusCode = e.response?.statusCode;
-        final responseData = e.response?.data;
-
-        if (statusCode == 401) {
-          // 다이얼로그 닫기
-          Navigator.pop(context);
-
-          // 비밀번호 틀림에 대한 명확한 분기 처리
-          final message = responseData is Map && responseData['message'] != null
-              ? responseData['message']
-              : '기존 비밀번호가 일치하지 않습니다.';
-          showTopSnackBar(context, message);
-          return;
-        }
-
-        final message = responseData is Map && responseData['message'] != null
-            ? responseData['message']
-            : statusCode == null
-                ? '서버에 연결할 수 없습니다. 다시 시도해주세요.'
-                : '처리 중 오류가 발생했습니다.';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('서버 오류: $message')),
-        );
-      } else {
-        // Firebase 인증 실패 또는 기타 예상 못한 에러
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('에러 발생: $e')),
-        );
-      }
+      Navigator.pop(context); // 로딩 다이얼로그 닫기
+      _handleSubmitError(e);
     } finally {
       if (mounted) {
         setState(() {
-          isLoading = false; // 로딩 끝
-          isSubmitting = false; //처리 완료 후 경고 다시 표시 가능하게
+          isLoading = false;
+          isSubmitting = false;
         });
       }
     }
   }
+
+  Future<void> _processProfileUpdate() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('로그인이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    // 데이터 준비
+    String id = idController.text;
+    String password = passwordController.text;
+    String newPassword = newPasswordController.text;
+    String mmsi = mmsiController.text;
+    String phone = phoneController.text;
+    String email = emailController.text;
+    String emailaddr = emailaddrController.text;
+
+    final isChangingPassword = newPassword.isNotEmpty;
+    final firebaseToken = await user.getIdToken();
+    final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+
+    // 서버 전송 데이터 구성
+    final dataToSend = {
+      'user_id': id,
+      if (isChangingPassword) 'user_pwd': password,
+      if (isChangingPassword) 'user_npwd': newPassword,
+      'mmsi': mmsi,
+      'mphn_no': phone,
+      'choice_time': widget.nowTime.toIso8601String(),
+      if (email.isNotEmpty && emailaddr.isNotEmpty)
+        'email_addr': '${email.trim()}@${emailaddr.trim()}',
+      'uuid': user.uid,
+      'fcm_tkn': fcmToken,
+    };
+
+    // 서버 업데이트 먼저 시도
+    await _updateServerProfile(user, dataToSend);
+
+    // Firebase 비밀번호 변경 (서버 성공 후)
+    if (isChangingPassword) {
+      await _handleFirebasePasswordChange(user, password, newPassword);
+    }
+  }
+
+  void _handleSubmitError(dynamic e) {
+    String errorMessage;
+
+    if (e is DioException) {
+      final statusCode = e.response?.statusCode;
+      final responseData = e.response?.data;
+
+      if (statusCode == 401) {
+        errorMessage = responseData is Map && responseData['message'] != null
+            ? responseData['message']
+            : '기존 비밀번호가 일치하지 않습니다.';
+      } else {
+        errorMessage = responseData is Map && responseData['message'] != null
+            ? responseData['message']
+            : statusCode == null
+                ? '서버에 연결할 수 없습니다. 다시 시도해주세요.'
+                : '처리 중 오류가 발생했습니다.';
+      }
+    } else {
+      errorMessage = '에러 발생: $e';
+    }
+
+    showTopSnackBar(context, errorMessage);
+  }
+
+  // ========================================
+  // UI 빌드 (기존 UI 완전 유지)
+  // ========================================
 
   @override
   Widget build(BuildContext context) {
@@ -443,19 +571,20 @@ class _MembershipviewState extends State<MemberInformationChange> {
             left: getSize20().toDouble(),
             right: getSize20().toDouble(),
             top: getSize20().toDouble(),
-            bottom: MediaQuery.of(context).viewInsets.bottom + getSize20().toDouble(),
+            bottom: MediaQuery.of(context).viewInsets.bottom +
+                getSize20().toDouble(),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding:
-                    EdgeInsets.only(top: getSize40().toDouble(), bottom: getSize8().toDouble()),
+                padding: EdgeInsets.only(
+                    top: getSize40().toDouble(), bottom: getSize8().toDouble()),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString(
-                        '아이디', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
+                    TextWidgetString('아이디', getTextcenter(), getSize16(),
+                        getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -463,8 +592,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget_deactivate(
-                      getSize266(), getSize48(), idController, '', getColorgray_Type7(),
+                  child: inputWidget_deactivate(getSize266(), getSize48(),
+                      idController, '', getColorgray_Type7(),
                       isReadOnly: true),
                 ),
               ),
@@ -473,8 +602,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('기존 비밀번호', getTextcenter(), getSize16(), getText700(),
-                        getColorgray_Type8()),
+                    TextWidgetString('기존 비밀번호', getTextcenter(), getSize16(),
+                        getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -482,8 +611,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize13().toDouble()),
-                  child: inputWidget(
-                      getSize266(), getSize48(), passwordController, '비밀번호', getColorgray_Type7(),
+                  child: inputWidget(getSize266(), getSize48(),
+                      passwordController, '비밀번호', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -493,8 +622,12 @@ class _MembershipviewState extends State<MemberInformationChange> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidgetString('비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
-                          getTextleft(), getSize12(), getText700(), getColorred_type3()),
+                      TextWidgetString(
+                          '비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
+                          getTextleft(),
+                          getSize12(),
+                          getText700(),
+                          getColorred_type3()),
                     ],
                   ),
                 ),
@@ -503,8 +636,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호', getTextcenter(), getSize16(), getText700(),
-                        getColorgray_Type8()),
+                    TextWidgetString('새로운 비밀번호', getTextcenter(), getSize16(),
+                        getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -512,8 +645,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), newPasswordController, '비밀번호',
-                      getColorgray_Type7(),
+                  child: inputWidget(getSize266(), getSize48(),
+                      newPasswordController, '비밀번호', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -522,8 +655,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호 확인', getTextcenter(), getSize16(), getText700(),
-                        getColorgray_Type8()),
+                    TextWidgetString('새로운 비밀번호 확인', getTextcenter(),
+                        getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -531,15 +664,19 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), confirmPasswordController,
-                      '비밀번호 확인', getColorgray_Type7(),
+                  child: inputWidget(
+                      getSize266(),
+                      getSize48(),
+                      confirmPasswordController,
+                      '비밀번호 확인',
+                      getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                child: TextWidgetString(
-                    '선박 MMSI 번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
+                child: TextWidgetString('선박 MMSI 번호', getTextcenter(),
+                    getSize16(), getText700(), getColorgray_Type8()),
               ),
               SizedBox(
                 width: double.infinity,
@@ -551,15 +688,15 @@ class _MembershipviewState extends State<MemberInformationChange> {
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                child: TextWidgetString(
-                    '휴대폰 번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
+                child: TextWidgetString('휴대폰 번호', getTextcenter(), getSize16(),
+                    getText700(), getColorgray_Type8()),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), phoneController, "'-' 구분없이 숫자만 입력",
-                      getColorgray_Type7()),
+                  child: inputWidget(getSize266(), getSize48(), phoneController,
+                      "'-' 구분없이 숫자만 입력", getColorgray_Type7()),
                 ),
               ),
               Padding(
@@ -567,8 +704,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString(
-                        '이메일', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
+                    TextWidgetString('이메일', getTextcenter(), getSize16(),
+                        getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -586,9 +723,10 @@ class _MembershipviewState extends State<MemberInformationChange> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: getSize4().toDouble()),
-                      child: TextWidgetString(
-                          '@', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: getSize4().toDouble()),
+                      child: TextWidgetString('@', getTextcenter(), getSize16(),
+                          getText700(), getColorgray_Type8()),
                     ),
                     Expanded(
                       child: Stack(
@@ -601,16 +739,22 @@ class _MembershipviewState extends State<MemberInformationChange> {
                               filled: true,
                               fillColor: getColorwhite_type1(),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(
+                                    DesignConstants.radiusM),
+                                borderSide: BorderSide(
+                                    color: getColorgray_Type7(), width: 1),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(
+                                    DesignConstants.radiusM),
+                                borderSide: BorderSide(
+                                    color: getColorgray_Type7(), width: 1),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(
+                                    DesignConstants.radiusM),
+                                borderSide: BorderSide(
+                                    color: getColorgray_Type7(), width: 1),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: DesignConstants.spacing20,
@@ -676,25 +820,5 @@ class _MembershipviewState extends State<MemberInformationChange> {
         ),
       ),
     );
-  }
-}
-
-class RedCirclePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = Colors.red
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height / 2), // 원 중심
-      size.width / 2, // 반지름
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

@@ -58,24 +58,24 @@ class _CmdChoiceViewBody extends StatelessWidget {
   Widget _buildHeader() {
     return Column(
       children: [
+        // 진행 단계 표시 - 회원정보 입력 화면과 동일한 스타일로 변경
         Padding(
           padding: EdgeInsets.only(bottom: getSize20().toDouble()),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              svgload('assets/kdn/usm/img/Frame_one_on.svg',
-                  getSize32().toDouble(), getSize32().toDouble()),
-              svgload('assets/kdn/usm/img/Frame_two_off.svg',
-                  getSize32().toDouble(), getSize32().toDouble()),
-              svgload('assets/kdn/usm/img/Frame_three_off.svg',
-                  getSize32().toDouble(), getSize32().toDouble()),
+              _buildStepIndicator(1, '약관동의', true),
+              _buildStepConnector(),
+              _buildStepIndicator(2, '정보입력', false),
+              _buildStepConnector(),
+              _buildStepIndicator(3, '가입완료', false),
             ],
           ),
         ),
-        TextWidgetString('K-VMS', getTextcenter(), getSize32(),
-            getText700(), getColorblack_type2()),
-        TextWidgetString('약관동의', getTextcenter(), getSize32(),
-            getText700(), getColorblack_type2()),
+        TextWidgetString('K-VMS', getTextcenter(), getSize32(), getText700(),
+            getColorblack_type2()),
+        TextWidgetString('약관동의', getTextcenter(), getSize32(), getText700(),
+            getColorblack_type2()),
         Padding(
           padding: EdgeInsets.only(
               top: getSize12().toDouble(), bottom: getSize60().toDouble()),
@@ -91,12 +91,14 @@ class _CmdChoiceViewBody extends StatelessWidget {
     );
   }
 
-  Widget _buildAllAgreementSection(BuildContext context, TermsProvider provider) {
+  Widget _buildAllAgreementSection(
+      BuildContext context, TermsProvider provider) {
     return Container(
       margin: EdgeInsets.only(bottom: getSize20().toDouble()),
       padding: EdgeInsets.all(getSize14().toDouble()),
       decoration: BoxDecoration(
-        border: Border.all(color: getColorgray_Type4(), width: getSize1().toDouble()),
+        border: Border.all(
+            color: getColorgray_Type4(), width: getSize1().toDouble()),
         borderRadius: BorderRadius.circular(getSize4().toDouble()),
       ),
       child: Row(
@@ -105,14 +107,15 @@ class _CmdChoiceViewBody extends StatelessWidget {
             scale: getSize1_333(),
             child: Checkbox(
               value: provider.isAllAgreed,
-              onChanged: (value) => provider.updateAllAgreements(value ?? false),
+              onChanged: (value) =>
+                  provider.updateAllAgreements(value ?? false),
               activeColor: getColorsky_Type3(),
               checkColor: getColorwhite_type1(),
               shape: const CircleBorder(),
             ),
           ),
-          TextWidgetString('약관에 모두 동의합니다', TextAlign.left,
-              getSize14(), getText700(), getColorblack_type2()),
+          TextWidgetString('약관에 모두 동의합니다', TextAlign.left, getSize14(),
+              getText700(), getColorblack_type2()),
         ],
       ),
     );
@@ -166,7 +169,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
     bool isRequired,
   ) {
     final agreed = provider.agreementStatus[type] ?? false;
-    
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -190,7 +193,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
               scale: 1.333,
               child: Checkbox(
                 value: agreed,
-                onChanged: (value) => provider.updateAgreement(type, value ?? false),
+                onChanged: (value) =>
+                    provider.updateAgreement(type, value ?? false),
                 activeColor: getColorsky_Type3(),
                 checkColor: getColorwhite_type1(),
                 shape: const CircleBorder(),
@@ -202,8 +206,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      TextWidgetString(title, TextAlign.left,
-                          getSize14(), getText400(), getColorblack_type2()),
+                      TextWidgetString(title, TextAlign.left, getSize14(),
+                          getText400(), getColorblack_type2()),
                       SizedBox(width: getSize4().toDouble()),
                       TextWidgetString(
                         subtitle,
@@ -276,6 +280,50 @@ class _CmdChoiceViewBody extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // 단계 표시기 - 회원정보 입력 화면과 동일한 스타일
+  Widget _buildStepIndicator(int step, String label, bool isActive) {
+    return Column(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isActive ? getColorsky_Type2() : getColorgray_Type3(),
+          ),
+          child: Center(
+            child: Text(
+              '$step',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: getText600(),
+                color: getColorwhite_type1(),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextWidgetString(
+          label,
+          getTextcenter(),
+          12,
+          getText400(),
+          isActive ? getColorblack_type2() : getColorgray_Type2(),
+        ),
+      ],
+    );
+  }
+
+  // 단계 연결선 - 회원정보 입력 화면과 동일한 스타일
+  Widget _buildStepConnector() {
+    return Container(
+      width: 40,
+      height: 2,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: getColorgray_Type3(),
     );
   }
 }
