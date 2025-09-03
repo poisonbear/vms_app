@@ -1,78 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
+import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
 
-class RegisterCompleteView extends StatefulWidget {
-  final DateTime? nowTime;
+class RegisterCompleteView extends StatelessWidget {
+  const RegisterCompleteView({super.key});
 
-  const RegisterCompleteView({super.key, this.nowTime});
-
-  @override
-  State<RegisterCompleteView> createState() => _RegisterCompleteViewState();
-}
-
-class _RegisterCompleteViewState extends State<RegisterCompleteView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: getColorwhite_type1(),
       appBar: AppBar(
-        title: const Text('회원가입 완료'),
+        title: const AppBarLayerView('회원가입'),
         centerTitle: true,
-        automaticallyImplyLeading: false, // 뒤로가기 버튼 제거
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // 진행 단계 표시
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildStepIndicator(1, '약관동의', false),
+                  _buildStepConnector(),
+                  _buildStepIndicator(2, '정보입력', false),
+                  _buildStepConnector(),
+                  _buildStepIndicator(3, '가입완료', true),
+                ],
+              ),
+              const SizedBox(height: 50),
+
               // 완료 아이콘
               Container(
-                width: 100,
-                height: 100,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: Colors.green.shade100,
                   shape: BoxShape.circle,
+                  color: getColorsky_Type2().withOpacity(0.1),
                 ),
                 child: Icon(
                   Icons.check_circle,
                   size: 60,
-                  color: Colors.green.shade600,
+                  color: getColorsky_Type2(),
                 ),
               ),
-              
-              const SizedBox(height: 32),
-              
-              // 완료 메시지
-              const Text(
-                '회원가입이 완료되었습니다!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
+              const SizedBox(height: 30),
+
+              // 타이틀
+              TextWidgetString(
+                'K-VMS',
+                getTextcenter(),
+                28,
+                getText700(),
+                getColorblack_type2(),
               ),
-              
               const SizedBox(height: 16),
-              
-              const Text(
-                '이제 로그인하여 VMS 서비스를\n이용하실 수 있습니다.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
+
+              // 완료 메시지
+              TextWidgetString(
+                '회원가입이 완료되었습니다',
+                getTextcenter(),
+                20,
+                getText700(),
+                getColorblack_type2(),
               ),
-              
-              const SizedBox(height: 48),
-              
-              // 로그인하기 버튼
+              const SizedBox(height: 12),
+              TextWidgetString(
+                '이제 K-VMS의 모든 서비스를\n이용하실 수 있습니다.',
+                getTextcenter(),
+                14,
+                getText400(),
+                getColorgray_Type2(),
+              ),
+              const SizedBox(height: 50),
+
+              // 로그인 버튼
               SizedBox(
                 width: double.infinity,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    // ✅ 올바른 클래스명으로 로그인 화면 이동
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
@@ -82,18 +93,17 @@ class _RegisterCompleteViewState extends State<RegisterCompleteView> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.blue.shade600,
-                    foregroundColor: Colors.white,
+                    backgroundColor: getColorsky_Type2(),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     '로그인하기',
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: getText700(),
+                      color: getColorwhite_type1(),
                     ),
                   ),
                 ),
@@ -102,6 +112,50 @@ class _RegisterCompleteViewState extends State<RegisterCompleteView> {
           ),
         ),
       ),
+    );
+  }
+
+  // 단계 표시기
+  Widget _buildStepIndicator(int step, String label, bool isActive) {
+    return Column(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isActive ? getColorsky_Type2() : getColorgray_Type3(),
+          ),
+          child: Center(
+            child: Text(
+              '$step',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: getText600(),
+                color: getColorwhite_type1(),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextWidgetString(
+          label,
+          getTextcenter(),
+          12,
+          getText400(),
+          isActive ? getColorblack_type2() : getColorgray_Type2(),
+        ),
+      ],
+    );
+  }
+
+  // 단계 연결선
+  Widget _buildStepConnector() {
+    return Container(
+      width: 40,
+      height: 2,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: getColorgray_Type3(),
     );
   }
 }

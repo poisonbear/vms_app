@@ -3,10 +3,10 @@ import 'package:vms_app/core/constants/constants.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/presentation/providers/terms_provider.dart';
-import 'package:vms_app/presentation/screens/auth/register_screen.dart';
 import 'package:vms_app/presentation/screens/auth/unified_terms_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
+import 'package:vms_app/presentation/screens/auth/register_screen.dart';
 
 /// 리팩토링된 약관 동의 화면
 class CmdChoiceViewRefactored extends StatelessWidget {
@@ -250,13 +250,13 @@ class _CmdChoiceViewBody extends StatelessWidget {
                     selectedAgreements.add('마케팅 활용 동의');
                   }
 
-                  debugPrint('버튼 클릭 시간: ${getCurrentDateDateTime()}');
+                  debugPrint('버튼 클릭 시간: ${DateTime.now()}');
                   debugPrint('선택된 약관: $selectedAgreements');
 
                   Navigator.push(
                     context,
                     createSlideTransition(
-                      Membershipview(nowTime: getCurrentDateDateTime()),
+                      const RegisterScreen(),
                     ),
                   );
                 }

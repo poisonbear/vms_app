@@ -3,45 +3,177 @@ import 'package:flutter/foundation.dart';
 
 /// 풍향 계산 디버깅 유틸리티
 class WindDebugUtils {
-  /// 풍향 계산 테스트
+  /// 풍향 계산 및 표시 테스트 (8방위)
   static void testWindCalculation() {
-    debugPrint('🌪️ === 풍향 계산 테스트 시작 ===');
+    debugPrint('🌪️ === 풍향/풍속 표시 테스트 (8방위) ===');
+    debugPrint('');
+    debugPrint('📌 풍속: 반올림 처리 (소수점 제거)');
+    debugPrint('📌 풍향: 8방위 한글 표시');
+    debugPrint('📌 화살표: 바람이 가는 방향 (풍향 + 180°)');
+    debugPrint('');
+    debugPrint('📍 8방위 체계:');
+    debugPrint('   북(N), 북동(NE), 동(E), 남동(SE),');
+    debugPrint('   남(S), 남서(SW), 서(W), 북서(NW)');
+    debugPrint('');
     
-    // 테스트 케이스들
+    // 8방위 테스트 케이스
     final testCases = [
-      {'name': '북풍', 'u': 0.0, 'v': -5.0, 'expected': 0},    // 북쪽에서 남쪽으로
-      {'name': '동풍', 'u': -5.0, 'v': 0.0, 'expected': 90},   // 동쪽에서 서쪽으로  
-      {'name': '남풍', 'u': 0.0, 'v': 5.0, 'expected': 180},   // 남쪽에서 북쪽으로
-      {'name': '서풍', 'u': 5.0, 'v': 0.0, 'expected': 270},   // 서쪽에서 동쪽으로
-      {'name': '북동풍', 'u': -3.5, 'v': -3.5, 'expected': 45}, // 북동쪽에서
-      {'name': '무풍', 'u': 0.0, 'v': 0.0, 'expected': 0},     // 바람 없음
+      {
+        'name': '정북풍',
+        'u': 0.0,
+        'v': -5.7,
+        'expectedSpeed': 6,
+        'expectedWind': 0,
+        'expectedText': '북풍'
+      },
+      {
+        'name': '북동풍',
+        'u': -4.0,
+        'v': -4.0,
+        'expectedSpeed': 6,
+        'expectedWind': 45,
+        'expectedText': '북동풍'
+      },
+      {
+        'name': '정동풍',
+        'u': -4.3,
+        'v': 0.0,
+        'expectedSpeed': 4,
+        'expectedWind': 90,
+        'expectedText': '동풍'
+      },
+      {
+        'name': '남동풍',
+        'u': -3.0,
+        'v': 3.0,
+        'expectedSpeed': 4,
+        'expectedWind': 135,
+        'expectedText': '남동풍'
+      },
+      {
+        'name': '정남풍',
+        'u': 0.0,
+        'v': 8.6,
+        'expectedSpeed': 9,
+        'expectedWind': 180,
+        'expectedText': '남풍'
+      },
+      {
+        'name': '남서풍',
+        'u': 3.5,
+        'v': 3.5,
+        'expectedSpeed': 5,
+        'expectedWind': 225,
+        'expectedText': '남서풍'
+      },
+      {
+        'name': '정서풍',
+        'u': 3.4,
+        'v': 0.0,
+        'expectedSpeed': 3,
+        'expectedWind': 270,
+        'expectedText': '서풍'
+      },
+      {
+        'name': '북서풍',
+        'u': 2.8,
+        'v': -2.8,
+        'expectedSpeed': 4,
+        'expectedWind': 315,
+        'expectedText': '북서풍'
+      },
     ];
+    
+    bool allPassed = true;
     
     for (final test in testCases) {
       final u = test['u'] as double;
       final v = test['v'] as double;
-      final expected = test['expected'] as int;
+      final expectedSpeed = test['expectedSpeed'] as int;
+      final expectedWind = test['expectedWind'] as int;
+      final expectedText = test['expectedText'] as String;
       final name = test['name'] as String;
+      
+      // 풍속 계산
+      double windSpeedValue = sqrt(u * u + v * v);
+      int calculatedSpeed = windSpeedValue.round();
       
       // 풍향 계산
       double windDirectionRad = atan2(-u, -v);
       double windDirectionDegrees = windDirectionRad * 180 / pi;
       if (windDirectionDegrees < 0) windDirectionDegrees += 360;
-      int calculated = windDirectionDegrees.round() % 360;
+      int calculatedWind = windDirectionDegrees.round() % 360;
       
-      final windSpeed = sqrt(u * u + v * v);
+      // 화살표 방향
+      int calculatedArrow = (calculatedWind + 180) % 360;
       
-      debugPrint('$name: U=$u, V=$v → $calculated° (예상: $expected°) 속도: ${windSpeed.toStringAsFixed(1)}');
+      // 8방위 한글 방위명
+      String calculatedText = directionToText8(calculatedWind);
+      
+      // 검증
+      bool speedOk = calculatedSpeed == expectedSpeed;
+      bool windOk = (calculatedWind - expectedWind).abs() <= 10;  // 10도 오차 허용
+      bool textOk = calculatedText == expectedText;
+      
+      if (!speedOk || !windOk || !textOk) allPassed = false;
+      
+      debugPrint('$name:');
+      debugPrint('  입력: U=$u, V=$v');
+      debugPrint('  풍속: ${windSpeedValue.toStringAsFixed(2)} → $calculatedSpeed m/s ${speedOk ? "✅" : "❌ (예상: $expectedSpeed)"}');
+      debugPrint('  풍향: $calculatedWind° ${windOk ? "✅" : "❌ (예상: $expectedWind°)"}');
+      debugPrint('  방위: $calculatedText ${textOk ? "✅" : "❌ (예상: $expectedText)"}');
+      debugPrint('  화살표: $calculatedArrow°');
+      debugPrint('');
     }
     
-    debugPrint('🌪️ === 풍향 계산 테스트 완료 ===');
+    debugPrint(allPassed ? '✅ 모든 테스트 통과!' : '❌ 일부 테스트 실패');
+    debugPrint('🌪️ ========================');
   }
   
-  /// 방위각을 방위명으로 변환
-  static String directionToText(int direction) {
-    const directions = ['북', '북북동', '북동', '동북동', '동', '동남동', '남동', '남남동', 
-                       '남', '남남서', '남서', '서남서', '서', '서북서', '북서', '북북서'];
-    int index = ((direction + 11.25) / 22.5).floor() % 16;
-    return '${directions[index]}풍';
+  /// 방위각을 8방위 한글명으로 변환
+  static String directionToText8(int direction) {
+    const directions = [
+      '북풍',    // 0° (337.5° ~ 22.5°)
+      '북동풍',  // 45° (22.5° ~ 67.5°)
+      '동풍',    // 90° (67.5° ~ 112.5°)
+      '남동풍',  // 135° (112.5° ~ 157.5°)
+      '남풍',    // 180° (157.5° ~ 202.5°)
+      '남서풍',  // 225° (202.5° ~ 247.5°)
+      '서풍',    // 270° (247.5° ~ 292.5°)
+      '북서풍'   // 315° (292.5° ~ 337.5°)
+    ];
+    int index = ((direction + 22.5) / 45).floor() % 8;
+    return directions[index];
+  }
+  
+  /// 풍속 강도 설명
+  static String getWindStrengthDescription(int windSpeed) {
+    if (windSpeed == 0) return '무풍';
+    if (windSpeed <= 3) return '약한 바람';
+    if (windSpeed <= 7) return '보통 바람';
+    if (windSpeed <= 13) return '강한 바람';
+    if (windSpeed <= 18) return '매우 강한 바람';
+    return '폭풍';
+  }
+  
+  /// 풍향/풍속 정보 요약
+  static void printWindSummary(String directionText, int windSpeed, int arrowRotation) {
+    debugPrint('📊 바람 정보 (8방위):');
+    debugPrint('  • 풍향: $directionText');
+    debugPrint('  • 풍속: $windSpeed m/s (${getWindStrengthDescription(windSpeed)})');
+    debugPrint('  • 화살표 회전: $arrowRotation°');
+  }
+  
+  /// 8방위 각도 범위 안내
+  static void print8DirectionRanges() {
+    debugPrint('📐 8방위 각도 범위:');
+    debugPrint('  • 북풍: 337.5° ~ 22.5° (0°)');
+    debugPrint('  • 북동풍: 22.5° ~ 67.5° (45°)');
+    debugPrint('  • 동풍: 67.5° ~ 112.5° (90°)');
+    debugPrint('  • 남동풍: 112.5° ~ 157.5° (135°)');
+    debugPrint('  • 남풍: 157.5° ~ 202.5° (180°)');
+    debugPrint('  • 남서풍: 202.5° ~ 247.5° (225°)');
+    debugPrint('  • 서풍: 247.5° ~ 292.5° (270°)');
+    debugPrint('  • 북서풍: 292.5° ~ 337.5° (315°)');
   }
 }

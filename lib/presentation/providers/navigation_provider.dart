@@ -1,9 +1,12 @@
+// lib/presentation/providers/navigation_provider.dart
+// 최종 버전 - 기존 코드 + 누락된 메서드 2개 추가
+
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/domain/repositories/navigation_repository.dart';
 import 'package:vms_app/domain/usecases/navigation/get_navigation_history.dart';
 import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart'
-    as weather_usecase;
+as weather_usecase;
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
 class NavigationProvider extends BaseProvider {
@@ -77,7 +80,7 @@ class NavigationProvider extends BaseProvider {
 
   Future<void> getWeatherInfo() async {
     final weatherInfo = await executeAsync(
-      () => _getWeatherInfo.execute(),
+          () => _getWeatherInfo.execute(),
       errorMessage: '기상 정보 로드 중 오류',
       showLoading: false,
     );
@@ -99,7 +102,7 @@ class NavigationProvider extends BaseProvider {
 
   Future<void> getNavigationWarnings() async {
     final warnings = await executeAsync(
-      () => _navigationRepository.getNavigationWarnings(),
+          () => _navigationRepository.getNavigationWarnings(),
       errorMessage: '항행경보 로드 중 오류',
       showLoading: false,
     );
@@ -118,10 +121,6 @@ class NavigationProvider extends BaseProvider {
     return Colors.red;
   }
 
-  String getFormattedWaveThresholdText(double waveValue) {
-    return '파고: ${waveValue.toStringAsFixed(1)}m';
-  }
-
   Color getVisibilityColor(double visibilityValue) {
     if (visibilityValue >= valm1) return Colors.green;
     if (visibilityValue >= valm2) return Colors.yellow;
@@ -129,7 +128,26 @@ class NavigationProvider extends BaseProvider {
     return Colors.red;
   }
 
+  // ✅ 추가된 메서드 1: 파고 임계값 포맷팅 텍스트
+  String getFormattedWaveThresholdText(double waveValue) {
+    return '파고: ${waveValue.toStringAsFixed(1)}m';
+  }
+
+  // ✅ 추가된 메서드 2: 시정 임계값 포맷팅 텍스트
   String getFormattedVisibilityThresholdText(double visibilityValue) {
-    return '시정: ${visibilityValue.toStringAsFixed(0)}m';
+    // 시정값이 1000m 이상이면 km로 표시
+    if (visibilityValue >= 1000) {
+      double visibilityInKm = visibilityValue / 1000;
+      
+      // 정수로 떨어지면 소수점 없이, 아니면 소수점 1자리까지
+      if (visibilityInKm % 1 == 0) {
+        return '시정: ${visibilityInKm.toStringAsFixed(0)}km';
+      } else {
+        return '시정: ${visibilityInKm.toStringAsFixed(1)}km';
+      }
+    } else {
+      // 1000m 미만은 m로 표시
+      return '시정: ${visibilityValue.toStringAsFixed(0)}m';
+    }
   }
 }

@@ -1696,7 +1696,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                 scrollAxis: Axis.horizontal,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 blankSpace: 300.0,
-                                velocity: 50.0,
+                                velocity: 35.0,
                                 pauseAfterRound: const Duration(seconds: 1),
                                 startPadding: 10.0,
                                 accelerationDuration: const Duration(seconds: 1),

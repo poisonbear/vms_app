@@ -8,6 +8,7 @@ import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
+// showTopSnackBar는 common_widgets.dart에 정의되어 있음
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,9 +19,11 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseAuth auth = FirebaseAuth.instance;
+  
+  // DioRequest 인스턴스 생성
   final DioRequest dioRequest = DioRequest();
   
-  // ✅ 올바른 API 키 사용
+  // API URLs from dotenv
   late final String apiUrl;
   late final String apisearchUrl;
 
@@ -33,6 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController emailAddrController = TextEditingController();
 
+  // 상태 변수
   int? isIdAvailable;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -40,16 +44,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // ✅ 올바른 키로 API URL 로드
-    apiUrl = dotenv.env['kdn_usm_insert_membership_key'] ?? '';
-    apisearchUrl = dotenv.env['kdn_usm_select_membership_search_key'] ?? '';
-    
-    // 디버깅 출력
-    print('=== API URL 확인 ===');
-    print('ID 중복확인 URL: $apisearchUrl');
-    print('회원가입 URL: $apiUrl');
-    print('==================');
+    // .env에서 API URL 로드
+    apiUrl = dotenv.env['kdn_insertMobileMembership_key'] ?? '';
+    apisearchUrl = dotenv.env['kdn_usm_select_uuid_key'] ?? '';
     
     if (apiUrl.isEmpty || apisearchUrl.isEmpty) {
       AppLogger.e('API URLs not configured in .env');
@@ -70,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   /// 아이디 중복확인
   Future<void> searchForm() async {
-    String id = idController.text.trim();
+    String id = idController.text;
 
     if (id.isEmpty) {
       showTopSnackBar(context, '아이디를 입력해주세요.');
@@ -83,61 +80,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      print('ID 중복확인 요청: $apisearchUrl');
-      print('요청 데이터: {user_id: $id}');
+      AppLogger.d('아이디 중복확인 시작: $id');
       
       Response response = await dioRequest.dio.post(
         apisearchUrl,
         data: {'user_id': id},
       );
-      
-      print('응답 데이터: ${response.data}');
 
       setState(() {
-        // 응답 처리 (0: 사용가능, 1 또는 기타: 사용중)
-        if (response.data is int) {
-          isIdAvailable = response.data;
-        } else if (response.data is Map) {
-          // Map 형태의 응답 처리
-          isIdAvailable = response.data['result'] ?? response.data['code'] ?? 1;
+        // API 응답에 따른 처리 (0: 사용가능, 1: 사용중)
+        if (response.data?['result'] == 0) {
+          isIdAvailable = ValidationConstants.idAvailable;
+          showTopSnackBar(context, '사용 가능한 아이디입니다.');
         } else {
-          isIdAvailable = null;
+          isIdAvailable = ValidationConstants.idNotAvailable;
+          showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
         }
       });
-
-      if (isIdAvailable == ValidationConstants.idAvailable) {
-        showTopSnackBar(context, '사용 가능한 아이디입니다.');
-      } else if (isIdAvailable == ValidationConstants.idNotAvailable) {
-        showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
-      }
     } on DioException catch (e) {
-      print('DioException: ${e.type}');
-      print('Response: ${e.response}');
-      
-      if (e.type == DioExceptionType.connectionError || 
-          e.type == DioExceptionType.connectionTimeout) {
-        showTopSnackBar(context, '서버에 연결할 수 없습니다.');
-      } else if (e.response?.statusCode == 404) {
-        showTopSnackBar(context, 'API 엔드포인트를 찾을 수 없습니다.');
+      AppLogger.e('아이디 중복확인 오류: ${e.message}');
+      if (e.response?.statusCode == 404) {
+        showTopSnackBar(context, 'API 서버를 찾을 수 없습니다.\n관리자에게 문의하세요.');
       } else {
         showTopSnackBar(context, '중복확인 중 오류가 발생했습니다.');
       }
-      
-      setState(() {
-        isIdAvailable = null;
-      });
     } catch (e) {
-      print('일반 오류: $e');
-      showTopSnackBar(context, '서버 오류가 발생했습니다.');
-      setState(() {
-        isIdAvailable = null;
-      });
+      AppLogger.e('예상치 못한 오류: $e');
+      showTopSnackBar(context, '중복확인 중 오류가 발생했습니다.');
     }
   }
 
   /// 회원가입 처리
   Future<void> onRegister() async {
-    String id = idController.text.trim();
+    String id = idController.text;
     String password = passwordController.text;
     String confirmPassword = confirmPasswordController.text;
     String mmsi = mmsiController.text;
@@ -145,24 +120,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String email = emailController.text;
     String emailaddr = emailAddrController.text;
 
-    // 필수 항목 체크
-    if (id.isEmpty || password.isEmpty || confirmPassword.isEmpty || mmsi.isEmpty) {
-      showTopSnackBar(context, '회원가입을 위해 필수 항목을 입력해주세요.');
-      return;
-    }
-
-    // 아이디 중복 확인 체크
-    if (isIdAvailable == null) {
-      showTopSnackBar(context, '아이디 중복 확인을 해주세요.');
-      return;
-    }
-
-    if (isIdAvailable != ValidationConstants.idAvailable) {
-      showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
-      return;
-    }
-
     // 유효성 검증
+    if (isIdAvailable != ValidationConstants.idAvailable) {
+      showTopSnackBar(context, '아이디 중복확인을 해주세요.');
+      return;
+    }
+
     if (!ValidationPatterns.isValidPassword(password)) {
       showTopSnackBar(context, '비밀번호 형식이 올바르지 않습니다.');
       return;
@@ -186,20 +149,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       // Firebase 사용자 생성
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: '$id@kdn.vms.com',
+        email: '$id@kdn.vms.com',  // 도메인 형식 유지
         password: password,
       );
 
       String uuid = userCredential.user!.uid;
 
       // 백엔드 API 호출
-      print('회원가입 API 호출: $apiUrl');
-      
       Response response = await dioRequest.dio.post(
         apiUrl,
         data: {
           'user_id': id,
-          'user_pwd': password,  // 원본과 동일한 키 사용
+          'password': password,
           'mmsi': mmsi,
           'mphn_no': phone,
           'email_id': email,
@@ -208,9 +169,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       );
 
-      print('회원가입 응답: ${response.data}');
-
-      if (response.data['result'] == 'success' || response.statusCode == 200) {
+      if (response.data['result'] == 'success') {
+        // 회원가입 완료 화면으로 이동
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -218,10 +178,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         );
       } else {
+        // API 실패 시 Firebase 사용자 삭제
         await userCredential.user?.delete();
         showTopSnackBar(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
       }
     } on FirebaseAuthException catch (e) {
+      AppLogger.e('Firebase 오류: ${e.code}');
       switch (e.code) {
         case 'weak-password':
           showTopSnackBar(context, '비밀번호가 너무 약합니다.');
@@ -233,25 +195,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
           showTopSnackBar(context, '회원가입 중 오류가 발생했습니다.');
       }
     } on DioException catch (e) {
-      // Firebase 사용자 삭제
+      // API 오류 시 Firebase 사용자 삭제
       try {
         await FirebaseAuth.instance.currentUser?.delete();
       } catch (_) {}
       
+      AppLogger.e('API 오류: ${e.response?.statusCode}');
       if (e.response?.statusCode == 404) {
-        // API 없어도 Firebase 회원가입은 성공으로 처리
-        print('API 404 - Firebase만으로 진행');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const RegisterCompleteView(),
-          ),
-        );
+        showTopSnackBar(context, 'API 서버를 찾을 수 없습니다.\n관리자에게 문의하세요.');
       } else {
         showTopSnackBar(context, '회원가입 처리 중 오류가 발생했습니다.');
       }
     } catch (e) {
-      print('회원가입 오류: $e');
+      AppLogger.e('회원가입 오류: $e');
       showTopSnackBar(context, '회원가입 중 오류가 발생했습니다.');
     }
   }
@@ -283,6 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 30),
 
+              // 타이틀
               TextWidgetString(
                 'K-VMS',
                 getTextcenter(),
@@ -300,6 +257,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 30),
 
+              // 아이디 입력
               _buildInputSection(
                 label: '아이디',
                 isRequired: true,
@@ -338,7 +296,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
               ),
-              
               if (isIdAvailable != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
@@ -368,9 +325,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-
               const SizedBox(height: 20),
 
+              // 비밀번호 입력
               _buildInputSection(
                 label: '비밀번호',
                 isRequired: true,
@@ -391,9 +348,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
 
+              // 비밀번호 확인
               _buildInputSection(
                 label: '비밀번호 확인',
                 isRequired: true,
@@ -414,9 +371,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
 
+              // MMSI 입력
               _buildInputSection(
                 label: 'MMSI',
                 isRequired: true,
@@ -426,9 +383,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.number,
                 ),
               ),
-
               const SizedBox(height: 20),
 
+              // 휴대폰 번호
               _buildInputSection(
                 label: '휴대폰 번호',
                 isRequired: false,
@@ -438,9 +395,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.phone,
                 ),
               ),
-
               const SizedBox(height: 20),
 
+              // 이메일
               _buildInputSection(
                 label: '이메일',
                 isRequired: false,
@@ -471,9 +428,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 40),
 
+              // 회원가입 버튼
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -502,6 +459,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // 단계 표시기
   Widget _buildStepIndicator(int step, String label, bool isActive) {
     return Column(
       children: [
@@ -535,6 +493,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // 단계 연결선
   Widget _buildStepConnector() {
     return Container(
       width: 40,
@@ -544,6 +503,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // 입력 섹션
   Widget _buildInputSection({
     required String label,
     required bool isRequired,
@@ -577,6 +537,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // 텍스트 필드
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -625,18 +586,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
-// Membershipview 별칭 (하위 호환성)
-class Membershipview extends StatefulWidget {
-  final DateTime nowTime;
-  const Membershipview({super.key, required this.nowTime});
-  
-  @override
-  State<Membershipview> createState() => _MembershipviewState();
-}
-
-class _MembershipviewState extends State<Membershipview> {
-  @override
-  Widget build(BuildContext context) {
-    return const RegisterScreen();
-  }
+// 임시 해결책: 클래스 별칭 생성 (IDE 인식 문제 해결용)
+class RegisterScreen extends Membershipview {
+  const RegisterScreen({super.key, required DateTime nowTime}) 
+    : super(nowTime: nowTime);
 }

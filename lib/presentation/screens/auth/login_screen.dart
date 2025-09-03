@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -137,7 +138,31 @@ class _CmdViewState extends State<LoginView> {
 
           //[2] Provider에 역할 저장
           context.read<UserState>().setRole(role); // 디바이스에 역할 상태 저장
-          context.read<UserState>().setMmsi(mmsi); // 디바에스에 mmsi 상태 저장
+        // MMSI 저장 또는 복구
+        if (mmsi != null && mmsi != 0) {
+          context.read<UserState>().setMmsi(mmsi);
+        } else {
+          // MMSI가 없으면 Firestore에서 조회 시도
+          try {
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              final doc = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .get();
+              
+              if (doc.exists) {
+                final firestoreMmsi = doc.data()?['mmsi'];
+                if (firestoreMmsi != null && mounted) {
+                  context.read<UserState>().setMmsi(firestoreMmsi);
+                  AppLogger.d('Firestore에서 MMSI 복구: $firestoreMmsi');
+                }
+              }
+            }
+          } catch (e) {
+            AppLogger.e('Firestore MMSI 조회 실패: $e');
+          }
+        }
         } else {}
 
         Navigator.pushReplacement(
