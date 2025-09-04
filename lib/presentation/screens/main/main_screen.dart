@@ -25,6 +25,7 @@ import 'package:vms_app/presentation/screens/main/tabs/navigation_tab.dart';
 import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
 import 'package:vms_app/presentation/screens/profile/profile_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //GeoJSON 파싱 함수
 List<LatLng> parseGeoJsonLineString(String geoJsonStr) {
@@ -56,12 +57,14 @@ class mainView extends StatefulWidget {
   final String username; // username 저장
   final RouteSearchProvider? routeSearchViewModel; // 선택적 viewModel 파라미터 추가
   final int initTabIndex; // ✅ 추가
+  final bool autoFocusLocation; // ✅ 자동 위치 포커스 플래그 추가
 
   const mainView({
     super.key,
     required this.username,
     this.routeSearchViewModel,
     this.initTabIndex = 0,
+    this.autoFocusLocation = false, // ✅ 기본값 false
   });
 
   @override
@@ -100,7 +103,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
   bool isOtherVesselsVisible = true; // 기본값은 다른 선박이 보이는 상태
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   final LocationService _locationService = LocationService();
   final UpdatePoint _UpdatePoint = UpdatePoint();
   bool positionStreamStarted = false;
@@ -138,14 +141,87 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     'submarine_cable_alert': false,
   };
 
+  // ✅ 자동으로 내 위치로 이동하는 메소드 추가
+  Future<void> _autoFocusToMyLocation() async {
+    try {
+      AppLogger.d('🎯 자동 위치 포커스 시작...');
+
+      // 먼저 SharedPreferences 확인 (첫 로그인인지 체크)
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstAutoFocus = prefs.getBool('first_auto_focus') ?? true;
+
+      // 첫 로그인이 아니면 자동 위치 이동 안함
+      if (!isFirstAutoFocus && !widget.autoFocusLocation) {
+        return;
+      }
+
+      // 위치 권한 확인
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          AppLogger.d('❌ 위치 권한 거부됨');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        AppLogger.d('❌ 위치 권한이 영구 거부됨');
+        showTopSnackBar(context, '설정에서 위치 권한을 허용해주세요.');
+        return;
+      }
+
+      // 위치 서비스 활성화 확인
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        AppLogger.d('❌ 위치 서비스가 비활성화됨');
+        showTopSnackBar(context, '위치 서비스를 활성화해주세요.');
+        return;
+      }
+
+      // 현재 위치 가져오기
+      AppLogger.d('📍 현재 위치 가져오는 중...');
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      AppLogger.d('✅ 위치 획득 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+
+      // 지도를 현재 위치로 이동
+      LatLng currentLocation = LatLng(position.latitude, position.longitude);
+
+      if (mounted) {
+        _mapControllerProvider.mapController.move(currentLocation, 13.0);
+        setState(() {
+          _currentPosition = currentLocation;
+        });
+
+        // 첫 번째 자동 이동 완료 표시
+        await prefs.setBool('first_auto_focus', false);
+
+        showTopSnackBar(context, '현재 위치로 이동했습니다.');
+      }
+
+    } catch (e) {
+      AppLogger.e('❌ 자동 위치 포커스 오류: $e');
+
+      // 오류가 발생해도 앱은 정상 작동
+      if (mounted) {
+        // 기본 위치(목포)로 이동
+        const defaultLocation = LatLng(35.374509, 126.132268);
+        _mapControllerProvider.mapController.move(defaultLocation, 12.0);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // 전달받은 viewModel이 있으면 사용하고, 없으면 새로 생성
     _routeSearchViewModel = widget.routeSearchViewModel ?? RouteSearchProvider();
 
-    // ✅ 이 두 줄을 꼭 추가해!
     selectedIndex = widget.initTabIndex;
     _selectedIndex = widget.initTabIndex;
 
@@ -175,20 +251,27 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
       vsync: this,
       duration: AnimationConstants.durationNormal,
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _flashController.reverse();
-        } else if (status == AnimationStatus.dismissed) {
-          if (_isFlashing) {
-            _flashController.forward();
-          }
+      if (status == AnimationStatus.completed) {
+        _flashController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        if (_isFlashing) {
+          _flashController.forward();
         }
-      });
+      }
+    });
 
     // 중요: 화면이 완전히 렌더링된 후 권한 요청
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(AnimationConstants.durationVerySlow, () {
         _requestPermissionsSequentially();
       });
+
+      // ✅ 로그인 시 자동 위치 포커스 (widget.autoFocusLocation이 true인 경우)
+      if (widget.autoFocusLocation) {
+        Future.delayed(const Duration(seconds: 2), () {
+          _autoFocusToMyLocation();
+        });
+      }
     });
 
     //Firebase Cloud Messaging (FCM) 포그라운드 알림 수신 리스너
@@ -377,7 +460,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                           await _routeSearchViewModel.getVesselRoute(
                                               mmsi: vessel.mmsi ?? 0,
                                               regDt:
-                                                  DateFormat('yyyy-MM-dd').format(DateTime.now()));
+                                              DateFormat('yyyy-MM-dd').format(DateTime.now()));
                                           _mapControllerProvider.mapController.move(
                                             LatLng(vessel.lttd ?? 35.3790988,
                                                 vessel.lntd ?? 126.167763),
@@ -599,7 +682,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     );
 
     const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
       notificationId,
@@ -951,7 +1034,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     if (index != 0) {
       if (index == 1) {
         _bottomSheetController = Scaffold.of(context).showBottomSheet(
-          (context) => WillPopScope(
+              (context) => WillPopScope(
             onWillPop: () async {
               setState(() {
                 _selectedIndex = 0;
@@ -973,7 +1056,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
         );
       } else if (index == 2) {
         _bottomSheetController = Scaffold.of(context).showBottomSheet(
-          (context) => WillPopScope(
+              (context) => WillPopScope(
             onWillPop: () async {
               // 뒤로가기 시에도 1번 기능 완전 초기화
               _resetNavigationHistory();
@@ -1354,59 +1437,59 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                       polygons: vessels
                           .where((v) => v.escapeRouteGeojson != null)
                           .map((v) {
-                            final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
-                            if (pts.length < 2) return null;
-                            final end = pts.last;
-                            final prev = pts[pts.length - 2];
+                        final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
+                        if (pts.length < 2) return null;
+                        final end = pts.last;
+                        final prev = pts[pts.length - 2];
 
-                            // 1) 진행 벡터와 단위벡터 u
-                            final dx = end.longitude - prev.longitude;
-                            final dy = end.latitude - prev.latitude;
-                            final dist = sqrt(dx * dx + dy * dy);
-                            if (dist == 0) return null;
-                            final ux = dx / dist;
-                            final uy = dy / dist;
+                        // 1) 진행 벡터와 단위벡터 u
+                        final dx = end.longitude - prev.longitude;
+                        final dy = end.latitude - prev.latitude;
+                        final dist = sqrt(dx * dx + dy * dy);
+                        if (dist == 0) return null;
+                        final ux = dx / dist;
+                        final uy = dy / dist;
 
-                            // 2) 수직 단위벡터 (왼쪽)
-                            final vx = -uy;
-                            final vy = ux;
+                        // 2) 수직 단위벡터 (왼쪽)
+                        final vx = -uy;
+                        final vy = ux;
 
-                            // 3) 삼각형 크기 설정 (size: 높이)
-                            const double size = 0.0005;
+                        // 3) 삼각형 크기 설정 (size: 높이)
+                        const double size = 0.0005;
 
-                            // 4) 꼭짓점 계산
-                            // apex: 진행 방향으로 size만큼 전진
-                            final apex = LatLng(
-                              end.latitude + uy * size,
-                              end.longitude + ux * size,
-                            );
+                        // 4) 꼭짓점 계산
+                        // apex: 진행 방향으로 size만큼 전진
+                        final apex = LatLng(
+                          end.latitude + uy * size,
+                          end.longitude + ux * size,
+                        );
 
-                            // baseCenter: 뒤쪽으로 size*0.5만큼
-                            final baseCenter = LatLng(
-                              end.latitude - uy * (size * 0.5),
-                              end.longitude - ux * (size * 0.5),
-                            );
+                        // baseCenter: 뒤쪽으로 size*0.5만큼
+                        final baseCenter = LatLng(
+                          end.latitude - uy * (size * 0.5),
+                          end.longitude - ux * (size * 0.5),
+                        );
 
-                            // base half-width: 정삼각형 한 변 = size*2/sqrt(3) ⇒ half-width = (변/2) = size/√3
-                            final halfWidth = size / sqrt(3);
+                        // base half-width: 정삼각형 한 변 = size*2/sqrt(3) ⇒ half-width = (변/2) = size/√3
+                        final halfWidth = size / sqrt(3);
 
-                            final b1 = LatLng(
-                              baseCenter.latitude + vy * halfWidth,
-                              baseCenter.longitude + vx * halfWidth,
-                            );
-                            final b2 = LatLng(
-                              baseCenter.latitude - vy * halfWidth,
-                              baseCenter.longitude - vx * halfWidth,
-                            );
+                        final b1 = LatLng(
+                          baseCenter.latitude + vy * halfWidth,
+                          baseCenter.longitude + vx * halfWidth,
+                        );
+                        final b2 = LatLng(
+                          baseCenter.latitude - vy * halfWidth,
+                          baseCenter.longitude - vx * halfWidth,
+                        );
 
-                            return Polygon(
-                              points: [apex, b1, b2],
-                              color: Colors.black,
-                              borderColor: Colors.black,
-                              borderStrokeWidth: 1,
-                              isFilled: true,
-                            );
-                          })
+                        return Polygon(
+                          points: [apex, b1, b2],
+                          color: Colors.black,
+                          borderColor: Colors.black,
+                          borderStrokeWidth: 1,
+                          isFilled: true,
+                        );
+                      })
                           .where((poly) => poly != null)
                           .cast<Polygon>()
                           .toList(),
@@ -1439,7 +1522,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                         ignoring: !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
                         child: MarkerLayer(
                           markers:
-                              vessels.where((vessel) => (vessel.mmsi ?? 0) != mmsi).map((vessel) {
+                          vessels.where((vessel) => (vessel.mmsi ?? 0) != mmsi).map((vessel) {
                             return Marker(
                               point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
                               width: 25,
@@ -1545,7 +1628,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                               builder: (context, routeViewModel, _) {
                                 //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 mainView에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
                                 if ((routeViewModel.pastRoutes.isNotEmpty == true ||
-                                        (routeViewModel.predRoutes.isNotEmpty == true)) &&
+                                    (routeViewModel.predRoutes.isNotEmpty == true)) &&
                                     routeViewModel.isNavigationHistoryMode != true &&
                                     _isTrackingEnabled) {
                                   return Column(
@@ -1626,7 +1709,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
                                     try {
                                       myVessel = vessels.firstWhere(
-                                        (vessel) => vessel.mmsi == mmsi,
+                                            (vessel) => vessel.mmsi == mmsi,
                                       );
                                     } catch (e) {
                                       myVessel = null;
@@ -1831,9 +1914,9 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
               selectedItemColor: getColorgray_Type8(),
               unselectedItemColor: getColorgray_Type2(),
               selectedLabelStyle:
-                  TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
               unselectedLabelStyle:
-                  TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
               currentIndex: selectedIndex,
               onTap: (index) {
                 setState(() {
@@ -2080,15 +2163,15 @@ Widget _warningPopOnDetail(
     child: GestureDetector(
       onTap: () {
         // 버튼 클릭 시 동작 추가
-warningPopdetail(
-          context,
-          title,
-          titleColor,
-          detail,
-          detailColor,
-          '',
-          alarmicon,
-          shadowcolor);
+        warningPopdetail(
+            context,
+            title,
+            titleColor,
+            detail,
+            detailColor,
+            '',
+            alarmicon,
+            shadowcolor);
       },
       child: Stack(
         alignment: Alignment.center,

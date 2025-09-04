@@ -81,9 +81,12 @@ flutter:
     - assets/kdn/ros/img/
     - assets/kdn/home/img/
     - assets/kdn/wid/img/
+    - assets/kdn/font/woff/
+    - assets/kdn/font/woff2/
     - .env
 
   fonts:
     - family: PretendardVariable
       fonts:
         - asset: assets/kdn/font/woff2/PretendardVariable.woff2
+

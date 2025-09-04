@@ -10,53 +10,55 @@ build/
 *.aab
 *.ipa
 
-# Android
+# IDE
+.idea/
 *.iml
+.vscode/
+*.swp
+*.swo
+
+# Android
+*.log
 .gradle/
 local.properties
-.idea/
-*.log
 android/.gradle/
 android/app/debug/
 android/app/profile/
 android/app/release/
+android/app/.cxx/
 
 # iOS
 ios/Pods/
 ios/.symlinks/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
-build/
-.dart_tool/
-.idea/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+*.xcworkspace/
 
-# 보안 관련 파일
+# Windows
+windows/flutter/ephemeral/
+
+# macOS
+macos/Flutter/ephemeral/
+
+# 보안 및 환경 파일
 *.keystore
 *.jks
 key.properties
-/android/app/google-services.json
-/ios/Runner/GoogleService-Info.plist
-
-# 환경 파일
 .env
 .env.*
-
-# 로그 파일
-*.log
-logs/
-
-# 백업 파일
-backup_*/
-*.bak
-
-# Firebase 설정 파일 (중요!)
 **/google-services.json
 **/GoogleService-Info.plist
-.env
-*.keystore
-*.jks
 
-# 백업 파일
+# 로그 및 백업 파일
+*.log
+logs/
 *.backup
 *.bak
-*_backup_*
+*_backup*
+backup_*/
+
+# 기타
+.DS_Store
+Thumbs.db
