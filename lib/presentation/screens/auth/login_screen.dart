@@ -15,6 +15,7 @@ import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+
 class LoginView extends StatefulWidget {
   const LoginView({
     super.key,
@@ -32,7 +33,7 @@ class _CmdViewState extends State<LoginView> {
   bool auto_login = false; // 자동 로그인
   late FirebaseMessaging messaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   late String fcmToken; //FCM 토큰 저장 변수 추가
 
   @override
@@ -71,7 +72,7 @@ class _CmdViewState extends State<LoginView> {
     try {
       // 토큰 생성
       UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
 
       // ✅ Firebase JWT 토큰 가져오기
       String? firebaseToken = await userCredential.user?.getIdToken();
@@ -85,8 +86,6 @@ class _CmdViewState extends State<LoginView> {
       String? token = firebaseToken;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('firebase_token', token); // firebase 토큰 디바이스에 저장
-
-      //String? tokenget = prefs.getString('firebase_token');
 
       //✅ 서버에 JWT 토큰과 함께 로그인 요청
       Response response = await Dio().post(
@@ -104,12 +103,14 @@ class _CmdViewState extends State<LoginView> {
           },
         ),
       );
+
       AppLogger.i('=== 로그인 응답 디버깅 시작 ===');
       AppLogger.d('➡️ 로그인 요청 API URL: $apiUrl');
       AppLogger.d('✅ Firebase JWT 토큰: $firebaseToken');
       AppLogger.d('✅ Authorization 헤더: Bearer $firebaseToken');
       AppLogger.d('Response data: ${response.data}');
       AppLogger.d('Response status code: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         // 요청 성공
         String username = response.data['username'];
@@ -138,35 +139,49 @@ class _CmdViewState extends State<LoginView> {
 
           //[2] Provider에 역할 저장
           context.read<UserState>().setRole(role); // 디바이스에 역할 상태 저장
-        // MMSI 저장 또는 복구
-        if (mmsi != null && mmsi != 0) {
-          context.read<UserState>().setMmsi(mmsi);
-        } else {
-          // MMSI가 없으면 Firestore에서 조회 시도
-          try {
-            final user = FirebaseAuth.instance.currentUser;
-            if (user != null) {
-              final doc = await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(user.uid)
-                  .get();
-              
-              if (doc.exists) {
-                final firestoreMmsi = doc.data()?['mmsi'];
-                if (firestoreMmsi != null && mounted) {
-                  context.read<UserState>().setMmsi(firestoreMmsi);
-                  AppLogger.d('Firestore에서 MMSI 복구: $firestoreMmsi');
+
+          // MMSI 저장 또는 복구
+          if (mmsi != null && mmsi != 0) {
+            context.read<UserState>().setMmsi(mmsi);
+          } else {
+            // MMSI가 없으면 Firestore에서 조회 시도
+            try {
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                final doc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+
+                if (doc.exists) {
+                  final firestoreMmsi = doc.data()?['mmsi'];
+                  if (firestoreMmsi != null && mounted) {
+                    context.read<UserState>().setMmsi(firestoreMmsi);
+                    AppLogger.d('Firestore에서 MMSI 복구: $firestoreMmsi');
+                  }
                 }
               }
+            } catch (e) {
+              AppLogger.e('Firestore MMSI 조회 실패: $e');
             }
-          } catch (e) {
-            AppLogger.e('Firestore MMSI 조회 실패: $e');
           }
         }
-        } else {}
+
+        // ✅ MainScreen으로 이동 - 올바른 생성자 호출
+        if (!mounted) return;
 
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => mainView(username: username)));
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainScreen(
+              username: username,
+              // 필요한 경우 다른 파라미터도 추가
+              // routeSearchViewModel: null,  // 선택적
+              // initTabIndex: 0,  // 선택적
+            ),
+          ),
+        );
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
@@ -175,11 +190,18 @@ class _CmdViewState extends State<LoginView> {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential') {
         if (e.message?.contains('password') ?? false) {
+          showTopSnackBar(context, '비밀번호를 확인해주세요.');
         } else if (e.message?.contains('email') ?? false) {
+          showTopSnackBar(context, '아이디를 확인해주세요.');
         } else {
           showTopSnackBar(context, '아이디 또는 비밀번호를 확인해주세요.');
         }
+      } else {
+        showTopSnackBar(context, '로그인 중 오류가 발생했습니다: ${e.message}');
       }
+    } catch (e) {
+      AppLogger.e('로그인 오류: $e');
+      showTopSnackBar(context, '로그인 중 오류가 발생했습니다.');
     }
   }
 
@@ -275,7 +297,7 @@ class _CmdViewState extends State<LoginView> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                              BorderRadius.circular(DesignConstants.radiusS),
+                                          BorderRadius.circular(DesignConstants.radiusS),
                                         ),
                                         child: inputWidget(getSize266(), getSize48(), idController,
                                             '아이디 입력', getColorgray_Type7()),
@@ -288,7 +310,7 @@ class _CmdViewState extends State<LoginView> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius:
-                                              BorderRadius.circular(DesignConstants.radiusS),
+                                          BorderRadius.circular(DesignConstants.radiusS),
                                         ),
                                         child: inputWidget(getSize266(), getSize48(),
                                             passwordController, '비밀번호 입력', getColorgray_Type7(),
@@ -323,7 +345,7 @@ class _CmdViewState extends State<LoginView> {
                                             PageRouteBuilder(
                                               pageBuilder:
                                                   (context, animation, secondaryAnimation) =>
-                                                      const CmdChoiceView(),
+                                              const CmdChoiceView(),
                                               transitionsBuilder:
                                                   (context, animation, secondaryAnimation, child) {
                                                 const begin = Offset(1.0, 0.0);

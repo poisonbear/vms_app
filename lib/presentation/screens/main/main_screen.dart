@@ -1,4 +1,11 @@
 import 'dart:async';
+import 'package:vms_app/core/services/timer_service.dart';
+import 'package:vms_app/core/services/popup_service.dart';
+import 'package:vms_app/core/services/location_focus_service.dart';
+import 'package:vms_app/core/services/state_manager.dart';
+import 'package:vms_app/core/services/memory_manager.dart';
+// =====================================
+
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -53,13 +60,13 @@ class MapControllerProvider extends ChangeNotifier {
   }
 }
 
-class mainView extends StatefulWidget {
+class MainScreen extends StatefulWidget {
   final String username; // username 저장
   final RouteSearchProvider? routeSearchViewModel; // 선택적 viewModel 파라미터 추가
   final int initTabIndex; // ✅ 추가
   final bool autoFocusLocation; // ✅ 자동 위치 포커스 플래그 추가
 
-  const mainView({
+  const MainScreen({
     super.key,
     required this.username,
     this.routeSearchViewModel,
@@ -68,7 +75,7 @@ class mainView extends StatefulWidget {
   });
 
   @override
-  _mainViewViewState createState() => _mainViewViewState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
 class CircularButton extends StatefulWidget {
@@ -93,7 +100,27 @@ class CircularButton extends StatefulWidget {
   _CircularButtonState createState() => _CircularButtonState();
 }
 
-class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
+
+  // ===== Timer 변수 (자동 추가됨) =====
+  Timer? _timer;
+  Timer? _vesselUpdateTimer;
+  Timer? _routeUpdateTimer;
+
+  // 팝업 관리 Map
+  final Map<String, bool> _activePopups = {
+    'turbine_entry_alert': false,
+    'weather_alert': false,
+    'submarine_cable_alert': false,
+  };
+  // =====================================
+  late final PopupService _popupService;
+  late final LocationFocusService _locationFocusService;
+  late final StateManager _stateManager;
+  final MemoryManager _memoryManager = MemoryManager();
+
+
+
   late RouteSearchProvider _routeSearchViewModel; //[GIS] 항행이력 조회 모델
   final MapControllerProvider _mapControllerProvider = MapControllerProvider();
 
@@ -113,15 +140,16 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
   bool isWaveSelected = true; // 파고 선택 여부
   bool isVisibilitySelected = true; // 시정 선택 여부
-  Timer? _timer; // Timer 변수 선언
   bool _isFCMListenerRegistered = false; //fcm lintener
 
   //화면 깜빡임
   late AnimationController _flashController;
   bool _isFlashing = false;
 
-  Timer? _vesselUpdateTimer; //타선박 위치 갱신용 타이머 변수
-  Timer? _routeUpdateTimer; // 항로 갱신용 타이머 변수
+  // ===== 리팩토링 서비스 변수 =====
+  late final TimerService _timerService;
+  // ==================================
+
 
   /// 바텀시트가 닫혔을 때 공통으로 호출할 리셋 로직
   void _resetNavigationHistory() {
@@ -135,11 +163,6 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   }
 
   // 현재 표시중인 팝업을 관리하는 Map 추가
-  final Map<String, bool> _activePopups = {
-    'turbine_entry_alert': false,
-    'weather_alert': false,
-    'submarine_cable_alert': false,
-  };
 
   // ✅ 자동으로 내 위치로 이동하는 메소드 추가
   Future<void> _autoFocusToMyLocation() async {
@@ -220,6 +243,10 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
+    _timerService = TimerService();
+    _popupService = PopupService();
+    _locationFocusService = LocationFocusService();
+    _stateManager = StateManager();
     _routeSearchViewModel = widget.routeSearchViewModel ?? RouteSearchProvider();
 
     selectedIndex = widget.initTabIndex;
@@ -285,17 +312,17 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
         _showForegroundNotification(message);
 
         //알림 type 종류에 따라 팝업 화면 다르게 분기
-        if (type == 'turbine_entry_alert' && !_activePopups['turbine_entry_alert']!) {
-          _activePopups['turbine_entry_alert'] = true;
+        if (type == 'turbine_entry_alert' && !_popupService.isPopupActive(PopupService.TURBINE_ENTRY_ALERT)) {
+          _popupService.showPopup(PopupService.TURBINE_ENTRY_ALERT);
           _startFlashing();
           _showRosPopup(context, message.notification?.title ?? '알림',
               message.notification?.body ?? '새로운 메시지');
-        } else if (type == 'weather_alert' && !_activePopups['weather_alert']!) {
-          _activePopups['weather_alert'] = true;
+        } else if (type == 'weather_alert' && !_popupService.isPopupActive(PopupService.WEATHER_ALERT)) {
+          _popupService.showPopup(PopupService.WEATHER_ALERT);
           _showWeatherPopup(context, message.notification?.title ?? '알림',
               message.notification?.body ?? '새로운 메시지');
-        } else if (type == 'submarine_cable_alert' && !_activePopups['submarine_cable_alert']!) {
-          _activePopups['submarine_cable_alert'] = true;
+        } else if (type == 'submarine_cable_alert' && !_popupService.isPopupActive(PopupService.SUBMARINE_CABLE_ALERT)) {
+          _popupService.showPopup(PopupService.SUBMARINE_CABLE_ALERT);
           _startFlashing();
           _showMarinPopup(context, message.notification?.title ?? '알림',
               message.notification?.body ?? '새로운 메시지');
@@ -470,7 +497,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                                           _isTrackingEnabled = true; // 항적 표시 활성화
                                           _vesselUpdateTimer
                                               ?.cancel(); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
-                                          _routeUpdateTimer?.cancel(); // 기존에 실행 중인 타이머가 있다면 취소
+                                          _timerService.stopTimer(TimerService.ROUTE_UPDATE); // 기존에 실행 중인 타이머가 있다면 취소
 
                                           // final startTime = DateTime.now();
 
@@ -609,9 +636,15 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   @override
   void dispose() {
     _flashController.dispose();
-    _timer?.cancel();
-    _routeUpdateTimer?.cancel();
-    _vesselUpdateTimer?.cancel();
+    _timerService.dispose();
+    _popupService.dispose();
+    _locationFocusService.dispose();
+    _stateManager.dispose();
+    _memoryManager.disposeAll();
+    _timerService.stopTimer(TimerService.WEATHER_UPDATE);
+    _timerService.stopTimer(TimerService.ROUTE_UPDATE);
+    _timerService.stopTimer(TimerService.VESSEL_UPDATE);
+
     super.dispose();
   }
 
@@ -622,8 +655,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
     _routeSearchViewModel.setNavigationHistoryMode(false);
 
     // 1) 즉시 한 번 실행
-    _routeUpdateTimer?.cancel();
-    _routeUpdateTimer = null;
+    _timerService.stopTimer(TimerService.ROUTE_UPDATE);
+    // _routeUpdateTimer = null - handled by TimerService;
 
     // UI 리셋
     setState(() {
@@ -773,7 +806,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   child: ElevatedButton(
                     onPressed: () {
                       _stopFlashing();
-                      _activePopups['weather_alert'] = false; // 이 줄 추가
+                      _popupService.hidePopup(PopupService.WEATHER_ALERT); // 이 줄 추가
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -872,7 +905,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   child: ElevatedButton(
                     onPressed: () {
                       _stopFlashing();
-                      _activePopups['turbine_entry_alert'] = false; // 이 줄 추가
+                      _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT); // 이 줄 추가
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -971,7 +1004,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                   child: ElevatedButton(
                     onPressed: () {
                       _stopFlashing();
-                      _activePopups['submarine_cable_alert'] = false; // 이 줄 추가
+                      _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT); // 이 줄 추가
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
@@ -1042,7 +1075,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
               });
               return true;
             },
-            child: mainViewWindy(context, onClose: () {
+            child: MainScreenWindy(context, onClose: () {
               setState(() {
                 _selectedIndex = 0;
                 selectedIndex = 0;
@@ -1235,12 +1268,12 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<RouteSearchProvider>.value(
-          value: _routeSearchViewModel,
-        ),
-        ChangeNotifierProvider<MapControllerProvider>.value(
-          value: _mapControllerProvider,
-        ),
+        ChangeNotifierProvider<RouteSearchProvider>.value(value: _routeSearchViewModel, ),
+        ChangeNotifierProvider<MapControllerProvider>.value(value: _mapControllerProvider, ),
+        ChangeNotifierProvider<TimerService>.value(value: _timerService),
+        ChangeNotifierProvider<PopupService>.value(value: _popupService),
+        ChangeNotifierProvider<LocationFocusService>.value(value: _locationFocusService),
+        ChangeNotifierProvider<StateManager>.value(value: _stateManager),
       ],
       child: Scaffold(
         body: Stack(
@@ -1626,7 +1659,7 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
                           children: [
                             Consumer<RouteSearchProvider>(
                               builder: (context, routeViewModel, _) {
-                                //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 mainView에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
+                                //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 MainScreen에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
                                 if ((routeViewModel.pastRoutes.isNotEmpty == true ||
                                     (routeViewModel.predRoutes.isNotEmpty == true)) &&
                                     routeViewModel.isNavigationHistoryMode != true &&

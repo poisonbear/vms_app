@@ -82,10 +82,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     return WillPopScope(
         // 추가: WillPopScope로 감싸서 뒤로가기 처리
         onWillPop: () async {
-          // 👉 mainView의 selectedIndex를 0으로 초기화 추가
-          final mainViewState = context.findAncestorStateOfType<State<mainView>>();
-          mainViewState?.setState(() {
-            (mainViewState as dynamic).selectedIndex = 0;
+          // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
+          final MainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+          MainScreenState?.setState(() {
+            (MainScreenState as dynamic).selectedIndex = 0;
           });
 
           routeSearchViewModel.clearRoutes(); // 중요: 뒤로가기 시 클리어 처리
@@ -133,11 +133,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     widget.onClose!();
                                   }
 
-                                  // 👉 mainView의 selectedIndex를 0으로 초기화 추가
-                                  final mainViewState =
-                                      context.findAncestorStateOfType<State<mainView>>();
-                                  mainViewState?.setState(() {
-                                    (mainViewState as dynamic).selectedIndex = 0;
+                                  // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
+                                  final MainScreenState =
+                                      context.findAncestorStateOfType<State<MainScreen>>();
+                                  MainScreenState?.setState(() {
+                                    (MainScreenState as dynamic).selectedIndex = 0;
                                   });
 
                                   routeSearchViewModel.clearRoutes();
@@ -527,10 +527,10 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm, St
                     viewModel.clearRoutes();
                     viewModel.setNavigationHistoryMode(false);
 
-                    // mainView의 selectedIndex를 0으로 초기화
-                    final mainViewState = context.findAncestorStateOfType<State<mainView>>();
-                    if (mainViewState != null) {
-                      (mainViewState as dynamic).selectedIndex = 0;
+                    // MainScreen의 selectedIndex를 0으로 초기화
+                    final MainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+                    if (MainScreenState != null) {
+                      (MainScreenState as dynamic).selectedIndex = 0;
                     }
 
                     // 바텀시트 닫기
@@ -539,10 +539,10 @@ Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm, St
                 },
                 child: WillPopScope(
                   onWillPop: () async {
-                    // 뒤로가기 누를 때도 mainView의 selectedIndex를 0으로 초기화 추가
-                    final mainViewState = context.findAncestorStateOfType<State<mainView>>();
-                    if (mainViewState != null) {
-                      (mainViewState as dynamic).selectedIndex = 0;
+                    // 뒤로가기 누를 때도 MainScreen의 selectedIndex를 0으로 초기화 추가
+                    final MainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+                    if (MainScreenState != null) {
+                      (MainScreenState as dynamic).selectedIndex = 0;
                     }
 
                     viewModel.clearRoutes();
@@ -711,10 +711,10 @@ Widget _buildCollapsedBottomSheet(BuildContext context, String shipName, String 
         IconButton(
           icon: Icon(Icons.close, color: getColorgray_Type8()),
           onPressed: () {
-            // 👉 mainView의 selectedIndex를 0으로 초기화 추가
-            final mainViewState = context.findAncestorStateOfType<State<mainView>>();
-            if (mainViewState != null) {
-              (mainViewState as dynamic).selectedIndex = 0;
+            // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
+            final MainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+            if (MainScreenState != null) {
+              (MainScreenState as dynamic).selectedIndex = 0;
             }
 
             viewModel.clearRoutes();

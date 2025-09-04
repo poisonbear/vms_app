@@ -17,6 +17,7 @@ class CmdChoiceView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => TermsProvider(),
       child: const _CmdChoiceViewBody(
+      )
     );
   }
 }

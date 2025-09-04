@@ -10,7 +10,7 @@ import 'package:vms_app/presentation/providers/weather_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
 // 택스트 위젯 - string
-Widget mainViewWindy(context, {Function? onClose}) {
+Widget MainScreenWindy(context, {Function? onClose}) {
   PersistentBottomSheetController? bottomSheetController;
   return FutureProvider<WidWeatherInfoViewModel>(
     create: (_) async {

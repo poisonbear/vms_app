@@ -1,44 +1,95 @@
 import 'dart:async';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:flutter/foundation.dart';
 
-/// 타이머 중앙 관리 서비스
-class TimerService {
+/// 앱 전체 타이머 관리 서비스
+class TimerService extends ChangeNotifier {
+  // 타이머 식별자 상수
+  static const String VESSEL_UPDATE = 'vessel_update';
+  static const String ROUTE_UPDATE = 'route_update';
+  static const String WEATHER_UPDATE = 'weather_update';
+  static const String LOCATION_UPDATE = 'location_update';
+  
+  // 타이머 저장소
   final Map<String, Timer?> _timers = {};
-  static final TimerService _instance = TimerService._internal();
+  final Map<String, VoidCallback?> _callbacks = {};
   
-  factory TimerService() => _instance;
-  TimerService._internal();
+  // 타이머 상태 조회
+  bool isTimerActive(String timerId) => _timers[timerId]?.isActive ?? false;
   
-  /// 타이머 등록
-  void registerTimer(String key, Timer timer) {
-    AppLogger.d('Timer registered: $key');
-    cancelTimer(key);
-    _timers[key] = timer;
+  /// 주기적 타이머 시작
+  void startPeriodicTimer({
+    required String timerId,
+    required Duration duration,
+    required VoidCallback callback,
+  }) {
+    stopTimer(timerId);
+    
+    _callbacks[timerId] = callback;
+    _timers[timerId] = Timer.periodic(duration, (_) {
+      callback();
+    });
+    
+    debugPrint('✅ Timer started: $timerId with duration: $duration');
+    notifyListeners();
   }
   
-  /// 특정 타이머 취소
-  void cancelTimer(String key) {
-    if (_timers.containsKey(key)) {
-      _timers[key]?.cancel();
-      _timers[key] = null;
-      AppLogger.d('Timer cancelled: $key');
-    }
+  /// 단일 실행 타이머
+  void startOnceTimer({
+    required String timerId,
+    required Duration duration,
+    required VoidCallback callback,
+  }) {
+    stopTimer(timerId);
+    
+    _callbacks[timerId] = callback;
+    _timers[timerId] = Timer(duration, () {
+      callback();
+      _timers.remove(timerId);
+      _callbacks.remove(timerId);
+      notifyListeners();
+    });
+    
+    debugPrint('⏱️ One-time timer started: $timerId');
   }
   
-  /// 모든 타이머 취소
-  void cancelAll() {
-    AppLogger.d('Cancelling all timers: ${_timers.keys.join(", ")}');
-    for (var timer in _timers.values) {
+  /// 타이머 정지
+  void stopTimer(String timerId) {
+    _timers[timerId]?.cancel();
+    _timers.remove(timerId);
+    _callbacks.remove(timerId);
+    debugPrint('⏹️ Timer stopped: $timerId');
+    notifyListeners();
+  }
+  
+  /// 모든 타이머 정지
+  void stopAllTimers() {
+    _timers.forEach((key, timer) {
       timer?.cancel();
-    }
+    });
     _timers.clear();
+    _callbacks.clear();
+    debugPrint('🛑 All timers stopped');
+    notifyListeners();
   }
   
-  /// 리소스 정리
+  /// 타이머 재시작
+  void restartTimer({
+    required String timerId,
+    required Duration duration,
+  }) {
+    final callback = _callbacks[timerId];
+    if (callback != null) {
+      startPeriodicTimer(
+        timerId: timerId,
+        duration: duration,
+        callback: callback,
+      );
+    }
+  }
+  
+  @override
   void dispose() {
-    cancelAll();
+    stopAllTimers();
+    super.dispose();
   }
-  
-  /// 타이머 활성 상태 확인
-  bool isActive(String key) => _timers[key]?.isActive ?? false;
 }

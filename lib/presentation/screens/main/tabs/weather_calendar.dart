@@ -54,7 +54,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
         // ✅ 뒤로가기 버튼이 눌리면 BottomSheet를 다시 연다
         _bottomSheetController = Scaffold.of(context).showBottomSheet(
           (context) {
-            return mainViewWindy(context);
+            return MainScreenWindy(context);
           },
           backgroundColor: getColorblack_type3(),
           shape: const RoundedRectangleBorder(
@@ -92,7 +92,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                       onPressed: () => {
                         _bottomSheetController = Scaffold.of(context).showBottomSheet(
                           (context) {
-                            return mainViewWindy(context);
+                            return MainScreenWindy(context);
                           },
                           backgroundColor: getColorblack_type3(),
                           shape: const RoundedRectangleBorder(
