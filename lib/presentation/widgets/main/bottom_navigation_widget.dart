@@ -1,61 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_app/core/constants/constants.dart';
 
+/// 하단 네비게이션바 위젯
 class BottomNavigationWidget extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-  final String userRole;
-  
+  final int selectedIndex;
+  final Function(int) onItemTapped;
+
   const BottomNavigationWidget({
     super.key,
-    required this.currentIndex,
-    required this.onTap,
-    required this.userRole,
+    required this.selectedIndex,
+    required this.onItemTapped,
   });
-  
+
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Theme.of(context).primaryColor,
-      unselectedItemColor: Colors.grey,
-      currentIndex: currentIndex,
-      onTap: onTap,
-      items: _buildNavigationItems(),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: getColorgray_Type4(), width: 1),
+        ),
+      ),
+      child: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: getColorgray_Type8(),
+        unselectedItemColor: getColorgray_Type2(),
+        selectedLabelStyle: TextStyle(
+          fontSize: getSize16().toDouble(), 
+          fontWeight: getText700()
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: getSize16().toDouble(), 
+          fontWeight: getText700()
+        ),
+        currentIndex: selectedIndex,
+        onTap: onItemTapped,
+        items: [
+          _buildNavItem(0, 'Home', '홈'),
+          _buildNavItem(1, 'cloud-sun', '기상정보'),
+          _buildNavItem(2, 'ship', '항행이력'),
+          _buildNavItem(3, 'user-alt-1', '마이'),
+        ],
+      ),
     );
   }
-  
-  List<BottomNavigationBarItem> _buildNavigationItems() {
-    final items = <BottomNavigationBarItem>[
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.map),
-        label: '지도',
-      ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.cloud),
-        label: '날씨',
-      ),
-    ];
+
+  BottomNavigationBarItem _buildNavItem(int index, String iconName, String label) {
+    final isSelected = selectedIndex == index;
+    final iconPath = 'assets/kdn/ros/img/${iconName}_${isSelected ? 'on' : 'off'}.svg';
     
-    if (userRole == 'ROLE_ADMIN') {
-      items.add(
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.directions_boat),
-          label: '선박관리',
+    return BottomNavigationBarItem(
+      icon: Padding(
+        padding: EdgeInsets.only(bottom: getSize8().toDouble()),
+        child: Column(
+          children: [
+            SizedBox(height: getSize12().toDouble()),
+            SizedBox(
+              width: getSize24().toDouble(),
+              height: getSize24().toDouble(),
+              child: SvgPicture.asset(iconPath, fit: BoxFit.contain),
+            ),
+          ],
         ),
-      );
-    }
-    
-    items.addAll([
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.history),
-        label: '항적',
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person),
-        label: '프로필',
-      ),
-    ]);
-    
-    return items;
+      label: label,
+    );
   }
 }

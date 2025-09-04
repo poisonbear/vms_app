@@ -1,4 +1,6 @@
 import 'dart:async';
+// ===== 분리된 위젯 Import =====
+// ================================
 import 'package:vms_app/core/services/timer_service.dart';
 import 'package:vms_app/core/services/popup_service.dart';
 import 'package:vms_app/core/services/location_focus_service.dart';
@@ -78,34 +80,13 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class CircularButton extends StatefulWidget {
-  final String svgPath;
-  final Color colorOn;
-  final Color colorOff;
-  final int widthSize;
-  final int heightSize;
-  final VoidCallback onTap; // ? onTap을 VoidCallback으로 추가
-
-  const CircularButton({
-    super.key,
-    required this.svgPath,
-    required this.colorOn,
-    required this.colorOff,
-    required this.widthSize,
-    required this.heightSize,
-    required this.onTap, // ? onTap을 생성자로 받음
-  });
-
-  @override
-  _CircularButtonState createState() => _CircularButtonState();
-}
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   // ===== Timer 변수 (자동 추가됨) =====
-  Timer? _timer;
-  Timer? _vesselUpdateTimer;
-  Timer? _routeUpdateTimer;
+  // Timer? _timer; // ✅ TimerService로 대체됨
+  // Timer? _vesselUpdateTimer; // ✅ TimerService로 대체됨
+  // Timer? _routeUpdateTimer; // ✅ TimerService로 대체됨
 
   // 팝업 관리 Map
   final Map<String, bool> _activePopups = {
@@ -264,9 +245,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadVesselDataAndUpdateMap(); // 최초 데이터 로드 및 이동
       // 3초마다 데이터 갱신
-      _vesselUpdateTimer = Timer.periodic(AnimationConstants.autoScrollDelay, (timer) {
+      _timerService.startPeriodicTimer(timerId: "vessel_update", duration: AnimationConstants.autoScrollDelay, callback: () {
         if (!mounted) {
-          timer.cancel();
+          // // timer.cancel(); // ✅ TimerService가 자동 관리 // ✅ TimerService가 자동 관리
           return;
         }
         _loadVesselDataAndUpdateMap(); // 주기적 데이터 로드
@@ -336,7 +317,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     Provider.of<NavigationProvider>(context, listen: false).getWeatherInfo();
 
     // 파고 알람 데이터 30초마다 데이터 갱신
-    _timer = Timer.periodic(AnimationConstants.weatherUpdateInterval, (timer) {
+    _timerService.startPeriodicTimer(timerId: "main_timer", duration: AnimationConstants.autoScrollDelay, callback: () {
       // 기존 값 저장
       // final prevWave = Provider.of<NavigationProvider>(context, listen: false).wave;
       // final prevVisibility = Provider.of<NavigationProvider>(context, listen: false).visibility;
@@ -495,21 +476,25 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                           );
                                           _selectedVesselMmsi = vessel.mmsi ?? 0; // 선택된 선박의 MMSI 저장
                                           _isTrackingEnabled = true; // 항적 표시 활성화
-                                          _vesselUpdateTimer
-                                              ?.cancel(); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
+                                          _timerService.stopTimer("vessel_update");// 기존에 실행되던 선박 위치 표시 타이머도 초기화
                                           _timerService.stopTimer(TimerService.ROUTE_UPDATE); // 기존에 실행 중인 타이머가 있다면 취소
 
                                           // final startTime = DateTime.now();
 
                                           // 선박 위치 갱신 타이머 재시작
-                                          _vesselUpdateTimer = Timer.periodic(
-                                              AnimationConstants.autoScrollDelay, (timer) {
+                                          _timerService.startPeriodicTimer(
+        timerId: "vessel_update",
+        duration: AnimationConstants.autoScrollDelay,
+        callback: () {
                                             _loadVesselDataAndUpdateMap();
-                                          });
+                                          },
+      );
 
                                           // 3초마다 데이터 갱신하는 타이머 시작
-                                          _routeUpdateTimer = Timer.periodic(
-                                              AnimationConstants.autoScrollDelay, (timer) {
+                                          _timerService.startPeriodicTimer(
+        timerId: "route_update",
+        duration: AnimationConstants.autoScrollDelay,
+        callback: () {
                                             try {
                                               if (_isTrackingEnabled) {
                                                 // 플래그 체크 없이 항상 갱신
@@ -665,9 +650,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
 
     // 선박 위치 갱신 타이머가 없으면 재시작
-    _vesselUpdateTimer ??= Timer.periodic(AnimationConstants.autoScrollDelay, (timer) {
-      _loadVesselDataAndUpdateMap();
-    });
+    _timerService.startPeriodicTimer(
+      timerId: "vessel_update",
+      duration: AnimationConstants.autoScrollDelay,
+      callback: () {
+        _loadVesselDataAndUpdateMap();
+      },
+    );
   }
 
   // 권한 요청
@@ -1602,7 +1591,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         child: Column(
                           children: [
                             // 파고 버튼
-                            _buildCircularButton_slide_on(
+                            buildCircularButtonSlideOn(
                               'assets/kdn/home/img/top_pago_img.svg',
                               viewModel.getWaveColor(viewModel.wave),
                               getSize56(),
@@ -1619,7 +1608,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             ),
 
                             // 시정 버튼
-                            _buildCircularButton_slide_on(
+                            buildCircularButtonSlideOn(
                               'assets/kdn/home/img/top_visibility_img.svg',
                               viewModel.getVisibilityColor(viewModel.visibility),
                               getSize56(),
@@ -2052,79 +2041,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 }
 
-Widget _buildCircularButton_slide_on(String svgPath, Color color, int widthsize, int heightsize,
-    String labelText, int widthSizeline, String statusText,
-    {VoidCallback? onTap, bool isSelected = true}) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: getSize12().toDouble()),
-    child: SizedBox(
-      width: widthSizeline.toDouble(), // 최대 너비로 고정
-      height: heightsize.toDouble(),
-      child: Stack(
-        clipBehavior: Clip.none, // 자식이 영역을 넘어가도록 허용
-        children: [
-          // 확장/축소되는 배경 (애니메이션)
-          Positioned(
-            left: 0,
-            top: 0,
-            child: AnimatedContainer(
-              duration: AnimationConstants.durationQuick,
-              width: isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
-              height: heightsize.toDouble(),
-              decoration: BoxDecoration(
-                color: getColorblack_type1(),
-                borderRadius: BorderRadius.circular(getSize30().toDouble()),
-              ),
-            ),
-          ),
-
-          // 텍스트 영역 (확장 시에만 표시)
-          if (isSelected)
-            Positioned(
-              left: widthsize.toDouble() + 8, // 아이콘 오른쪽 여백 추가
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidgetString(
-                        labelText, getTextleft(), getSize14(), getText700(), getColorgray_Type2()),
-                    TextWidgetString(statusText, getTextleft(), getSize14(), getText700(),
-                        getColorwhite_type1()),
-                  ],
-                ),
-              ),
-            ),
-
-          // 원형 아이콘 (항상 왼쪽에 고정)
-          Positioned(
-            left: 0,
-            top: 0,
-            child: GestureDetector(
-              onTap: onTap,
-              child: Container(
-                width: widthsize.toDouble(),
-                height: heightsize.toDouble(),
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  svgPath,
-                  width: getSize24().toDouble(),
-                  height: getSize24().toDouble(),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
 Widget _warningPopOn(
     String svgPath,
@@ -2236,37 +2152,3 @@ Widget _warningPopOnDetail(
   );
 }
 
-class _CircularButtonState extends State<CircularButton> {
-  bool isOn = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isOn = !isOn;
-        });
-        widget.onTap(); //  추가: 클릭 이벤트 실행
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: widget.widthSize.toDouble(),
-            height: widget.heightSize.toDouble(),
-            decoration: BoxDecoration(
-              color: isOn ? widget.colorOn : widget.colorOff,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: SvgPicture.asset(
-              widget.svgPath,
-              width: 24.0,
-              height: 24.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

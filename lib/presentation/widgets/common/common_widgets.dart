@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
 
 // svg 파일 불러오기
 Widget svgload(svgrul, height, width) {
@@ -73,81 +72,42 @@ Widget inputWidget(
           fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
-        hintStyle: TextStyle(
-            fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
-        labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
+        hintStyle: TextStyle(color: color),
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 포커스 시 테두리 색상과 두께
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 활성 상태 테두리 색상과 두께
+          borderRadius: BorderRadius.circular(8.0),
         ),
       ),
     ),
   );
 }
 
-// 텍스트 입력값을 받을 때 - .svg 파일 필요 할 때
-Widget inputWidgetSvg(
-    int widthsize,
-    int heightsize,
-    TextEditingController controller,
-    String title,
-    Color color,
-    String svgPath) {
+// 비활성화된 텍스트 입력 위젯
+Widget inputWidget_deactivate(
+  int widthsize,
+  int heightsize,
+  TextEditingController controller,
+  String title,
+  Color color, {
+  bool isEnabled = true,
+  bool isReadOnly = false,
+}) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
     child: TextField(
       controller: controller,
       style: const TextStyle(
-          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
+        fontSize: DesignConstants.fontSizeM,
+        decorationThickness: 0,
+      ),
+      enabled: isEnabled,
+      readOnly: isReadOnly,
       decoration: InputDecoration(
         hintText: title,
         hintStyle: TextStyle(
-            fontSize: DesignConstants.fontSizeM, color: color), // 힌트 스타일
-        labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 기본 테두리 색상과 두께
+          fontSize: DesignConstants.fontSizeM,
+          color: color,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 포커스 시 테두리 색상과 두께
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: color), // 활성 상태 테두리 색상과 두께
-        ),
-        suffixIcon: Padding(
-          padding: const EdgeInsets.all(12.0), // 아이콘 크기 조절
-          child: SvgPicture.asset(
-            svgPath,
-            width: 24,
-            height: 24,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-// 텍스트를 비활성화 할 때
-Widget inputWidget_deactivate(int widthsize, int heightsize,
-    TextEditingController controller, String title, Color color,
-    {bool isEnabled = true, bool isReadOnly = false}) {
-  return SizedBox(
-    width: widthsize.toDouble(),
-    height: heightsize.toDouble(),
-    child: TextField(
-      controller: controller,
-      style: const TextStyle(
-          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
-      enabled: isEnabled, // 비활성화 여부 설정
-      readOnly: isReadOnly, //읽기 여부 설정
-      decoration: InputDecoration(
-        hintText: title,
-        hintStyle: TextStyle(fontSize: DesignConstants.fontSizeM, color: color),
         labelStyle: const TextStyle(fontSize: DesignConstants.fontSizeM),
         border: OutlineInputBorder(
           borderSide: BorderSide(color: color),
@@ -158,42 +118,57 @@ Widget inputWidget_deactivate(int widthsize, int heightsize,
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: color),
         ),
+        disabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: color.withOpacity(0.5)),
+        ),
+        filled: true,
+        fillColor: isEnabled ? Colors.white : Colors.grey.shade100,
       ),
     ),
   );
 }
 
+// 상단 스낵바 표시 함수
 void showTopSnackBar(BuildContext context, String message) {
   final overlay = Overlay.of(context);
-  final overlayEntry = OverlayEntry(
+  late OverlayEntry overlayEntry;
+  
+  overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
-      top: MediaQuery.of(context).padding.top + 10, // 상태바 아래 10px 간격
-      left: 20,
-      right: 20,
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 16,
+      right: 16,
       child: Material(
         color: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: DesignConstants.spacing16,
-              vertical: DesignConstants.spacing12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: getColorgray_Type8(),
-            borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                  color: getColorgray_Type9(), blurRadius: 5, spreadRadius: 2),
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
             ],
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.info_outline, color: Colors.white),
-              const SizedBox(width: DesignConstants.spacing10),
+              const Icon(
+                Icons.info_outline,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   message,
                   style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -204,18 +179,147 @@ void showTopSnackBar(BuildContext context, String message) {
   );
 
   overlay.insert(overlayEntry);
-  Future.delayed(AnimationConstants.splashDuration, () {
+
+  // 3초 후 자동 제거
+  Future.delayed(const Duration(seconds: 3), () {
     overlayEntry.remove();
   });
 }
 
-// 현재 날짜 구하기
-String getCurrentDateString() {
-  DateTime now = DateTime.now();
-  return DateFormat('yyyy.MM.dd').format(now);
+// 원형 버튼 위젯 - 상태 관리 포함
+class CircularButton extends StatefulWidget {
+  final String svgPath;
+  final Color colorOn;
+  final Color colorOff;
+  final int widthSize;
+  final int heightSize;
+  final VoidCallback onTap;
+
+  const CircularButton({
+    super.key,
+    required this.svgPath,
+    required this.colorOn,
+    required this.colorOff,
+    required this.widthSize,
+    required this.heightSize,
+    required this.onTap,
+  });
+
+  @override
+  _CircularButtonState createState() => _CircularButtonState();
 }
 
-DateTime getCurrentDateDateTime() {
-  DateTime now = DateTime.now();
-  return DateTime.now();
+class _CircularButtonState extends State<CircularButton> {
+  bool isOn = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isOn = !isOn;
+        });
+        widget.onTap();
+      },
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: widget.widthSize.toDouble(),
+            height: widget.heightSize.toDouble(),
+            decoration: BoxDecoration(
+              color: isOn ? widget.colorOn : widget.colorOff,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: SvgPicture.asset(
+              widget.svgPath,
+              width: 24.0,
+              height: 24.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+// 슬라이드 온 버튼 빌더 함수 (전역 함수로 정의)
+// buildCircularButtonSlideOn 함수 제거됨 - 원래 스타일로 대체
+
+
+// 원래 스타일의 슬라이드 버튼 함수 복원
+Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize, int heightsize,
+    String labelText, int widthSizeline, String statusText,
+    {VoidCallback? onTap, bool isSelected = true}) {
+  return Padding(
+    padding: EdgeInsets.only(bottom: getSize12().toDouble()),
+    child: SizedBox(
+      width: widthSizeline.toDouble(), // 최대 너비로 고정
+      height: heightsize.toDouble(),
+      child: Stack(
+        clipBehavior: Clip.none, // 자식이 영역을 넘어가도록 허용
+        children: [
+          // 확장/축소되는 배경 (애니메이션) - 원래 스타일
+          Positioned(
+            left: 0,
+            top: 0,
+            child: AnimatedContainer(
+              duration: AnimationConstants.durationQuick,
+              width: isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
+              height: heightsize.toDouble(),
+              decoration: BoxDecoration(
+                color: getColorblack_type1(), // 원래 배경색
+                borderRadius: BorderRadius.circular(getSize30().toDouble()), // 원래 둥근 모서리
+              ),
+            ),
+          ),
+
+          // 텍스트 영역 (확장 시에만 표시) - 원래 스타일
+          if (isSelected)
+            Positioned(
+              left: widthsize.toDouble() + 8, // 아이콘 오른쪽 여백 추가
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidgetString(
+                        labelText, getTextleft(), getSize14(), getText700(), getColorgray_Type2()),
+                    TextWidgetString(statusText, getTextleft(), getSize14(), getText700(),
+                        getColorwhite_type1()),
+                  ],
+                ),
+              ),
+            ),
+
+          // 원형 아이콘 (항상 왼쪽에 고정) - 원래 스타일
+          Positioned(
+            left: 0,
+            top: 0,
+            child: GestureDetector(
+              onTap: onTap,
+              child: Container(
+                width: widthsize.toDouble(),
+                height: heightsize.toDouble(),
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: SvgPicture.asset(
+                  svgPath,
+                  width: getSize24().toDouble(),
+                  height: getSize24().toDouble(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
