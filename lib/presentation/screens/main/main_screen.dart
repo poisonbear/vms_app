@@ -162,6 +162,10 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
       await _loadVesselDataAndUpdateMap(); // 최초 데이터 로드 및 이동
       // 3초마다 데이터 갱신
       _vesselUpdateTimer = Timer.periodic(AnimationConstants.autoScrollDelay, (timer) {
+        if (!mounted) {
+          timer.cancel();
+          return;
+        }
         _loadVesselDataAndUpdateMap(); // 주기적 데이터 로드
       });
     });
@@ -466,6 +470,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   //선박 데이터 로드 및 이동 메소드
   // 1️⃣ async/await 스타일로 변경
   Future<void> _loadVesselDataAndUpdateMap() async {
+    if (!mounted) return;
+
     try {
       final mmsi = context.read<UserState>().mmsi ?? 0;
       final role = context.read<UserState>().role;
@@ -521,7 +527,8 @@ class _mainViewViewState extends State<mainView> with TickerProviderStateMixin {
   void dispose() {
     _flashController.dispose();
     _timer?.cancel();
-    _routeUpdateTimer?.cancel(); // 추가: 선박 위치 갱신 타이머 취소
+    _routeUpdateTimer?.cancel();
+    _vesselUpdateTimer?.cancel();
     super.dispose();
   }
 

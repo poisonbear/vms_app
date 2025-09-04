@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/network/dio_client.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logger.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
@@ -19,15 +19,21 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // ===== Services & Dependencies =====
+  // ========================================
+  // Services & Dependencies
+  // ========================================
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DioRequest _dioRequest = DioRequest();
 
-  // ===== API Configuration =====
+  // ========================================
+  // API Configuration
+  // ========================================
   late final String _apiUrl;
   late final String _apiSearchUrl;
 
-  // ===== Form Controllers =====
+  // ========================================
+  // Form Controllers
+  // ========================================
   late final TextEditingController _idController;
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
@@ -36,14 +42,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _emailAddrController;
 
-  // ===== State Variables =====
+  // ========================================
+  // State Variables
+  // ========================================
   int? _isIdAvailable;
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isDirectInput = false;
   bool _isLoading = false;
 
-  // ===== Email Domain Configuration =====
+  // ========================================
+  // Email Domain Configuration
+  // ========================================
   String? _selectedEmailDomain;
   static const List<String> _emailDomains = [
     'naver.com',
@@ -52,7 +62,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     '직접입력'
   ];
 
-  // ===== Lifecycle Methods =====
+  // ========================================
+  // Lifecycle Methods
+  // ========================================
   @override
   void initState() {
     super.initState();
@@ -67,7 +79,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // ===== Initialization Methods =====
+  // ========================================
+  // Initialization Methods
+  // ========================================
   void _initializeControllers() {
     _idController = TextEditingController();
     _passwordController = TextEditingController();
@@ -92,499 +106,297 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _apiUrl = dotenv.env['kdn_usm_insert_membership_key'] ?? '';
     _apiSearchUrl = dotenv.env['kdn_usm_select_membership_search_key'] ?? '';
 
-    if (_apiUrl.isEmpty || _apiSearchUrl.isEmpty) {
-      AppLogger.e('API URLs not configured in .env');
-    }
+    // 디버깅용 로그
+    print('===== API URLs 로드 =====');
+    print('회원가입 API: $_apiUrl');
+    print('중복확인 API: $_apiSearchUrl');
+    print('========================');
   }
 
   void _setDefaultEmailDomain() {
-    _selectedEmailDomain = _emailDomains.first;
+    _selectedEmailDomain = _emailDomains[0];
     _emailAddrController.text = _selectedEmailDomain!;
   }
 
-  // ===== Business Logic Methods =====
+  // ========================================
+  // Validation Methods
+  // ========================================
+  bool _validateForm() {
+    // 아이디 검증
+    if (_idController.text.trim().isEmpty) {
+      showTopSnackBar(context, '아이디를 입력해주세요.');
+      return false;
+    }
 
-  /// 아이디 중복확인
+    if (_isIdAvailable != ValidationConstants.idAvailable) {
+      showTopSnackBar(context, '아이디 중복확인을 해주세요.');
+      return false;
+    }
+
+    // 비밀번호 검증
+    if (_passwordController.text.isEmpty) {
+      showTopSnackBar(context, '비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    if (_confirmPasswordController.text.isEmpty) {
+      showTopSnackBar(context, '비밀번호 확인을 입력해주세요.');
+      return false;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      showTopSnackBar(context, '비밀번호가 일치하지 않습니다.');
+      return false;
+    }
+
+    if (!ValidationPatterns.isValidPassword(_passwordController.text)) {
+      showTopSnackBar(context, '비밀번호는 6-12자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+      return false;
+    }
+
+    // MMSI 검증
+    if (_mmsiController.text.trim().isEmpty) {
+      showTopSnackBar(context, 'MMSI를 입력해주세요.');
+      return false;
+    }
+
+    if (!ValidationPatterns.isValidMmsi(_mmsiController.text)) {
+      showTopSnackBar(context, 'MMSI는 9자리 숫자여야 합니다.');
+      return false;
+    }
+
+    // 전화번호 검증
+    if (_phoneController.text.trim().isEmpty) {
+      showTopSnackBar(context, '전화번호를 입력해주세요.');
+      return false;
+    }
+
+    if (!ValidationPatterns.isValidPhone(_phoneController.text)) {
+      showTopSnackBar(context, '올바른 전화번호 형식이 아닙니다.');
+      return false;
+    }
+
+    // 이메일 검증 (선택사항)
+    if (_emailController.text.trim().isNotEmpty || _emailAddrController.text.trim().isNotEmpty) {
+      if (_emailController.text.trim().isEmpty || _emailAddrController.text.trim().isEmpty) {
+        showTopSnackBar(context, '이메일을 완전히 입력해주세요.');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // ========================================
+  // API Methods
+  // ========================================
   Future<void> _checkIdDuplicate() async {
     final id = _idController.text.trim();
 
-    if (!_validateIdFormat(id)) return;
+    if (id.isEmpty) {
+      showTopSnackBar(context, '아이디를 입력해주세요.');
+      return;
+    }
 
-    setState(() => _isLoading = true);
+    if (!ValidationPatterns.isValidId(id)) {
+      showTopSnackBar(context, '아이디는 영문과 숫자만 사용 가능합니다.');
+      return;
+    }
 
     try {
+      print('중복확인 API 호출: $_apiSearchUrl');
+      print('전송 데이터: user_id=$id');
+
       final response = await _dioRequest.dio.post(
         _apiSearchUrl,
         data: {'user_id': id},
       );
 
-      _processIdCheckResponse(response);
-    } on DioException catch (e) {
-      _handleIdCheckError(e);
+      if (!mounted) return;
+
+      print('응답 데이터: ${response.data}');
+
+      setState(() {
+        // API 응답에 따른 처리
+        if (response.data is int) {
+          _isIdAvailable = response.data;
+        } else if (response.data is Map) {
+          _isIdAvailable = response.data['result'] ??
+              response.data['available'] ??
+              response.data['code'] ?? 1;
+        } else {
+          _isIdAvailable = ValidationConstants.idAvailable;
+        }
+      });
+
+      final message = _isIdAvailable == ValidationConstants.idAvailable
+          ? '사용 가능한 아이디입니다.'
+          : '이미 사용 중인 아이디입니다.';
+      showTopSnackBar(context, message);
     } catch (e) {
-      _showSnackBar('서버 오류가 발생했습니다.');
-      setState(() => _isIdAvailable = null);
-    } finally {
-      setState(() => _isLoading = false);
+      logger.e('ID 중복 확인 실패: $e');
+      showTopSnackBar(context, '아이디 중복 확인에 실패했습니다.');
     }
   }
 
-  bool _validateIdFormat(String id) {
-    if (id.isEmpty) {
-      _showSnackBar('아이디를 입력해주세요.');
-      return false;
-    }
+  Future<void> _register() async {
+    if (!_validateForm()) return;
 
-    if (!ValidationPatterns.isValidId(id)) {
-      _showSnackBar('아이디 형식이 올바르지 않습니다.\n문자, 숫자 8~12자리로 입력해주세요.');
-      return false;
-    }
-
-    return true;
-  }
-
-  void _processIdCheckResponse(Response response) {
     setState(() {
-      if (response.data is int) {
-        _isIdAvailable = response.data;
-      } else if (response.data is Map) {
-        _isIdAvailable = response.data['result'] ?? response.data['code'] ?? 1;
-      } else {
-        _isIdAvailable = null;
-      }
+      _isLoading = true;
     });
 
-    final message = _isIdAvailable == ValidationConstants.idAvailable
-        ? '사용 가능한 아이디입니다.'
-        : '이미 사용 중인 아이디입니다.';
-    _showSnackBar(message);
-  }
-
-  void _handleIdCheckError(DioException e) {
-    String message;
-    if (e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.connectionTimeout) {
-      message = '서버에 연결할 수 없습니다.';
-    } else if (e.response?.statusCode == 404) {
-      message = 'API 엔드포인트를 찾을 수 없습니다.';
-    } else {
-      message = '중복확인 중 오류가 발생했습니다.';
-    }
-
-    _showSnackBar(message);
-    setState(() => _isIdAvailable = null);
-  }
-
-  /// 회원가입 처리
-  Future<void> _register() async {
-    print('\n========== 회원가입 프로세스 시작 ==========');
-
-    if (!_validateAllFields()) return;
-
-    setState(() => _isLoading = true);
-
     try {
-      final formData = _getFormData();
-      final id = formData['id'] ?? '';
-      final password = formData['password'] ?? '';
-
-      print('[회원가입] 입력 정보:');
-      print('  ID: $id');
-      print('  Firebase Email: $id@kdn.vms.com');
-
-      // Firebase 계정 생성 직접 시도
-      final firebaseEmail = '$id@kdn.vms.com';
-      print('[회원가입] createUserWithEmailAndPassword 호출...');
-
-      UserCredential? userCredential;
-
-      try {
-        userCredential = await _auth.createUserWithEmailAndPassword(
-          email: firebaseEmail,
-          password: password,
-        );
-
-        print('✅ Firebase 계정 생성 성공!');
-        print('  UID: ${userCredential.user?.uid}');
-
-      } on FirebaseAuthException catch (e) {
-        print('❌ Firebase 계정 생성 실패: ${e.code}');
-
-        if (e.code == 'email-already-in-use') {
-          // 기존 계정 발견 - 사용자에게 선택권 제공
-          final shouldDelete = await _showExistingAccountDialog();
-
-          if (!shouldDelete) {
-            setState(() => _isLoading = false);
-            print('========== 회원가입 프로세스 종료 (사용자 취소) ==========\n');
-            return;
-          }
-
-          // 기존 계정 삭제 시도
-          final deleted = await _deleteExistingAccount(firebaseEmail, password);
-
-          if (!deleted) {
-            setState(() => _isLoading = false);
-            return;
-          }
-
-          // 계정 삭제 성공 - 다시 생성
-          try {
-            userCredential = await _auth.createUserWithEmailAndPassword(
-              email: firebaseEmail,
-              password: password,
-            );
-            print('✅ 계정 재생성 성공!');
-          } catch (retryError) {
-            print('❌ 계정 재생성 실패: $retryError');
-            _showSnackBar('계정 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
-            setState(() => _isLoading = false);
-            return;
-          }
-        } else {
-          // 다른 Firebase 에러 처리
-          _handleFirebaseAuthError(e);
-          setState(() => _isLoading = false);
-          return;
-        }
-      }
-
-      // 백엔드 API 호출
-      print('[회원가입] 백엔드 API 호출...');
-      await _registerToBackend(userCredential, formData);
-    
-      print('========== 회원가입 프로세스 완료 ==========\n');
-
-    } on DioException catch (e) {
-      print('❌ 백엔드 API 에러: $e');
-      await _handleBackendError(e);
-    } catch (e) {
-      print('❌ 예상치 못한 에러: $e');
-      AppLogger.e('Registration error: $e');
-      _showSnackBar('회원가입 중 오류가 발생했습니다.');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<bool> _showExistingAccountDialog() async {
-    return await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('기존 계정 발견'),
-        content: const Text(
-          '이전에 사용했던 계정 정보가 시스템에 남아있습니다.\n'
-              '기존 계정을 삭제하고 새로 가입하시겠습니까?\n\n'
-              '※ 동일한 비밀번호를 입력하셔야 처리 가능합니다.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('기존 계정 삭제 후 재가입'),
-          ),
-        ],
-      ),
-    ) ?? false;
-  }
-
-  Future<bool> _deleteExistingAccount(String email, String password) async {
-    print('[삭제 프로세스] 시작...');
-    print('  이메일: $email');
-
-    _showLoadingDialog();
-
-    try {
-      print('Firebase 로그인 시도...');
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
+      // Firebase 계정 생성
+      final firebaseEmail = '${_idController.text.trim()}@kdn.vms.com';
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: firebaseEmail,
+        password: _passwordController.text,
       );
 
-      print('✅ 로그인 성공!');
-      print('  UID: ${credential.user?.uid}');
+      // API 서버에 회원정보 등록
+      final email = _emailController.text.trim().isNotEmpty && _emailAddrController.text.trim().isNotEmpty
+          ? '${_emailController.text.trim()}@${_emailAddrController.text.trim()}'
+          : '';
 
-      print('계정 삭제 시도...');
-      await credential.user?.delete();
+      final response = await _dioRequest.dio.post(
+        _apiUrl,
+        data: {
+          'user_id': _idController.text.trim(),
+          'user_pwd': _passwordController.text,
+          'mmsi': _mmsiController.text.trim(),
+          'mphn_no': _phoneController.text.trim(),
+          'email_addr': email,
+          'firebase_uuid': userCredential.user?.uid,
+          'choice_time': widget.nowTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
+        },
+      );
 
-      print('✅ 계정 삭제 완료!');
+      if (!mounted) return;
 
-      Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
-      _showSnackBar('기존 계정이 삭제되었습니다. 회원가입을 진행합니다.');
-
-      await Future.delayed(const Duration(seconds: 1));
-      print('[삭제 프로세스] 성공적으로 완료');
-      return true;
-
-    } on FirebaseAuthException catch (e) {
-      Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
-
-      print('❌ Firebase 인증 오류 발생:');
-      print('  에러 코드: ${e.code}');
-      print('  에러 메시지: ${e.message}');
-
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        await _showPasswordMismatchDialog();
-        return false;
-      } else if (e.code == 'user-not-found') {
-        _showSnackBar('계정을 찾을 수 없습니다.');
-        return true; // 이미 없으므로 진행 가능
+      // API 응답 확인
+      if (response.statusCode == 200 || response.data['result'] == 'success') {
+        // 회원가입 완료 화면으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const RegisterCompleteView(),
+          ),
+        );
       } else {
-        _showSnackBar('기존 계정 처리 중 오류: ${e.code}');
-        return false;
+        // Firebase 계정 삭제
+        await userCredential.user?.delete();
+        showTopSnackBar(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (e) {
-      Navigator.of(context).pop();
-      print('❌ 예상치 못한 오류: $e');
-      _showSnackBar('계정 삭제 중 오류가 발생했습니다.');
-      return false;
-    }
-  }
+      logger.e('회원가입 실패: $e');
 
-  Future<void> _showPasswordMismatchDialog() {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('비밀번호 불일치'),
-        content: const Text(
-          '기존 계정의 비밀번호와 일치하지 않습니다.\n'
-              '다른 아이디를 사용하시거나, 관리자에게 문의해주세요.\n\n'
-              '고객센터: 1234-5678',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
-  }
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
+        } else if (e.code == 'weak-password') {
+          showTopSnackBar(context, '비밀번호가 너무 약합니다.');
+        } else {
+          showTopSnackBar(context, '회원가입에 실패했습니다. ${e.message}');
+        }
+      } else if (e is DioException) {
+        // Firebase 계정이 생성되었다면 삭제
+        try {
+          await FirebaseAuth.instance.currentUser?.delete();
+        } catch (_) {}
 
-  bool _validateAllFields() {
-    final formData = _getFormData();
-
-    final id = formData['id'] ?? '';
-    final password = formData['password'] ?? '';
-    final confirmPassword = formData['confirmPassword'] ?? '';
-    final mmsi = formData['mmsi'] ?? '';
-    final phone = formData['phone'] ?? '';
-    final emailaddr = formData['emailaddr'] ?? '';
-
-    // 필수 항목 체크
-    if (id.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty ||
-        mmsi.isEmpty) {
-      _showSnackBar('회원가입을 위해 필수 항목을 입력해주세요.');
-      return false;
-    }
-
-    // 중복확인 체크
-    if (_isIdAvailable == null) {
-      _showSnackBar('아이디 중복 확인을 해주세요.');
-      return false;
-    }
-
-    if (_isIdAvailable != ValidationConstants.idAvailable) {
-      _showSnackBar('이미 사용 중인 아이디입니다.');
-      return false;
-    }
-
-    // 유효성 검사
-    if (!ValidationPatterns.isValidPassword(password)) {
-      _showSnackBar('비밀번호 형식이 올바르지 않습니다.');
-      return false;
-    }
-
-    if (!ValidationPatterns.isValidMmsi(mmsi)) {
-      _showSnackBar('MMSI 형식이 올바르지 않습니다.');
-      return false;
-    }
-
-    if (phone.isNotEmpty &&
-        !ValidationPatterns.isValidPhone(phone)) {
-      _showSnackBar('휴대폰 번호 형식이 올바르지 않습니다.');
-      return false;
-    }
-
-    if (password != confirmPassword) {
-      _showSnackBar('비밀번호가 일치하지 않습니다.');
-      return false;
-    }
-
-    if (_isDirectInput && emailaddr.isEmpty) {
-      _showSnackBar('이메일 도메인을 입력해주세요.');
-      return false;
-    }
-
-    return true;
-  }
-
-  Map<String, String> _getFormData() {
-    return {
-      'id': _idController.text.trim(),
-      'password': _passwordController.text,
-      'confirmPassword': _confirmPasswordController.text,
-      'mmsi': _mmsiController.text,
-      'phone': _phoneController.text,
-      'email': _emailController.text,
-      'emailaddr': _isDirectInput
-          ? _emailAddrController.text
-          : _selectedEmailDomain ?? '',
-    };
-  }
-
-  Future<void> _registerToBackend(
-      UserCredential userCredential,
-      Map<String, String> formData,
-      ) async {
-    final id = formData['id'] ?? '';
-    final password = formData['password'] ?? '';
-    final mmsi = formData['mmsi'] ?? '';
-    final phone = formData['phone'] ?? '';
-    final email = formData['email'] ?? '';
-    final emailaddr = formData['emailaddr'] ?? '';
-
-    print('[백엔드 API] 전송 데이터:');
-    print('  user_id: $id');
-    print('  mmsi: $mmsi');
-    print('  mphn_no: $phone');
-    print('  firebase_uuid: ${userCredential.user!.uid}');
-    print('  email_addr: ${(email.isNotEmpty && emailaddr.isNotEmpty) ? '$email@$emailaddr' : '(빈값)'}');
-    print('  choice_time: ${widget.nowTime?.toIso8601String() ?? DateTime.now().toIso8601String()}');
-
-    final response = await _dioRequest.dio.post(
-      _apiUrl,
-      data: {
-        'user_id': id,
-        'user_pwd': password,
-        'mmsi': mmsi,
-        'mphn_no': phone,
-        'firebase_uuid': userCredential.user!.uid,
-        'email_addr': (email.isNotEmpty && emailaddr.isNotEmpty)
-            ? '$email@$emailaddr'
-            : '',
-        'choice_time': widget.nowTime?.toIso8601String() ??
-            DateTime.now().toIso8601String(),
-      },
-    );
-
-    print('[백엔드 API] 응답:');
-    print('  Status: ${response.statusCode}');
-    print('  Data: ${response.data}');
-
-    if (response.data['result'] == 'success' || response.statusCode == 200) {
-      _navigateToCompleteScreen();
-    } else {
-      await userCredential.user?.delete();
-      _showSnackBar('회원가입에 실패했습니다. 다시 시도해주세요.');
-    }
-  }
-
-  void _handleFirebaseAuthError(FirebaseAuthException e) {
-    final message = switch (e.code) {
-      'weak-password' => '비밀번호가 너무 약합니다.',
-      'email-already-in-use' => '계정이 이미 존재합니다.',
-      _ => '회원가입 중 오류가 발생했습니다.',
-    };
-    _showSnackBar(message);
-  }
-
-  Future<void> _handleBackendError(DioException e) async {
-    try {
-      await FirebaseAuth.instance.currentUser?.delete();
-    } catch (_) {}
-
-    if (e.response?.statusCode == 404) {
-      AppLogger.i('API 404 - Proceeding with Firebase only');
-      _navigateToCompleteScreen();
-    } else {
-      _showSnackBar('회원가입 처리 중 오류가 발생했습니다.');
-    }
-  }
-
-  // ===== UI Helper Methods =====
-  void _showSnackBar(String message) {
-    showTopSnackBar(context, message);
-  }
-
-  void _showLoadingDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-
-  void _navigateToCompleteScreen() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const RegisterCompleteView(),
-      ),
-    );
-  }
-
-  void _onIdChanged(String value) {
-    setState(() {
-      if (_isIdAvailable != null) {
-        _isIdAvailable = null;
+        if (e.response?.statusCode == 404) {
+          // API 엔드포인트가 없는 경우에도 진행
+          logger.i('API 404 - Proceeding with Firebase only');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const RegisterCompleteView(),
+            ),
+          );
+        } else {
+          showTopSnackBar(context, '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      } else {
+        showTopSnackBar(context, '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.');
       }
-    });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  void _onEmailDomainChanged(String? newValue) {
+  // ========================================
+  // Event Handlers
+  // ========================================
+  void _onEmailDomainChanged(String? value) {
     setState(() {
-      _selectedEmailDomain = newValue;
-      if (newValue == '직접입력') {
+      _selectedEmailDomain = value;
+      if (value == '직접입력') {
         _isDirectInput = true;
         _emailAddrController.clear();
       } else {
         _isDirectInput = false;
-        _emailAddrController.text = newValue ?? '';
+        _emailAddrController.text = value ?? '';
       }
     });
   }
 
-  // ===== Build Methods =====
+  void _onIdChanged(String value) {
+    setState(() {
+      _isIdAvailable = null;
+    });
+  }
+
+  // ========================================
+  // Build Methods
+  // ========================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: getColorwhite_type1(),
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        backgroundColor: getColorwhite_type1(),
         title: const AppBarLayerView('회원가입'),
         centerTitle: true,
       ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildProgressIndicator(),
-          const SizedBox(height: 30),
-          _buildHeader(),
-          const SizedBox(height: 30),
-          _buildForm(),
-          const SizedBox(height: 40),
-          _buildSubmitButton(),
-        ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              _buildProgressIndicator(),
+              const SizedBox(height: 40),
+              _buildIdSection(),
+              const SizedBox(height: 24),
+              _buildPasswordSection(),
+              const SizedBox(height: 24),
+              _buildConfirmPasswordSection(),
+              const SizedBox(height: 24),
+              _buildMmsiSection(),
+              const SizedBox(height: 24),
+              _buildPhoneSection(),
+              const SizedBox(height: 24),
+              _buildEmailSection(),
+              const SizedBox(height: 40),
+              _buildSubmitButton(),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
       ),
     );
   }
 
+  // ========================================
+  // UI Builder Methods
+  // ========================================
   Widget _buildProgressIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -598,55 +410,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildStepIndicator(int step, String label, bool isActive) {
     return Column(
       children: [
-        TextWidgetString(
-          'K-VMS',
-          getTextcenter(),
-          24,
-          getText700(),
-          getColorblack_type2(),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isActive ? getColorsky_Type2() : getColorgray_Type3(),
+          ),
+          child: Center(
+            child: Text(
+              '$step',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: getText600(),
+                color: getColorwhite_type1(),
+              ),
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextWidgetString(
-          '회원정보를 입력해주세요',
+          label,
           getTextcenter(),
-          14,
+          12,
           getText400(),
-          getColorgray_Type2(),
+          isActive ? getColorblack_type2() : getColorgray_Type2(),
         ),
       ],
     );
   }
 
-  Widget _buildForm() {
-    return Column(
-      children: [
-        _buildIdSection(),
-        const SizedBox(height: 20),
-        _buildPasswordSection(),
-        const SizedBox(height: 20),
-        _buildConfirmPasswordSection(),
-        const SizedBox(height: 20),
-        _buildMmsiSection(),
-        const SizedBox(height: 20),
-        _buildPhoneSection(),
-        const SizedBox(height: 20),
-        _buildEmailSection(),
-      ],
+  Widget _buildStepConnector() {
+    return Container(
+      width: 40,
+      height: 2,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: getColorgray_Type3(),
     );
   }
 
   Widget _buildIdSection() {
-    return Column(
-      children: [
-        _buildInputSection(
-          label: '아이디',
-          isRequired: true,
-          child: Row(
+    return _buildInputSection(
+      label: '아이디',
+      isRequired: true,
+      child: Column(
+        children: [
+          Row(
             children: [
               Expanded(
+                flex: 7,
                 child: _buildTextField(
                   controller: _idController,
                   hintText: '아이디를 입력하세요',
@@ -654,22 +469,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              _buildIdCheckButton(),
+              Expanded(
+                flex: 3,
+                child: _buildIdDuplicateButton(),
+              ),
             ],
           ),
-        ),
-        _buildIdStatusIndicator(),
-      ],
+          _buildIdStatusIndicator(),
+        ],
+      ),
     );
   }
 
-  Widget _buildIdCheckButton() {
+  Widget _buildIdDuplicateButton() {
     return SizedBox(
       height: 48,
       child: ElevatedButton(
-        onPressed: _idController.text.trim().isNotEmpty && !_isLoading
-            ? _checkIdDuplicate
-            : null,
+        onPressed: !_isLoading ? _checkIdDuplicate : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: getColorsky_Type2(),
           shape: RoundedRectangleBorder(
@@ -677,9 +493,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
         child: Text(
-          _isIdAvailable == ValidationConstants.idAvailable
-              ? '재확인'
-              : '중복확인',
+          _isIdAvailable == ValidationConstants.idAvailable ? '재확인' : '중복확인',
           style: TextStyle(
             fontSize: 14,
             fontWeight: getText600(),
@@ -704,9 +518,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return _buildStatusRow(
         icon: isAvailable ? Icons.check_circle : Icons.error,
         color: isAvailable ? Colors.green : getColorred_type1(),
-        message: isAvailable
-            ? '사용 가능한 아이디입니다'
-            : '이미 사용 중인 아이디입니다',
+        message: isAvailable ? '사용 가능한 아이디입니다' : '이미 사용 중인 아이디입니다',
       );
     }
 
@@ -784,7 +596,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       isRequired: true,
       child: _buildTextField(
         controller: _mmsiController,
-        hintText: 'MMSI를 입력하세요',
+        hintText: 'MMSI 번호를 입력하세요',
         keyboardType: TextInputType.number,
       ),
     );
@@ -792,11 +604,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildPhoneSection() {
     return _buildInputSection(
-      label: '휴대폰 번호',
-      isRequired: false,
+      label: '전화번호',
+      isRequired: true,
       child: _buildTextField(
         controller: _phoneController,
-        hintText: '휴대폰 번호를 입력하세요',
+        hintText: '전화번호를 입력하세요',
         keyboardType: TextInputType.phone,
       ),
     );
@@ -809,37 +621,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: Row(
         children: [
           Expanded(
+            flex: 5,
             child: _buildTextField(
               controller: _emailController,
               hintText: '이메일',
+              keyboardType: TextInputType.emailAddress,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextWidgetString(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
               '@',
-              getTextcenter(),
-              16,
-              getText400(),
-              getColorblack_type2(),
+              style: TextStyle(
+                fontSize: 16,
+                color: getColorgray_Type2(),
+              ),
             ),
           ),
           Expanded(
-            child: _isDirectInput
-                ? _buildTextField(
-              controller: _emailAddrController,
-              hintText: '도메인 입력',
-            )
-                : _buildEmailDomainDropdown(),
+            flex: 5,
+            child: _isDirectInput ? _buildEmailDirectInput() : _buildEmailDomainDropdown(),
           ),
         ],
       ),
     );
   }
 
+  Widget _buildEmailDirectInput() {
+    return _buildTextField(
+      controller: _emailAddrController,
+      hintText: '직접입력',
+      keyboardType: TextInputType.emailAddress,
+    );
+  }
+
   Widget _buildEmailDomainDropdown() {
     return Container(
       height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         border: Border.all(color: getColorgray_Type3()),
         borderRadius: BorderRadius.circular(8),
@@ -849,25 +668,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: DropdownButton<String>(
           value: _selectedEmailDomain,
           isExpanded: true,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          icon: Icon(
-            Icons.arrow_drop_down,
-            color: getColorblack_type2(),
-          ),
-          style: TextStyle(
-            fontSize: 14,
-            color: getColorblack_type2(),
-          ),
-          items: _emailDomains.map((domain) {
+          icon: Icon(Icons.arrow_drop_down, color: getColorgray_Type2()),
+          items: _emailDomains.map((String value) {
             return DropdownMenuItem<String>(
-              value: domain,
+              value: value,
               child: Text(
-                domain,
+                value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: domain == '직접입력'
-                      ? getColorgray_Type2()
-                      : getColorblack_type2(),
+                  color: value == '직접입력' ? getColorgray_Type2() : getColorblack_type2(),
                 ),
               ),
             );
@@ -904,49 +713,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ===== Reusable Widget Builders =====
-  Widget _buildStepIndicator(int step, String label, bool isActive) {
-    return Column(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isActive ? getColorsky_Type2() : getColorgray_Type3(),
-          ),
-          child: Center(
-            child: Text(
-              '$step',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: getText600(),
-                color: getColorwhite_type1(),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        TextWidgetString(
-          label,
-          getTextcenter(),
-          12,
-          getText400(),
-          isActive ? getColorblack_type2() : getColorgray_Type2(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStepConnector() {
-    return Container(
-      width: 40,
-      height: 2,
-      margin: const EdgeInsets.only(bottom: 20),
-      color: getColorgray_Type3(),
-    );
-  }
-
+  // ========================================
+  // Reusable Widget Builders
+  // ========================================
   Widget _buildInputSection({
     required String label,
     required bool isRequired,
@@ -1007,9 +776,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: enabled
-            ? getColorwhite_type1()
-            : getColorgray_Type3().withOpacity(0.5),
+        fillColor: enabled ? getColorwhite_type1() : getColorgray_Type3().withOpacity(0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
@@ -1035,7 +802,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 }
 
-// ===== Backward Compatibility =====
+// ========================================
+// Backward Compatibility
+// ========================================
 class Membershipview extends StatefulWidget {
   final DateTime nowTime;
 
