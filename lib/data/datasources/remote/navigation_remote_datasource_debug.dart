@@ -1,5 +1,6 @@
 import 'package:vms_app/core/constants/api_endpoints.dart';
 import 'package:vms_app/core/utils/logger.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/data/models/navigation/navigation_model.dart';
@@ -24,7 +25,8 @@ class RosSource {
         receiveTimeout: const Duration(seconds: 100),
       );
 
-      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response =
+          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
@@ -32,7 +34,9 @@ class RosSource {
       }
 
       if (response.data is List) {
-        return (response.data as List).map<RosModel>((json) => RosModel.fromJson(json)).toList();
+        return (response.data as List)
+            .map<RosModel>((json) => RosModel.fromJson(json))
+            .toList();
       }
 
       return [];
@@ -85,22 +89,22 @@ class RosSource {
 
       // 디버그용 로그 추가
       if (kDebugMode) {
-        debugPrint('🚢 === 항행경보 API 응답 ===');
-        debugPrint('Response type: ${response.data.runtimeType}');
+        AppLogger.d('🚢 === 항행경보 API 응답 ===');
+        AppLogger.d('Response type: ${response.data.runtimeType}');
         if (response.data != null && response.data['data'] != null) {
-          debugPrint('Data type: ${response.data['data'].runtimeType}');
-          debugPrint('Data content: ${response.data['data']}');
-          
+          AppLogger.d('Data type: ${response.data['data'].runtimeType}');
+          AppLogger.d('Data content: ${response.data['data']}');
+
           // 각 항목의 구조 확인
           if (response.data['data'] is List) {
             List<dynamic> dataList = response.data['data'];
             for (int i = 0; i < dataList.length && i < 3; i++) {
-              debugPrint('Item $i type: ${dataList[i].runtimeType}');
-              debugPrint('Item $i content: ${dataList[i]}');
+              AppLogger.d('Item $i type: ${dataList[i].runtimeType}');
+              AppLogger.d('Item $i content: ${dataList[i]}');
             }
           }
         }
-        debugPrint('🚢 =====================');
+        AppLogger.d('🚢 =====================');
       }
 
       if (response.data != null && response.data['data'] != null) {

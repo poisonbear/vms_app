@@ -36,14 +36,16 @@ Future<void> _setupFlutterNotifications() async {
     importance: Importance.high,
   );
 
-  final AndroidFlutterLocalNotificationsPlugin? androidPlugin = flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
+      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidPlugin != null) {
     await androidPlugin.createNotificationChannel(channel);
   }
 
-  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
   const initializationSettingsIOS = DarwinInitializationSettings();
 
   const initializationSettings = InitializationSettings(

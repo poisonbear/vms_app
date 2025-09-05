@@ -8,10 +8,10 @@ class OptimizedListView<T> extends StatelessWidget {
   final bool shrinkWrap;
   final ScrollPhysics? physics;
   final EdgeInsetsGeometry? padding;
-  
+
   // 성능 관련 설정
-  final double? itemExtent;  // 아이템 높이가 고정일 때 사용
-  final int? itemCacheExtent;  // 캐시할 아이템 수
+  final double? itemExtent; // 아이템 높이가 고정일 때 사용
+  final int? itemCacheExtent; // 캐시할 아이템 수
 
   const OptimizedListView({
     super.key,
@@ -47,7 +47,7 @@ class OptimizedListView<T> extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       physics: physics,
       padding: padding,
-      itemExtent: itemExtent,  // 성능 향상
+      itemExtent: itemExtent, // 성능 향상
       cacheExtent: itemCacheExtent?.toDouble(),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -103,7 +103,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final newItems = await widget.loadMore(0);
       setState(() {
@@ -120,9 +120,9 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
   Future<void> _loadMoreData() async {
     if (_isLoading || !_hasMore) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final newItems = await widget.loadMore(_currentPage);
       setState(() {

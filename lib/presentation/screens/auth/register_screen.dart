@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/network/dio_client.dart';
 import 'package:vms_app/core/utils/logger.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:vms_app/presentation/widgets/common/custom_app_bar.dart';
@@ -55,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Email Domain Configuration
   // ========================================
   String? _selectedEmailDomain;
-  static const List<String> _emailDomains = [
+  static final List<String> _emailDomains = [
     'naver.com',
     'gmail.com',
     'hanmail.net',
@@ -107,10 +108,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _apiSearchUrl = dotenv.env['kdn_usm_select_membership_search_key'] ?? '';
 
     // 디버깅용 로그
-    print('===== API URLs 로드 =====');
-    print('회원가입 API: $_apiUrl');
-    print('중복확인 API: $_apiSearchUrl');
-    print('========================');
+    AppLogger.d('===== API URLs 로드 =====');
+    AppLogger.d('회원가입 API: $_apiUrl');
+    AppLogger.d('중복확인 API: $_apiSearchUrl');
+    AppLogger.d('========================');
   }
 
   void _setDefaultEmailDomain() {
@@ -177,8 +178,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // 이메일 검증 (선택사항)
-    if (_emailController.text.trim().isNotEmpty || _emailAddrController.text.trim().isNotEmpty) {
-      if (_emailController.text.trim().isEmpty || _emailAddrController.text.trim().isEmpty) {
+    if (_emailController.text.trim().isNotEmpty ||
+        _emailAddrController.text.trim().isNotEmpty) {
+      if (_emailController.text.trim().isEmpty ||
+          _emailAddrController.text.trim().isEmpty) {
         showTopSnackBar(context, '이메일을 완전히 입력해주세요.');
         return false;
       }
@@ -204,8 +207,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      print('중복확인 API 호출: $_apiSearchUrl');
-      print('전송 데이터: user_id=$id');
+      AppLogger.d('중복확인 API 호출: $_apiSearchUrl');
+      AppLogger.d('전송 데이터: user_id=$id');
 
       final response = await _dioRequest.dio.post(
         _apiSearchUrl,
@@ -214,7 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (!mounted) return;
 
-      print('응답 데이터: ${response.data}');
+      AppLogger.d('응답 데이터: ${response.data}');
 
       setState(() {
         // API 응답에 따른 처리
@@ -223,7 +226,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         } else if (response.data is Map) {
           _isIdAvailable = response.data['result'] ??
               response.data['available'] ??
-              response.data['code'] ?? 1;
+              response.data['code'] ??
+              1;
         } else {
           _isIdAvailable = ValidationConstants.idAvailable;
         }
@@ -255,7 +259,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       // API 서버에 회원정보 등록
-      final email = _emailController.text.trim().isNotEmpty && _emailAddrController.text.trim().isNotEmpty
+      final email = _emailController.text.trim().isNotEmpty &&
+              _emailAddrController.text.trim().isNotEmpty
           ? '${_emailController.text.trim()}@${_emailAddrController.text.trim()}'
           : '';
 
@@ -268,7 +273,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'mphn_no': _phoneController.text.trim(),
           'email_addr': email,
           'firebase_uuid': userCredential.user?.uid,
-          'choice_time': widget.nowTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
+          'choice_time': widget.nowTime?.toIso8601String() ??
+              DateTime.now().toIso8601String(),
         },
       );
 
@@ -303,7 +309,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Firebase 계정이 생성되었다면 삭제
         try {
           await FirebaseAuth.instance.currentUser?.delete();
-        } catch (_) {}
+        } catch (e) {
+          // Ignored error
+          AppLogger.d("Ignored: $e");
+        }
 
         if (e.response?.statusCode == 404) {
           // API 엔드포인트가 없는 경우에도 진행
@@ -640,7 +649,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           Expanded(
             flex: 5,
-            child: _isDirectInput ? _buildEmailDirectInput() : _buildEmailDomainDropdown(),
+            child: _isDirectInput
+                ? _buildEmailDirectInput()
+                : _buildEmailDomainDropdown(),
           ),
         ],
       ),
@@ -676,7 +687,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: value == '직접입력' ? getColorgray_Type2() : getColorblack_type2(),
+                  color: value == '직접입력'
+                      ? getColorgray_Type2()
+                      : getColorblack_type2(),
                 ),
               ),
             );
@@ -702,13 +715,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : Text(
-          '회원가입',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: getText700(),
-            color: getColorwhite_type1(),
-          ),
-        ),
+                '회원가입',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: getText700(),
+                  color: getColorwhite_type1(),
+                ),
+              ),
       ),
     );
   }
@@ -776,7 +789,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: enabled ? getColorwhite_type1() : getColorgray_Type3().withOpacity(0.5),
+        fillColor: enabled
+            ? getColorwhite_type1()
+            : getColorgray_Type3().withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,

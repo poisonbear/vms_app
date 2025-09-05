@@ -2,6 +2,9 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude:
+    - "safe_backup_*/**"
+    - "*_backup_*/**"
+    - "backup_*/**"
     - "**/.dart_tool/**"
     - "**/build/**"
     - "**/generated_plugin_registrant.dart"

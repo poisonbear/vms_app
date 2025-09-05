@@ -49,7 +49,7 @@ class RegisterCompleteView extends StatelessWidget {
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: getColorsky_Type2().withOpacity(0.1),
+                    color: getColorsky_Type2().withValues(alpha: 0.1),
                   ),
                   child: Icon(
                     Icons.check_circle,

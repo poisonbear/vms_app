@@ -23,7 +23,8 @@ class RosSource {
         receiveTimeout: const Duration(seconds: 100),
       );
 
-      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response =
+          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       // 로그 출력
       //logger.d("[API URL] : ${apiUrl}");
@@ -35,7 +36,9 @@ class RosSource {
       }
 
       if (response.data is List) {
-        return (response.data as List).map<RosModel>((json) => RosModel.fromJson(json)).toList();
+        return (response.data as List)
+            .map<RosModel>((json) => RosModel.fromJson(json))
+            .toList();
       }
 
       return [];

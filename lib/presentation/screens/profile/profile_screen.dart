@@ -89,11 +89,15 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                       padding: EdgeInsets.only(top: getSize6().toDouble()),
                       child: Column(
                         children: [
-                          TextWidgetString('${widget.username}님', getTextcenter(), getSize20(),
-                              getText700(), getColorblack_type2()),
+                          TextWidgetString(
+                              '${widget.username}님',
+                              getTextcenter(),
+                              getSize20(),
+                              getText700(),
+                              getColorblack_type2()),
                           SizedBox(height: getSize8().toDouble()),
-                          TextWidgetString('반갑습니다.', getTextcenter(), getSize12(), getText700(),
-                              getColorgray_Type3()),
+                          TextWidgetString('반갑습니다.', getTextcenter(),
+                              getSize12(), getText700(), getColorgray_Type3()),
                         ],
                       ),
                     ),
@@ -105,8 +109,9 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               SizedBox(height: getSize20().toDouble()),
 
               Padding(
-                padding:
-                    EdgeInsets.only(top: getSize20().toDouble(), bottom: getSize20().toDouble()),
+                padding: EdgeInsets.only(
+                    top: getSize20().toDouble(),
+                    bottom: getSize20().toDouble()),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextWidgetString(
@@ -143,7 +148,8 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                             _logout();
                             Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(builder: (context) => const LoginView()),
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginView()),
                               (Route<dynamic> route) => false,
                             );
                           },
@@ -170,13 +176,14 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               Padding(
-                padding:
-                    EdgeInsets.only(right: getSize12().toDouble(), left: getSize12().toDouble()),
+                padding: EdgeInsets.only(
+                    right: getSize12().toDouble(),
+                    left: getSize12().toDouble()),
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(children: [
-                      TextWidgetString(
-                          '자동 로그인', getTextleft(), getSize16(), getText700(), getColorgray_Type3()),
+                      TextWidgetString('자동 로그인', getTextleft(), getSize16(),
+                          getText700(), getColorgray_Type3()),
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
@@ -190,20 +197,29 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                           width: getSize70().toDouble(),
                           height: getSize36().toDouble(),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(DesignConstants.radiusXL),
+                            borderRadius:
+                                BorderRadius.circular(DesignConstants.radiusXL),
                             border: Border.all(
                               // ✅ 테두리 색 변경 가능
-                              color: _isSwitched ? getColorsky_Type2() : getColorgray_Type11(),
+                              color: _isSwitched
+                                  ? getColorsky_Type2()
+                                  : getColorgray_Type11(),
                             ),
-                            color: _isSwitched ? getColorsky_Type2() : getColorgray_Type11(),
+                            color: _isSwitched
+                                ? getColorsky_Type2()
+                                : getColorgray_Type11(),
                           ),
                           child: Stack(
                             children: [
                               AnimatedPositioned(
                                 duration: AnimationConstants.durationFast,
                                 curve: Curves.easeInOut,
-                                left: _isSwitched ? getSize30().toDouble() : getSize0().toDouble(),
-                                right: _isSwitched ? getSize0().toDouble() : getSize30().toDouble(),
+                                left: _isSwitched
+                                    ? getSize30().toDouble()
+                                    : getSize0().toDouble(),
+                                right: _isSwitched
+                                    ? getSize0().toDouble()
+                                    : getSize30().toDouble(),
                                 top: getSize4().toDouble(), // 상단 간격 추가
                                 bottom: getSize4().toDouble(), // 하단 간격 추가
                                 child: Container(
@@ -211,8 +227,9 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                                   height: getSize30().toDouble(),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color:
-                                        _isSwitched ? getColorwhite_type1() : getColorwhite_type1(),
+                                    color: _isSwitched
+                                        ? getColorwhite_type1()
+                                        : getColorwhite_type1(),
                                   ),
                                 ),
                               ),
@@ -272,7 +289,9 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               // 키보드가 올라와도 충분한 여백 확보
-              SizedBox(height: MediaQuery.of(context).viewInsets.bottom + getSize50().toDouble()),
+              SizedBox(
+                  height: MediaQuery.of(context).viewInsets.bottom +
+                      getSize50().toDouble()),
             ],
           ),
         ),

@@ -16,7 +16,7 @@ class VesselSearchSource {
   }) async {
     try {
       final String apiUrl = dotenv.env['kdn_gis_select_vessel_List'] ?? '';
-      
+
       if (apiUrl.isEmpty) {
         return const Failure(
           GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'),
@@ -53,7 +53,6 @@ class VesselSearchSource {
 
       logger.d('Vessel list fetched: ${vessels.length} items');
       return Success(vessels);
-      
     } catch (e) {
       logger.e('Vessel API Error: $e');
       final exception = ErrorHandler.handleError(e);

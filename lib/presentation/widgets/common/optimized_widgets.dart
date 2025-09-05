@@ -6,11 +6,11 @@ class OptimizedWidgets {
 
   // const 생성자를 활용한 위젯
   static const Widget loadingIndicator = CircularProgressIndicator();
-  
+
   static const EdgeInsets defaultPadding = EdgeInsets.all(16.0);
   static const EdgeInsets smallPadding = EdgeInsets.all(8.0);
   static const EdgeInsets largePadding = EdgeInsets.all(24.0);
-  
+
   // 자주 사용되는 SizedBox를 const로
   static const Widget height4 = SizedBox(height: 4);
   static const Widget height8 = SizedBox(height: 8);
@@ -18,7 +18,7 @@ class OptimizedWidgets {
   static const Widget height16 = SizedBox(height: 16);
   static const Widget height20 = SizedBox(height: 20);
   static const Widget height24 = SizedBox(height: 24);
-  
+
   static const Widget width4 = SizedBox(width: 4);
   static const Widget width8 = SizedBox(width: 8);
   static const Widget width12 = SizedBox(width: 12);
@@ -97,17 +97,17 @@ class OptimizedNetworkImage extends StatelessWidget {
 /// 자주 사용되는 스타일
 class OptimizedStyles {
   OptimizedStyles._();
-  
+
   static const TextStyle titleStyle = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.bold,
   );
-  
+
   static const TextStyle subtitleStyle = TextStyle(
     fontSize: 14,
     color: Colors.grey,
   );
-  
+
   static const TextStyle bodyStyle = TextStyle(
     fontSize: 16,
   );

@@ -25,7 +25,7 @@ class SecureApiService {
     } catch (e) {
       AppLogger.w('Secure storage failed for $secureKey, falling back to .env');
     }
-    
+
     // 2. .env에서 fallback
     final envUrl = dotenv.env[envKey] ?? '';
     if (envUrl.isEmpty) {
@@ -44,17 +44,17 @@ class SecureApiService {
     String? firebaseToken,
   }) async {
     final apiUrl = await getApiUrl('login_api', 'kdn_loginForm_key');
-    
+
     if (apiUrl.isEmpty) {
       throw Exception('Login API URL not configured');
     }
-    
+
     AppLogger.api('POST', apiUrl, {
       'user_id': AppLogger.maskSensitive(userId),
       'user_pwd': '[HIDDEN]',
       'auto_login': autoLogin,
     });
-    
+
     try {
       final response = await _dioRequest.dio.post(
         apiUrl,
@@ -66,12 +66,12 @@ class SecureApiService {
           'uuid': uuid,
         },
         options: Options(
-          headers: firebaseToken != null 
-            ? {'Authorization': 'Bearer $firebaseToken'}
-            : null,
+          headers: firebaseToken != null
+              ? {'Authorization': 'Bearer $firebaseToken'}
+              : null,
         ),
       );
-      
+
       AppLogger.i('Login successful');
       return response;
     } catch (e) {
@@ -83,19 +83,20 @@ class SecureApiService {
   /// 사용자 역할 조회 API
   Future<Response> getUserRole(String username) async {
     final apiUrl = await getApiUrl('role_api', 'kdn_usm_select_role_data_key');
-    
+
     if (apiUrl.isEmpty) {
       throw Exception('Role API URL not configured');
     }
-    
-    AppLogger.api('POST', apiUrl, {'user_id': AppLogger.maskSensitive(username)});
-    
+
+    AppLogger.api(
+        'POST', apiUrl, {'user_id': AppLogger.maskSensitive(username)});
+
     try {
       final response = await _dioRequest.dio.post(
         apiUrl,
         data: {'user_id': username},
       );
-      
+
       AppLogger.i('User role fetched successfully');
       return response;
     } catch (e) {
@@ -107,13 +108,13 @@ class SecureApiService {
   /// 약관 목록 조회 API
   Future<Response> getTermsList() async {
     final apiUrl = await getApiUrl('terms_api', 'kdn_usm_select_cmd_key');
-    
+
     if (apiUrl.isEmpty) {
       throw Exception('Terms API URL not configured');
     }
-    
+
     AppLogger.api('GET', apiUrl);
-    
+
     try {
       final response = await _dioRequest.dio.get(apiUrl);
       AppLogger.i('Terms list fetched successfully');
@@ -126,14 +127,15 @@ class SecureApiService {
 
   /// 선박 목록 조회 API
   Future<Response> getVesselList({String? regDt, int? mmsi}) async {
-    final apiUrl = await getApiUrl('vessel_list_api', 'kdn_gis_select_vessel_List');
-    
+    final apiUrl =
+        await getApiUrl('vessel_list_api', 'kdn_gis_select_vessel_List');
+
     if (apiUrl.isEmpty) {
       throw Exception('Vessel API URL not configured');
     }
-    
+
     AppLogger.api('GET', apiUrl, {'regDt': regDt, 'mmsi': mmsi});
-    
+
     try {
       final response = await _dioRequest.dio.get(
         apiUrl,
@@ -142,7 +144,7 @@ class SecureApiService {
           if (mmsi != null) 'mmsi': mmsi,
         },
       );
-      
+
       AppLogger.i('Vessel list fetched successfully');
       return response;
     } catch (e) {

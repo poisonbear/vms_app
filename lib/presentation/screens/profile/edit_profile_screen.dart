@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
@@ -191,20 +192,20 @@ class _MembershipviewState extends State<MemberInformationChange> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        print('사용자가 로그인되어 있지 않습니다.');
+        AppLogger.d('사용자가 로그인되어 있지 않습니다.');
         return;
       }
 
       final uuid = user.uid; // uuid 사용 (원본 방식)
 
       if (userInfoUrl.isEmpty) {
-        print('회원정보 조회 API URL이 설정되지 않았습니다.');
+        AppLogger.d('회원정보 조회 API URL이 설정되지 않았습니다.');
         return;
       }
 
-      print('=== 회원정보 조회 시도 ===');
-      print('API URL: $userInfoUrl');
-      print('UUID: $uuid');
+      AppLogger.d('=== 회원정보 조회 시도 ===');
+      AppLogger.d('API URL: $userInfoUrl');
+      AppLogger.d('UUID: $uuid');
 
       // 원본 API 호출 방식 복원
       final response = await dioRequest.dio.post(
@@ -217,45 +218,45 @@ class _MembershipviewState extends State<MemberInformationChange> {
         }),
       );
 
-      print('응답 상태코드: ${response.statusCode}');
+      AppLogger.d('응답 상태코드: ${response.statusCode}');
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data;
 
         if (data is Map<String, dynamic>) {
-          print('응답 필드: ${data.keys.join(', ')}');
+          AppLogger.d('응답 필드: ${data.keys.join(', ')}');
           _updateFormWithUserData(data);
-          print('=== 회원정보 로딩 성공 ===');
+          AppLogger.d('=== 회원정보 로딩 성공 ===');
         } else if (data is List && data.isNotEmpty) {
-          print('리스트 형태 응답, 첫 번째 항목 사용');
+          AppLogger.d('리스트 형태 응답, 첫 번째 항목 사용');
           _updateFormWithUserData(data[0]);
         }
       }
     } catch (e) {
-      print('=== 회원정보 조회 실패 ===');
+      AppLogger.d('=== 회원정보 조회 실패 ===');
 
       if (e is DioException) {
         final statusCode = e.response?.statusCode;
-        print('Status Code: $statusCode');
-        print('Request URL: ${e.requestOptions.uri}');
-        print('Request Data: ${e.requestOptions.data}');
+        AppLogger.d('Status Code: $statusCode');
+        AppLogger.d('Request URL: ${e.requestOptions.uri}');
+        AppLogger.d('Request Data: ${e.requestOptions.data}');
 
         if (e.response?.data != null) {
-          print('서버 응답: ${e.response?.data}');
+          AppLogger.d('서버 응답: ${e.response?.data}');
         }
 
         if (statusCode == 400) {
-          print('⚠️ 잘못된 요청 (400): ${e.response?.data}');
+          AppLogger.d('⚠️ 잘못된 요청 (400): ${e.response?.data}');
         } else if (statusCode == 401) {
-          print('⚠️ 인증 오류 (401): JWT 토큰 문제일 수 있습니다.');
+          AppLogger.d('⚠️ 인증 오류 (401): JWT 토큰 문제일 수 있습니다.');
         } else if (statusCode == 404) {
-          print('⚠️ API 엔드포인트 404 오류: $userInfoUrl');
+          AppLogger.d('⚠️ API 엔드포인트 404 오류: $userInfoUrl');
         }
       } else {
-        print('일반 오류: $e');
+        AppLogger.d('일반 오류: $e');
       }
 
-      print('빈 폼으로 계속 진행합니다.');
+      AppLogger.d('빈 폼으로 계속 진행합니다.');
     }
   }
 
@@ -266,18 +267,18 @@ class _MembershipviewState extends State<MemberInformationChange> {
     if (!mounted) return;
     setState(() {
       // 회원가입 시 입력한 핵심 정보만 처리
-      print('서버에서 받은 회원정보: $data');
+      AppLogger.d('서버에서 받은 회원정보: $data');
 
       // MMSI 정보
       if (data.containsKey('mmsi') && data['mmsi'] != null) {
         mmsiController.text = data['mmsi'].toString();
-        print('MMSI 설정: ${data['mmsi']}');
+        AppLogger.d('MMSI 설정: ${data['mmsi']}');
       }
 
       // 휴대폰 번호
       if (data.containsKey('mphn_no') && data['mphn_no'] != null) {
         phoneController.text = data['mphn_no'].toString();
-        print('휴대폰번호 설정: ${data['mphn_no']}');
+        AppLogger.d('휴대폰번호 설정: ${data['mphn_no']}');
       }
 
       // 이메일 정보 처리
@@ -292,7 +293,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
         if (emailParts.length == 2) {
           emailId = emailParts[0];
           emailDomain = emailParts[1];
-          print('이메일: $emailId@$emailDomain');
+          AppLogger.d('이메일: $emailId@$emailDomain');
         }
       }
 
@@ -301,7 +302,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
           data['email_id'] != null &&
           data['email_id'].isNotEmpty) {
         emailId = data['email_id'].toString();
-        print('이메일 ID: $emailId');
+        AppLogger.d('이메일 ID: $emailId');
       }
 
       // 분리된 도메인
@@ -309,7 +310,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
           data['email_domain'] != null &&
           data['email_domain'].isNotEmpty) {
         emailDomain = data['email_domain'].toString();
-        print('이메일 도메인: $emailDomain');
+        AppLogger.d('이메일 도메인: $emailDomain');
       }
 
       emailController.text = emailId;
@@ -320,11 +321,11 @@ class _MembershipviewState extends State<MemberInformationChange> {
         final serverUserId = data['user_id'].toString();
         if (idController.text != serverUserId) {
           idController.text = serverUserId;
-          print('사용자 ID 동기화: $serverUserId');
+          AppLogger.d('사용자 ID 동기화: $serverUserId');
         }
       }
 
-      print('폼 데이터 업데이트 완료');
+      AppLogger.d('폼 데이터 업데이트 완료');
     });
   }
 

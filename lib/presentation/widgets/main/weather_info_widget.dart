@@ -41,7 +41,7 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
                 isSelected: isWaveSelected,
                 onTap: () => setState(() => isWaveSelected = !isWaveSelected),
               ),
-              
+
               // 시정 버튼
               buildCircularButtonSlideOn(
                 'assets/kdn/home/img/top_visibility_img.svg',
@@ -50,9 +50,11 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
                 getSize56(),
                 '시정',
                 getSize160(),
-                viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
+                viewModel
+                    .getFormattedVisibilityThresholdText(viewModel.visibility),
                 isSelected: isVisibilitySelected,
-                onTap: () => setState(() => isVisibilitySelected = !isVisibilitySelected),
+                onTap: () => setState(
+                    () => isVisibilitySelected = !isVisibilitySelected),
               ),
             ],
           ),

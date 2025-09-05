@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
@@ -38,7 +37,8 @@ class UserState extends BaseProvider {
       try {
         // SharedPreferences에 저장
         final prefs = await SharedPreferences.getInstance();
-        final success = await prefs.setString(StringConstants.userRoleKey, newRole);
+        final success =
+            await prefs.setString(StringConstants.userRoleKey, newRole);
 
         if (!success) {
           throw Exception('역할 저장 실패');
@@ -51,10 +51,8 @@ class UserState extends BaseProvider {
         _role = previousRole;
         rethrow;
       }
-    },
-        errorMessage: '사용자 역할 저장 중 오류가 발생했습니다',
-        showLoading: false  // 백그라운드 작업
-    );
+    }, errorMessage: '사용자 역할 저장 중 오류가 발생했습니다', showLoading: false // 백그라운드 작업
+        );
   }
 
   /// MMSI 설정
@@ -86,10 +84,7 @@ class UserState extends BaseProvider {
         _mmsi = previousMmsi;
         rethrow;
       }
-    },
-        errorMessage: 'MMSI 저장 중 오류가 발생했습니다',
-        showLoading: false
-    );
+    }, errorMessage: 'MMSI 저장 중 오류가 발생했습니다', showLoading: false);
   }
 
   /// 저장된 사용자 데이터 로드
@@ -98,7 +93,8 @@ class UserState extends BaseProvider {
       final prefs = await SharedPreferences.getInstance();
 
       // 역할 로드
-      _role = prefs.getString(StringConstants.userRoleKey) ?? StringConstants.emptyString;
+      _role = prefs.getString(StringConstants.userRoleKey) ??
+          StringConstants.emptyString;
 
       // MMSI 로드
       _mmsi = prefs.getInt(StringConstants.userMmsiKey);
@@ -107,10 +103,7 @@ class UserState extends BaseProvider {
 
       AppLogger.d('User data loaded - Role: $_role, MMSI: $_mmsi');
       safeNotifyListeners();
-    },
-        errorMessage: '사용자 정보를 불러오는 중 오류가 발생했습니다',
-        showLoading: false
-    );
+    }, errorMessage: '사용자 정보를 불러오는 중 오류가 발생했습니다', showLoading: false);
   }
 
   /// 사용자 데이터 초기화 (로그아웃 시 사용)
@@ -131,10 +124,7 @@ class UserState extends BaseProvider {
 
       AppLogger.i('User data cleared');
       safeNotifyListeners();
-    },
-        errorMessage: '사용자 정보 초기화 중 오류가 발생했습니다',
-        showLoading: false
-    );
+    }, errorMessage: '사용자 정보 초기화 중 오류가 발생했습니다', showLoading: false);
   }
 
   /// 역할 업데이트 (동기식 - UI 즉시 반영용)
@@ -158,7 +148,8 @@ class UserState extends BaseProvider {
   }
 
   /// 사용자가 로그인되어 있는지 확인
-  bool get isLoggedIn => _role.isNotEmpty && _role != StringConstants.emptyString;
+  bool get isLoggedIn =>
+      _role.isNotEmpty && _role != StringConstants.emptyString;
 
   /// 사용자가 일반 사용자인지 확인
   bool get isUser => _role == 'ROLE_USER';
@@ -174,14 +165,15 @@ class UserState extends BaseProvider {
 
   /// 디버그용 - 현재 상태 출력
   void printUserState() {
-    debugPrint('=== UserState Debug ===');
-    debugPrint('Role: $_role');
-    debugPrint('MMSI: $_mmsi');
-    debugPrint('IsInitialized: $_isInitialized');
-    debugPrint('IsLoggedIn: $isLoggedIn');
-    debugPrint('HasError: $hasError');
-    debugPrint('ErrorMessage: ${errorMessage.isNotEmpty ? errorMessage : "none"}');
-    debugPrint('======================');
+    AppLogger.d('=== UserState Debug ===');
+    AppLogger.d('Role: $_role');
+    AppLogger.d('MMSI: $_mmsi');
+    AppLogger.d('IsInitialized: $_isInitialized');
+    AppLogger.d('IsLoggedIn: $isLoggedIn');
+    AppLogger.d('HasError: $hasError');
+    AppLogger.d(
+        'ErrorMessage: ${errorMessage.isNotEmpty ? errorMessage : "none"}');
+    AppLogger.d('======================');
   }
 
   // ============================================

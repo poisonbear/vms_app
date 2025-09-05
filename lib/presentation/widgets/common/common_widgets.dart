@@ -119,7 +119,7 @@ Widget inputWidget_deactivate(
           borderSide: BorderSide(color: color),
         ),
         disabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: color.withOpacity(0.5)),
+          borderSide: BorderSide(color: color.withValues(alpha: 0.5)),
         ),
         filled: true,
         fillColor: isEnabled ? Colors.white : Colors.grey.shade100,
@@ -132,7 +132,7 @@ Widget inputWidget_deactivate(
 void showTopSnackBar(BuildContext context, String message) {
   final overlay = Overlay.of(context);
   late OverlayEntry overlayEntry;
-  
+
   overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
       top: MediaQuery.of(context).padding.top + 16,
@@ -147,7 +147,7 @@ void showTopSnackBar(BuildContext context, String message) {
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -247,10 +247,9 @@ class _CircularButtonState extends State<CircularButton> {
 // 슬라이드 온 버튼 빌더 함수 (전역 함수로 정의)
 // buildCircularButtonSlideOn 함수 제거됨 - 원래 스타일로 대체
 
-
 // 원래 스타일의 슬라이드 버튼 함수 복원
-Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize, int heightsize,
-    String labelText, int widthSizeline, String statusText,
+Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize,
+    int heightsize, String labelText, int widthSizeline, String statusText,
     {VoidCallback? onTap, bool isSelected = true}) {
   return Padding(
     padding: EdgeInsets.only(bottom: getSize12().toDouble()),
@@ -266,11 +265,13 @@ Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize, in
             top: 0,
             child: AnimatedContainer(
               duration: AnimationConstants.durationQuick,
-              width: isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
+              width:
+                  isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
               height: heightsize.toDouble(),
               decoration: BoxDecoration(
                 color: getColorblack_type1(), // 원래 배경색
-                borderRadius: BorderRadius.circular(getSize30().toDouble()), // 원래 둥근 모서리
+                borderRadius:
+                    BorderRadius.circular(getSize30().toDouble()), // 원래 둥근 모서리
               ),
             ),
           ),
@@ -286,10 +287,10 @@ Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize, in
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString(
-                        labelText, getTextleft(), getSize14(), getText700(), getColorgray_Type2()),
-                    TextWidgetString(statusText, getTextleft(), getSize14(), getText700(),
-                        getColorwhite_type1()),
+                    TextWidgetString(labelText, getTextleft(), getSize14(),
+                        getText700(), getColorgray_Type2()),
+                    TextWidgetString(statusText, getTextleft(), getSize14(),
+                        getText700(), getColorwhite_type1()),
                   ],
                 ),
               ),
@@ -322,4 +323,3 @@ Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize, in
     ),
   );
 }
-

@@ -97,7 +97,7 @@ class UnifiedTermsScreen extends StatelessWidget {
           // 소제목
           Padding(
             padding: EdgeInsets.only(
-              top: getSize12().toDouble(),
+              top: getSize14().toDouble(),
               bottom: getSize40().toDouble(),
             ),
             child: TextWidgetString(

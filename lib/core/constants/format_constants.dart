@@ -24,6 +24,6 @@ class FormatConstants {
   // static const int maxPasswordLength = 20; // → ValidationConstants.passwordMaxLength
   static const int maxShipNameLength = 50;
   static const int maxUserNameLength = 30;
-  
+
   // 참고: 정규식 패턴들은 ValidationPatterns 클래스로 이동되었습니다.
 }

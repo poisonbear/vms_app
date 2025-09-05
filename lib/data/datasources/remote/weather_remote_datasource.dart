@@ -21,7 +21,9 @@ class WidSource {
       }
 
       if (response.data is List) {
-        return (response.data as List).map<WidModel>((json) => WidModel.fromJson(json)).toList();
+        return (response.data as List)
+            .map<WidModel>((json) => WidModel.fromJson(json))
+            .toList();
       }
 
       return [];

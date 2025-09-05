@@ -6,7 +6,7 @@ class MapControlWidget extends StatelessWidget {
   final VoidCallback onTrackingToggle;
   final bool isOtherVesselsVisible;
   final bool isTrackingEnabled;
-  
+
   const MapControlWidget({
     super.key,
     required this.onLocationFocus,
@@ -15,7 +15,7 @@ class MapControlWidget extends StatelessWidget {
     required this.isOtherVesselsVisible,
     required this.isTrackingEnabled,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -50,7 +50,7 @@ class MapControlWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildControlButton({
     required BuildContext context,
     required IconData icon,
@@ -68,7 +68,7 @@ class MapControlWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),

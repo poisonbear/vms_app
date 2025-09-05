@@ -18,7 +18,7 @@ class VesselSearchSourceCached {
     try {
       // 캐시 키 생성
       final cacheKey = 'vessel_list_${mmsi ?? 'all'}_${regDt ?? 'latest'}';
-      
+
       // 캐시 확인
       final cachedData = await CacheManager.getCache(cacheKey);
       if (cachedData != null) {
@@ -28,10 +28,10 @@ class VesselSearchSourceCached {
             .toList();
         return Success(vessels);
       }
-      
+
       // 캐시가 없으면 API 호출
       final String apiUrl = dotenv.env['kdn_gis_select_vessel_List'] ?? '';
-      
+
       if (apiUrl.isEmpty) {
         return const Failure(
           GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'),
@@ -71,10 +71,9 @@ class VesselSearchSourceCached {
 
       // 응답을 캐시에 저장
       await CacheManager.saveCache(cacheKey, dataToCache);
-      
+
       logger.d('Vessel list fetched and cached: ${vessels.length} items');
       return Success(vessels);
-      
     } catch (e) {
       logger.e('Vessel API Error: $e');
       final exception = ErrorHandler.handleError(e);

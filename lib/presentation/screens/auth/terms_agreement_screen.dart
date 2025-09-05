@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/constants/constants.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/network/dio_client.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/terms_provider.dart';
 import 'package:vms_app/presentation/screens/auth/unified_terms_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
@@ -15,10 +16,7 @@ class CmdChoiceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => TermsProvider(),
-      child: const _CmdChoiceViewBody(
-      )
-    );
+        create: (_) => TermsProvider(), child: const _CmdChoiceViewBody());
   }
 }
 
@@ -255,8 +253,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
                     selectedAgreements.add('마케팅 활용 동의');
                   }
 
-                  debugPrint('버튼 클릭 시간: ${DateTime.now()}');
-                  debugPrint('선택된 약관: $selectedAgreements');
+                  AppLogger.d('버튼 클릭 시간: ${DateTime.now()}');
+                  AppLogger.d('선택된 약관: $selectedAgreements');
 
                   Navigator.push(
                     context,

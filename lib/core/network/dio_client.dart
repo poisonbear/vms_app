@@ -9,7 +9,7 @@ import 'package:vms_app/core/utils/logger.dart';
 /// Dio HTTP 클라이언트 래퍼
 class DioRequest {
   late final Dio _dio;
-  
+
   Dio get dio => _dio;
 
   DioRequest() {
@@ -117,8 +117,8 @@ Future<void> warningPop(
                   center: Alignment.center,
                   radius: 0.9,
                   colors: [
-                    shadowColor.withOpacity(0.1),
-                    shadowColor.withOpacity(0.2),
+                    shadowColor.withValues(alpha: 0.1),
+                    shadowColor.withValues(alpha: 0.2),
                   ],
                 ),
               ),
@@ -136,7 +136,7 @@ Future<void> warningPop(
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: shadowColor.withOpacity(0.3),
+                      color: shadowColor.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -151,7 +151,8 @@ Future<void> warningPop(
                         alarmIcon,
                         width: 48,
                         height: 48,
-                        colorFilter: ColorFilter.mode(titleColor, BlendMode.srcIn),
+                        colorFilter:
+                            ColorFilter.mode(titleColor, BlendMode.srcIn),
                       ),
                     const SizedBox(height: 16),
                     // 제목
@@ -231,8 +232,8 @@ Future<void> warningPopdetail(
                   center: Alignment.center,
                   radius: 0.9,
                   colors: [
-                    shadowColor.withOpacity(0.1),
-                    shadowColor.withOpacity(0.2),
+                    shadowColor.withValues(alpha: 0.1),
+                    shadowColor.withValues(alpha: 0.2),
                   ],
                 ),
               ),
@@ -250,7 +251,7 @@ Future<void> warningPopdetail(
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: shadowColor.withOpacity(0.3),
+                      color: shadowColor.withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -265,7 +266,8 @@ Future<void> warningPopdetail(
                         alarmIcon,
                         width: 48,
                         height: 48,
-                        colorFilter: ColorFilter.mode(titleColor, BlendMode.srcIn),
+                        colorFilter:
+                            ColorFilter.mode(titleColor, BlendMode.srcIn),
                       ),
                     const SizedBox(height: 16),
                     // 제목

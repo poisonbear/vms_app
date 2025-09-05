@@ -10,11 +10,11 @@ class EnvKeys {
   static const String weatherInfoUrl = 'kdn_wid_select_weather_Info';
   static const String memberInfoUrl = 'kdn_usm_select_member_info_data';
   static const String updateMembershipUrl = 'kdn_usm_update_membership_key';
-  
+
   // Firebase
   static const String firebaseApiKey = 'firebase_api_key';
   static const String firebaseProjectId = 'firebase_project_id';
-  
+
   // Other
   static const String mapboxToken = 'mapbox_access_token';
 }

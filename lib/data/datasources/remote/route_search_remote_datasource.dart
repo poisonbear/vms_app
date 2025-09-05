@@ -30,7 +30,8 @@ class RouteSearchSource {
       );
 
       //GET 방식으로 요청 보냄.
-      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response =
+          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       // 로그 출력
       //logger.d("[API URL] : ${apiUrl}");
@@ -44,8 +45,9 @@ class RouteSearchSource {
 
       // 만약 List 형태로 온다면, 임의로 past에 담고 pred는 빈 리스트로 처리
       if (response.data is List) {
-        List<PastRouteSearchModel> list =
-            (response.data as List).map((json) => PastRouteSearchModel.fromJson(json)).toList();
+        List<PastRouteSearchModel> list = (response.data as List)
+            .map((json) => PastRouteSearchModel.fromJson(json))
+            .toList();
         return VesselRouteResponse(pred: [], past: list);
       }
 

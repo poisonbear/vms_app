@@ -5,14 +5,14 @@ class VesselListWidget extends StatelessWidget {
   final List<VesselSearchModel> vessels;
   final int? selectedMmsi;
   final ValueChanged<int> onVesselSelected;
-  
+
   const VesselListWidget({
     super.key,
     required this.vessels,
     this.selectedMmsi,
     required this.onVesselSelected,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     if (vessels.isEmpty) {
@@ -20,17 +20,19 @@ class VesselListWidget extends StatelessWidget {
         child: Text('등록된 선박이 없습니다.'),
       );
     }
-    
+
     return ListView.builder(
       itemCount: vessels.length,
       itemBuilder: (context, index) {
         final vessel = vessels[index];
         final isSelected = vessel.mmsi == selectedMmsi;
-        
+
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           elevation: isSelected ? 4 : 1,
-          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+          color: isSelected
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+              : null,
           child: ListTile(
             leading: Icon(
               Icons.directions_boat,

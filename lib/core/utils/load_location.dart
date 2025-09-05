@@ -7,7 +7,8 @@ import 'package:vms_app/core/utils/app_logger.dart';
 
 /// Defines the main theme color.
 final MaterialColor themeMaterialColor =
-    BaseflowPluginExample.createMaterialColor(const Color.fromRGBO(48, 49, 60, 1));
+    BaseflowPluginExample.createMaterialColor(
+        const Color.fromRGBO(48, 49, 60, 1));
 
 void main() {
   runApp(const GeolocatorWidget());
@@ -20,7 +21,8 @@ class GeolocatorWidget extends StatefulWidget {
 
   /// Utility method to create a page with the Baseflow templating.
   static ExamplePage createPage() {
-    return ExamplePage(Icons.location_on, (context) => const GeolocatorWidget());
+    return ExamplePage(
+        Icons.location_on, (context) => const GeolocatorWidget());
   }
 
   @override
@@ -28,9 +30,11 @@ class GeolocatorWidget extends StatefulWidget {
 }
 
 class _GeolocatorWidgetState extends State<GeolocatorWidget> {
-  static const String _kLocationServicesDisabledMessage = 'Location services are disabled.';
+  static const String _kLocationServicesDisabledMessage =
+      'Location services are disabled.';
   static const String _kPermissionDeniedMessage = 'Permission denied.';
-  static const String _kPermissionDeniedForeverMessage = 'Permission denied forever.';
+  static const String _kPermissionDeniedForeverMessage =
+      'Permission denied forever.';
   static const String _kPermissionGrantedMessage = 'Permission granted.';
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
@@ -189,7 +193,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
     );
 
     AppLogger.d('반환할 위치값');
-    AppLogger.d('Position: lat=${position.latitude}, lng=${position.longitude}');
+    AppLogger.d(
+        'Position: lat=${position.latitude}, lng=${position.longitude}');
 
     return position; // Position 객체 반환
   }
@@ -254,8 +259,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
     setState(() {});
   }
 
-  bool _isListening() =>
-      !(_positionStreamSubscription == null || _positionStreamSubscription!.isPaused);
+  bool _isListening() => !(_positionStreamSubscription == null ||
+      _positionStreamSubscription!.isPaused);
 
   Color _determineButtonColor() {
     return _isListening() ? Colors.green : Colors.red;
@@ -264,7 +269,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
   void _toggleServiceStatusStream() {
     if (_serviceStatusStreamSubscription == null) {
       final serviceStatusStream = _geolocatorPlatform.getServiceStatusStream();
-      _serviceStatusStreamSubscription = serviceStatusStream.handleError((error) {
+      _serviceStatusStreamSubscription =
+          serviceStatusStream.handleError((error) {
         _serviceStatusStreamSubscription?.cancel();
         _serviceStatusStreamSubscription = null;
       }).listen((serviceStatus) {
@@ -279,7 +285,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
             setState(() {
               _positionStreamSubscription?.cancel();
               _positionStreamSubscription = null;
-              _updatePositionList(_PositionItemType.log, 'Position Stream has been canceled');
+              _updatePositionList(
+                  _PositionItemType.log, 'Position Stream has been canceled');
             });
           }
           serviceStatusValue = 'disabled';
@@ -299,7 +306,8 @@ class _GeolocatorWidgetState extends State<GeolocatorWidget> {
         _positionStreamSubscription?.cancel();
         _positionStreamSubscription = null;
       }).listen((position) {
-        AppLogger.d('실시간 위치 업데이트 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+        AppLogger.d(
+            '실시간 위치 업데이트 - 위도: ${position.latitude}, 경도: ${position.longitude}');
         _updatePositionList(
           _PositionItemType.position,
           '실시간 위치 - 위도: ${position.latitude}, 경도: ${position.longitude}',

@@ -29,13 +29,9 @@ class BottomNavigationWidget extends StatelessWidget {
         selectedItemColor: getColorgray_Type8(),
         unselectedItemColor: getColorgray_Type2(),
         selectedLabelStyle: TextStyle(
-          fontSize: getSize16().toDouble(), 
-          fontWeight: getText700()
-        ),
+            fontSize: getSize16().toDouble(), fontWeight: getText700()),
         unselectedLabelStyle: TextStyle(
-          fontSize: getSize16().toDouble(), 
-          fontWeight: getText700()
-        ),
+            fontSize: getSize16().toDouble(), fontWeight: getText700()),
         currentIndex: selectedIndex,
         onTap: onItemTapped,
         items: [
@@ -48,10 +44,12 @@ class BottomNavigationWidget extends StatelessWidget {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(int index, String iconName, String label) {
+  BottomNavigationBarItem _buildNavItem(
+      int index, String iconName, String label) {
     final isSelected = selectedIndex == index;
-    final iconPath = 'assets/kdn/ros/img/${iconName}_${isSelected ? 'on' : 'off'}.svg';
-    
+    final iconPath =
+        'assets/kdn/ros/img/${iconName}_${isSelected ? 'on' : 'off'}.svg';
+
     return BottomNavigationBarItem(
       icon: Padding(
         padding: EdgeInsets.only(bottom: getSize8().toDouble()),

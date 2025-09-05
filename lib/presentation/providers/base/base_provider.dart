@@ -7,12 +7,12 @@ import 'package:vms_app/core/errors/error_handler.dart';
 class CancelableOperation<T> {
   final Future<T> _future;
   bool _isCanceled = false;
-  
+
   CancelableOperation.fromFuture(this._future);
-  
+
   Future<T> get value => _future;
   bool get isCanceled => _isCanceled;
-  
+
   void cancel() {
     _isCanceled = true;
   }
@@ -23,14 +23,14 @@ abstract class BaseProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _errorMessage = '';
   bool _isDisposed = false;
-  
+
   // 진행 중인 비동기 작업 추적
   final Set<CancelableOperation> _pendingOperations = {};
-  
+
   // Timer 관리
   final Set<Timer> _activeTimers = {};
-  
-  // StreamSubscription 관리  
+
+  // StreamSubscription 관리
   final List<StreamSubscription> _subscriptions = [];
 
   bool get isLoading => _isLoading;
@@ -130,18 +130,18 @@ abstract class BaseProvider extends ChangeNotifier {
     try {
       if (showLoading) setLoading(true);
       clearError();
-      
+
       final result = await operation();
-      
+
       if (showLoading) setLoading(false);
       return result;
     } catch (e) {
       if (_isDisposed) return null;
-      
+
       setLoading(false);
       final appException = ErrorHandler.handleError(e);
       setError(errorMessage ?? ErrorHandler.getUserMessage(appException));
-      
+
       onError?.call(appException);
       return null;
     }
@@ -165,25 +165,25 @@ abstract class BaseProvider extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposed = true;
-    
+
     // 모든 비동기 작업 취소
     for (final operation in _pendingOperations) {
       operation.cancel();
     }
     _pendingOperations.clear();
-    
+
     // 모든 타이머 취소
     for (final timer in _activeTimers) {
       timer.cancel();
     }
     _activeTimers.clear();
-    
+
     // 모든 StreamSubscription 취소
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
     _subscriptions.clear();
-    
+
     super.dispose();
   }
 }

@@ -1,16 +1,18 @@
+import 'package:vms_app/core/utils/app_logger.dart';
+
 // RosModel - 항행이력 데이터 모델
 class RosModel {
   int? mmsi;
   int? reg_dt;
-  int? odb_reg_date;  // navigation_tab에서 사용하는 필드
+  int? odb_reg_date; // navigation_tab에서 사용하는 필드
   String? shipName;
   String? ship_kdn;
   String? psng_auth;
   String? psng_auth_cd;
-  double? lntd;  // 위도
-  double? lttd;  // 경도
-  double? sog;   // 속도
-  String? cog;   // 침로
+  double? lntd; // 위도
+  double? lttd; // 경도
+  double? sog; // 속도
+  String? cog; // 침로
 
   RosModel({
     this.mmsi,
@@ -92,14 +94,20 @@ class WeatherInfo {
           if (nowData.containsKey('wvhgt_surf')) {
             try {
               wave = double.parse(nowData['wvhgt_surf'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
 
           // 현재 시정 값 추출
           if (nowData.containsKey('vdst')) {
             try {
               visibility = double.parse(nowData['vdst'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
         }
       }
@@ -111,22 +119,34 @@ class WeatherInfo {
           if (waveData.containsKey('alm_a_val')) {
             try {
               walm1 = double.parse(waveData['alm_a_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (waveData.containsKey('alm_b_val')) {
             try {
               walm2 = double.parse(waveData['alm_b_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (waveData.containsKey('alm_c_val')) {
             try {
               walm3 = double.parse(waveData['alm_c_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (waveData.containsKey('alm_d_val')) {
             try {
               walm4 = double.parse(waveData['alm_d_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
         }
       }
@@ -138,22 +158,34 @@ class WeatherInfo {
           if (visibilityData.containsKey('alm_a_val')) {
             try {
               valm1 = double.parse(visibilityData['alm_a_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (visibilityData.containsKey('alm_b_val')) {
             try {
               valm2 = double.parse(visibilityData['alm_b_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (visibilityData.containsKey('alm_c_val')) {
             try {
               valm3 = double.parse(visibilityData['alm_c_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
           if (visibilityData.containsKey('alm_d_val')) {
             try {
               valm4 = double.parse(visibilityData['alm_d_val'].toString());
-            } catch (e) {}
+            } catch (e) {
+              // TODO: Handle error
+              AppLogger.e("Error: $e");
+            }
           }
         }
       }
@@ -182,7 +214,7 @@ class NavigationWarnings {
 
   factory NavigationWarnings.fromJson(Map<String, dynamic> json) {
     List<dynamic> data = json['data'] ?? [];
-    
+
     // API 데이터를 정제하여 구분자 포함 문자열로 변환
     List<String> processedWarnings = [];
     for (var item in data) {
@@ -190,7 +222,7 @@ class NavigationWarnings {
       String category = '';
       String message = '';
       String dateTime = '';
-      
+
       // item이 Map인 경우 구분자와 메시지 추출
       if (item is Map<String, dynamic>) {
         // 구분자/카테고리 추출
@@ -203,7 +235,7 @@ class NavigationWarnings {
         } else if (item.containsKey('warn_type')) {
           category = _convertTypeToKorean(item['warn_type'].toString());
         }
-        
+
         // 메시지 추출
         if (item.containsKey('message')) {
           message = item['message'].toString();
@@ -216,7 +248,7 @@ class NavigationWarnings {
         } else if (item.containsKey('warning')) {
           message = item['warning'].toString();
         }
-        
+
         // 날짜/시간 정보 추출
         if (item.containsKey('date_time')) {
           dateTime = ' ${item['date_time']}';
@@ -224,10 +256,11 @@ class NavigationWarnings {
           dateTime = ' ${item['datetime']}';
         } else if (item.containsKey('period')) {
           dateTime = ' ${item['period']}';
-        } else if (item.containsKey('start_time') && item.containsKey('end_time')) {
+        } else if (item.containsKey('start_time') &&
+            item.containsKey('end_time')) {
           dateTime = ' ${item['start_time']} ~ ${item['end_time']}';
         }
-        
+
         // 위치 정보 추가 (있는 경우)
         String location = '';
         if (item.containsKey('location')) {
@@ -241,19 +274,34 @@ class NavigationWarnings {
             location = ' $location';
           }
         }
-        
+
         // 카테고리가 없으면 기본값 설정
         if (category.isEmpty) {
           category = '항행경보';
         }
-        
+
         // 메시지가 없으면 모든 텍스트 필드 결합
         if (message.isEmpty) {
           List<String> textValues = [];
           item.forEach((key, value) {
-            if (!['id', 'code', 'type', 'category', 'warning_type', 'warn_type', 
-                  'status', 'created_at', 'updated_at', 'date_time', 'datetime', 
-                  'period', 'start_time', 'end_time', 'location', 'area'].contains(key.toLowerCase())) {
+            if (![
+              'id',
+              'code',
+              'type',
+              'category',
+              'warning_type',
+              'warn_type',
+              'status',
+              'created_at',
+              'updated_at',
+              'date_time',
+              'datetime',
+              'period',
+              'start_time',
+              'end_time',
+              'location',
+              'area'
+            ].contains(key.toLowerCase())) {
               if (value != null && value.toString().isNotEmpty) {
                 textValues.add(value.toString());
               }
@@ -261,10 +309,10 @@ class NavigationWarnings {
           });
           message = textValues.join(' ');
         }
-        
+
         // 최종 포맷: [구분자] 위치 메시지 시간
-        warningText = '[$category]$location${location.isNotEmpty && message.isNotEmpty ? ' ' : ''}$message$dateTime';
-        
+        warningText =
+            '[$category]$location${location.isNotEmpty && message.isNotEmpty ? ' ' : ''}$message$dateTime';
       } else if (item is String) {
         // item이 이미 문자열인 경우
         warningText = '[항행경보] $item';
@@ -272,13 +320,15 @@ class NavigationWarnings {
         // 기타 타입
         warningText = '[항행경보] ${item.toString()}';
       }
-      
+
       // 빈 문자열이 아닌 경우만 추가
-      if (warningText.trim().isNotEmpty && warningText != '[항행경보]' && warningText != '[]') {
+      if (warningText.trim().isNotEmpty &&
+          warningText != '[항행경보]' &&
+          warningText != '[]') {
         processedWarnings.add(warningText.trim());
       }
     }
-    
+
     return NavigationWarnings(warnings: processedWarnings);
   }
 
@@ -316,7 +366,7 @@ class NavigationWarnings {
       'dredging': '준설작업',
       'dredge': '준설작업',
     };
-    
+
     return typeMap[type.toLowerCase()] ?? type;
   }
 

@@ -31,9 +31,9 @@ class NavigationEntity {
 
   /// 위치 유효성 검증
   bool get hasValidPosition =>
-      latitude >= NumericConstants.latitudeMin && 
-      latitude <= NumericConstants.latitudeMax && 
-      longitude >= NumericConstants.longitudeMin && 
+      latitude >= NumericConstants.latitudeMin &&
+      latitude <= NumericConstants.latitudeMax &&
+      longitude >= NumericConstants.longitudeMin &&
       longitude <= NumericConstants.longitudeMax;
 
   /// 항행 상태 문자열

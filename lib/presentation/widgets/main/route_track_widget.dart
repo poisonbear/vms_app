@@ -7,7 +7,7 @@ class RouteTrackWidget extends StatelessWidget {
   final Color trackColor;
   final double strokeWidth;
   final bool isDotted;
-  
+
   const RouteTrackWidget({
     super.key,
     required this.routePoints,
@@ -15,13 +15,13 @@ class RouteTrackWidget extends StatelessWidget {
     this.strokeWidth = 3.0,
     this.isDotted = false,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     if (routePoints.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return PolylineLayer(
       polylines: [
         Polyline(
