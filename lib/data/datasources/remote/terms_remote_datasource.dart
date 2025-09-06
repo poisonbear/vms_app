@@ -14,8 +14,7 @@ class CmdSource {
       final String apiUrl = dotenv.env['kdn_usm_select_cmd_key'] ?? '';
 
       if (apiUrl.isEmpty) {
-        return const Failure(
-            GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'));
+        return const Failure(GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'));
       }
 
       final response = await dioRequest.dio.get(apiUrl);
@@ -23,9 +22,7 @@ class CmdSource {
       // 프로덕션에서는 로그 레벨 조정 필요
       logger.d('[API Call] Terms list fetched successfully');
 
-      final list = (response.data as List)
-          .map<CmdModel>((json) => CmdModel.fromJson(json))
-          .toList();
+      final list = (response.data as List).map<CmdModel>((json) => CmdModel.fromJson(json)).toList();
 
       return Success(list);
     } catch (e) {

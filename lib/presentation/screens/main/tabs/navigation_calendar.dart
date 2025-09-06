@@ -109,9 +109,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
         child: Container(
           height: 550,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-              vertical: DesignConstants.spacing20,
-              horizontal: DesignConstants.spacing16),
+          padding:
+              const EdgeInsets.symmetric(vertical: DesignConstants.spacing20, horizontal: DesignConstants.spacing16),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -137,8 +136,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
-                          width: 24, height: 24),
+                      icon: SvgPicture.asset('assets/kdn/usm/img/close.svg', width: 24, height: 24),
                       onPressed: () {
                         safelyNavigateBack();
                       },
@@ -184,9 +182,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
-                    titleTextStyle: TextStyle(
-                        fontSize: DesignConstants.fontSizeXL,
-                        fontWeight: FontWeight.bold),
+                    titleTextStyle: TextStyle(fontSize: DesignConstants.fontSizeXL, fontWeight: FontWeight.bold),
                   ),
                   calendarStyle: CalendarStyle(
                     selectedDecoration: BoxDecoration(
@@ -212,63 +208,42 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                               fontSize: DesignConstants.fontSizeM,
                             ),
                           ),
-                          TextWidgetString('오늘', getTextleft(), getSize14(),
-                              getText700(), getColorgray_Type3()),
+                          TextWidgetString('오늘', getTextleft(), getSize14(), getText700(), getColorgray_Type3()),
                         ],
                       );
                     },
                     dowBuilder: (context, day) {
                       switch (day.weekday) {
                         case 1:
-                          return const Center(
-                              child: Text('월',
-                                  style: TextStyle(color: Colors.black)));
+                          return const Center(child: Text('월', style: TextStyle(color: Colors.black)));
                         case 2:
-                          return const Center(
-                              child: Text('화',
-                                  style: TextStyle(color: Colors.black)));
+                          return const Center(child: Text('화', style: TextStyle(color: Colors.black)));
                         case 3:
-                          return const Center(
-                              child: Text('수',
-                                  style: TextStyle(color: Colors.black)));
+                          return const Center(child: Text('수', style: TextStyle(color: Colors.black)));
                         case 4:
-                          return const Center(
-                              child: Text('목',
-                                  style: TextStyle(color: Colors.black)));
+                          return const Center(child: Text('목', style: TextStyle(color: Colors.black)));
                         case 5:
-                          return const Center(
-                              child: Text('금',
-                                  style: TextStyle(color: Colors.black)));
+                          return const Center(child: Text('금', style: TextStyle(color: Colors.black)));
                         case 6:
                           return const Center(
-                              child: Text('토',
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold)));
+                              child: Text('토', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)));
                         case 7:
                           return const Center(
-                              child: Text('일',
-                                  style: TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)));
+                              child: Text('일', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)));
                         default:
                           return const Center(child: Text(''));
                       }
                     },
                     defaultBuilder: (context, day, focusedDay) {
-                      bool isSelected =
-                          isSameDay(_parseDate(_selectedDay), day);
+                      bool isSelected = isSameDay(_parseDate(_selectedDay), day);
                       DateTime? holiday = holidays.firstWhereOrNull((holiday) =>
-                          holiday.year == day.year &&
-                          holiday.month == day.month &&
-                          holiday.day == day.day);
+                          holiday.year == day.year && holiday.month == day.month && holiday.day == day.day);
 
                       return Container(
                         decoration: isSelected
                             ? BoxDecoration(
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.blue, width: 2),
+                                border: Border.all(color: Colors.blue, width: 2),
                               )
                             : null,
                         alignment: Alignment.center,
@@ -278,12 +253,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                             Text(
                               '${day.day}',
                               style: TextStyle(
-                                color: holiday != null || day.weekday == 7
-                                    ? Colors.red
-                                    : Colors.black,
-                                fontWeight: holiday != null || day.weekday == 7
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                                color: holiday != null || day.weekday == 7 ? Colors.red : Colors.black,
+                                fontWeight: holiday != null || day.weekday == 7 ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
                             if (holiday != null)
@@ -317,8 +288,7 @@ String formatDate(DateTime date) {
 DateTime _parseDate(String dateString) {
   List<String> parts = dateString.split('-');
   if (parts.length == 3) {
-    return DateTime(
-        int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
   }
   return DateTime.now(); // 변환 실패 시 현재 날짜 반환
 }

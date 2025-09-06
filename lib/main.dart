@@ -25,8 +25,7 @@ import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> _setupFlutterNotifications() async {
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -37,15 +36,13 @@ Future<void> _setupFlutterNotifications() async {
   );
 
   final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
-      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidPlugin != null) {
     await androidPlugin.createNotificationChannel(channel);
   }
 
-  const initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
   const initializationSettingsIOS = DarwinInitializationSettings();
 
   const initializationSettings = InitializationSettings(

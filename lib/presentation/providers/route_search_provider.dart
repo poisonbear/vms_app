@@ -73,4 +73,14 @@ class RouteSearchProvider extends BaseProvider {
     setLoading(false);
     notifyListeners();
   }
+
+  @override
+  void dispose() {
+    // Route 검색 관련 리소스 정리
+    clearRoutes();
+    _isNavigationHistoryMode = false;
+
+    // BaseProvider의 dispose 호출
+    super.dispose();
+  }
 }

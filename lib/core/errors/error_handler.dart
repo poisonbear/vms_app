@@ -25,8 +25,7 @@ class ErrorHandler {
         } else if (statusCode == 403) {
           return AuthException(message, 'FORBIDDEN');
         } else if (statusCode == 404) {
-          return ServerException(message,
-              statusCode: statusCode, code: 'NOT_FOUND');
+          return ServerException(message, statusCode: statusCode, code: 'NOT_FOUND');
         } else if (statusCode != null && statusCode >= 500) {
           return ServerException(ErrorMessages.server, statusCode: statusCode);
         } else {
@@ -61,9 +60,7 @@ class ErrorHandler {
       case 503:
         return ErrorMessages.server;
       default:
-        return statusCode != null
-            ? '서버 오류가 발생했습니다 (코드: $statusCode)'
-            : ErrorMessages.server;
+        return statusCode != null ? '서버 오류가 발생했습니다 (코드: $statusCode)' : ErrorMessages.server;
     }
   }
 
@@ -74,8 +71,7 @@ class ErrorHandler {
     } else if (error is DioException) {
       return handleDioError(error);
     } else if (error is FormatException) {
-      return DataParsingException(
-          '${ErrorMessages.dataFormat}: ${error.message}');
+      return DataParsingException('${ErrorMessages.dataFormat}: ${error.message}');
     } else if (error is TypeError) {
       return const DataParsingException(ErrorMessages.dataFormat);
     } else if (error.toString().contains('SocketException')) {
@@ -106,17 +102,11 @@ class ErrorHandler {
 
     // 예외 타입별 기본 메시지
     if (exception is NetworkException) {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : ErrorMessages.network;
+      return exception.message.isNotEmpty ? exception.message : ErrorMessages.network;
     } else if (exception is ServerException) {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : ErrorMessages.server;
+      return exception.message.isNotEmpty ? exception.message : ErrorMessages.server;
     } else if (exception is AuthException) {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : ErrorMessages.unauthorized;
+      return exception.message.isNotEmpty ? exception.message : ErrorMessages.unauthorized;
     } else if (exception is DataParsingException) {
       return ErrorMessages.dataFormat;
     } else if (exception is PermissionException) {
@@ -126,9 +116,7 @@ class ErrorHandler {
     } else if (exception is CacheException) {
       return '캐시 처리 중 오류가 발생했습니다';
     } else {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : ErrorMessages.general;
+      return exception.message.isNotEmpty ? exception.message : ErrorMessages.general;
     }
   }
 }

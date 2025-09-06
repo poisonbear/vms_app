@@ -23,8 +23,7 @@ class MemoryManager {
   /// AnimationController 등록
   void registerAnimationController(AnimationController controller) {
     _animationControllers.add(controller);
-    AppLogger.d(
-        '🎬 Animation controller registered. Total: ${_animationControllers.length}');
+    AppLogger.d('🎬 Animation controller registered. Total: ${_animationControllers.length}');
   }
 
   /// Timer 등록

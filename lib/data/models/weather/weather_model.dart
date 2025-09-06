@@ -32,9 +32,7 @@ class WidModel {
         gust_surface: json['gustsurface'],
         wave_height: json['waveheight'],
         ptype_surface: json['ptypesurface'],
-        ts: json['timestamp'] != null
-            ? DateTime.parse(json['timestamp'])
-            : null,
+        ts: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : null,
         reg_dt: json['regdt'] != null ? DateTime.parse(json['regdt']) : null);
   }
 }

@@ -22,15 +22,12 @@ void main() async {
               file.path.endsWith(StringConstants.jpegExtension)))
       .toList();
 
-  AppLogger.d(
-      '${StringConstants.foundImages}: ${imageFiles.length}${StringConstants.unitBytes}');
+  AppLogger.d('${StringConstants.foundImages}: ${imageFiles.length}${StringConstants.unitBytes}');
 
   for (var file in imageFiles) {
     final fileSize = (file as File).lengthSync();
-    final fileSizeKB = (fileSize / NumericConstants.bytesPerKB)
-        .toStringAsFixed(ValidationConstants.debugDecimalPlaces);
-    AppLogger.d(
-        '  - ${path.basename(file.path)}: $fileSizeKB${StringConstants.unitKB}');
+    final fileSizeKB = (fileSize / NumericConstants.bytesPerKB).toStringAsFixed(ValidationConstants.debugDecimalPlaces);
+    AppLogger.d('  - ${path.basename(file.path)}: $fileSizeKB${StringConstants.unitKB}');
 
     // 100KB 이상인 이미지 경고
     if (fileSize > ValidationConstants.maxImageFileSizeBytes) {

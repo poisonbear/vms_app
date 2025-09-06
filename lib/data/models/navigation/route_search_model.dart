@@ -19,8 +19,7 @@ class PastRouteSearchModel {
   double? cog;
 
   //생성자 작성 객체만들때 값을 전달해서 변수를 초기화 해주는 역할 ex) var ship = GisModel(mmsi: 123456789, shipName: "가람호");
-  PastRouteSearchModel(
-      {this.regDt, this.mmsi, this.lntd, this.lttd, this.spd, this.cog});
+  PastRouteSearchModel({this.regDt, this.mmsi, this.lntd, this.lttd, this.spd, this.cog});
 
   //JSON을 받아서 GisModel객체로 바꿔주는 함수 작성
   //fromJson()을 통해 받은 JSON을 Dart객체로 변환 mmsi(클래스변수명) : json['(실제 데이터 컬림명)'];
@@ -54,10 +53,7 @@ class PredRouteSearchModel {
   //fromJson()을 통해 받은 JSON을 Dart객체로 변환 mmsi(클래스변수명) : json['(실제 데이터 컬림명)'];
   factory PredRouteSearchModel.fromJson(Map<String, dynamic> json) {
     return PredRouteSearchModel(
-        pdcthh: json['pdct_cord_hh'],
-        lntd: json['pdct_lntd'],
-        lttd: json['pdct_lttd'],
-        spd: json['pdct_sog']);
+        pdcthh: json['pdct_cord_hh'], lntd: json['pdct_lntd'], lttd: json['pdct_lttd'], spd: json['pdct_sog']);
   }
 
   @override
@@ -76,8 +72,7 @@ class RouteSearchModel {
     required this.predRoutes,
   });
 
-  factory RouteSearchModel.fromVesselRouteResponse(
-      VesselRouteResponse response) {
+  factory RouteSearchModel.fromVesselRouteResponse(VesselRouteResponse response) {
     return RouteSearchModel(
       pastRoutes: response.past,
       predRoutes: response.pred,

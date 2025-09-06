@@ -42,13 +42,9 @@ class VesselSearchSource {
 
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
-        vessels = items
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        vessels = items.map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
       } else if (response.data is List) {
-        vessels = (response.data as List)
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        vessels = (response.data as List).map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
       }
 
       logger.d('Vessel list fetched: ${vessels.length} items');

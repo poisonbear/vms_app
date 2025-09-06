@@ -30,9 +30,7 @@ class VesselListWidget extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           elevation: isSelected ? 4 : 1,
-          color: isSelected
-              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-              : null,
+          color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : null,
           child: ListTile(
             leading: Icon(
               Icons.directions_boat,
@@ -49,10 +47,8 @@ class VesselListWidget extends StatelessWidget {
               children: [
                 Text('MMSI: ${vessel.mmsi ?? '-'}'),
                 Text('선박종류: ${vessel.ship_knd ?? '-'}'),
-                if (vessel.sog != null)
-                  Text('속력: ${vessel.sog!.toStringAsFixed(1)} knots'),
-                if (vessel.cog != null)
-                  Text('침로: ${vessel.cog!.toStringAsFixed(1)}°'),
+                if (vessel.sog != null) Text('속력: ${vessel.sog!.toStringAsFixed(1)} knots'),
+                if (vessel.cog != null) Text('침로: ${vessel.cog!.toStringAsFixed(1)}°'),
               ],
             ),
             trailing: Column(

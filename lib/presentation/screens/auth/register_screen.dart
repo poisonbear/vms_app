@@ -56,12 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Email Domain Configuration
   // ========================================
   String? _selectedEmailDomain;
-  static final List<String> _emailDomains = [
-    'naver.com',
-    'gmail.com',
-    'hanmail.net',
-    '직접입력'
-  ];
+  static final List<String> _emailDomains = ['naver.com', 'gmail.com', 'hanmail.net', '직접입력'];
 
   // ========================================
   // Lifecycle Methods
@@ -178,10 +173,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // 이메일 검증 (선택사항)
-    if (_emailController.text.trim().isNotEmpty ||
-        _emailAddrController.text.trim().isNotEmpty) {
-      if (_emailController.text.trim().isEmpty ||
-          _emailAddrController.text.trim().isEmpty) {
+    if (_emailController.text.trim().isNotEmpty || _emailAddrController.text.trim().isNotEmpty) {
+      if (_emailController.text.trim().isEmpty || _emailAddrController.text.trim().isEmpty) {
         showTopSnackBar(context, '이메일을 완전히 입력해주세요.');
         return false;
       }
@@ -224,18 +217,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (response.data is int) {
           _isIdAvailable = response.data;
         } else if (response.data is Map) {
-          _isIdAvailable = response.data['result'] ??
-              response.data['available'] ??
-              response.data['code'] ??
-              1;
+          _isIdAvailable = response.data['result'] ?? response.data['available'] ?? response.data['code'] ?? 1;
         } else {
           _isIdAvailable = ValidationConstants.idAvailable;
         }
       });
 
-      final message = _isIdAvailable == ValidationConstants.idAvailable
-          ? '사용 가능한 아이디입니다.'
-          : '이미 사용 중인 아이디입니다.';
+      final message = _isIdAvailable == ValidationConstants.idAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.';
       showTopSnackBar(context, message);
     } catch (e) {
       logger.e('ID 중복 확인 실패: $e');
@@ -259,8 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       // API 서버에 회원정보 등록
-      final email = _emailController.text.trim().isNotEmpty &&
-              _emailAddrController.text.trim().isNotEmpty
+      final email = _emailController.text.trim().isNotEmpty && _emailAddrController.text.trim().isNotEmpty
           ? '${_emailController.text.trim()}@${_emailAddrController.text.trim()}'
           : '';
 
@@ -273,8 +260,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'mphn_no': _phoneController.text.trim(),
           'email_addr': email,
           'firebase_uuid': userCredential.user?.uid,
-          'choice_time': widget.nowTime?.toIso8601String() ??
-              DateTime.now().toIso8601String(),
+          'choice_time': widget.nowTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
         },
       );
 
@@ -649,9 +635,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           Expanded(
             flex: 5,
-            child: _isDirectInput
-                ? _buildEmailDirectInput()
-                : _buildEmailDomainDropdown(),
+            child: _isDirectInput ? _buildEmailDirectInput() : _buildEmailDomainDropdown(),
           ),
         ],
       ),
@@ -687,9 +671,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: value == '직접입력'
-                      ? getColorgray_Type2()
-                      : getColorblack_type2(),
+                  color: value == '직접입력' ? getColorgray_Type2() : getColorblack_type2(),
                 ),
               ),
             );
@@ -789,9 +771,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: enabled
-            ? getColorwhite_type1()
-            : getColorgray_Type3().withValues(alpha: 0.5),
+        fillColor: enabled ? getColorwhite_type1() : getColorgray_Type3().withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,

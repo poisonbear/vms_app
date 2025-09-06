@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
 import 'package:vms_app/domain/repositories/navigation_repository.dart';
 import 'package:vms_app/domain/usecases/navigation/get_navigation_history.dart';
-import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart'
-    as weather_usecase;
+import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart' as weather_usecase;
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
 class NavigationProvider extends BaseProvider {
@@ -149,5 +148,31 @@ class NavigationProvider extends BaseProvider {
       // 1000m 미만은 m로 표시
       return '시정: ${visibilityValue.toStringAsFixed(0)}m';
     }
+  }
+
+  // ✅ dispose 메서드 추가 - 메모리 누수 방지
+  @override
+  void dispose() {
+    // Navigation 관련 리소스 정리
+    _rosList.clear();
+    _navigationWarnings.clear();
+
+    // 상태 초기화
+    _isInitialized = false;
+
+    // Weather 데이터 초기화
+    wave = 0;
+    visibility = 0;
+    walm1 = 0.0;
+    walm2 = 0.0;
+    walm3 = 0.0;
+    walm4 = 0.0;
+    valm1 = 0.0;
+    valm2 = 0.0;
+    valm3 = 0.0;
+    valm4 = 0.0;
+
+    // BaseProvider의 dispose 호출 (중요!)
+    super.dispose();
   }
 }

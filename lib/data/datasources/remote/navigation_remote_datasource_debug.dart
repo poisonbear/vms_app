@@ -9,8 +9,7 @@ import 'package:flutter/foundation.dart';
 class RosSource {
   final dioRequest = DioRequest();
 
-  Future<List<RosModel>> getRosList(
-      {String? startDate, String? endDate, int? mmsi, String? shipName}) async {
+  Future<List<RosModel>> getRosList({String? startDate, String? endDate, int? mmsi, String? shipName}) async {
     try {
       final String apiUrl = ApiEndpoints.navigationHistory;
 
@@ -25,8 +24,7 @@ class RosSource {
         receiveTimeout: const Duration(seconds: 100),
       );
 
-      final response =
-          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
@@ -34,9 +32,7 @@ class RosSource {
       }
 
       if (response.data is List) {
-        return (response.data as List)
-            .map<RosModel>((json) => RosModel.fromJson(json))
-            .toList();
+        return (response.data as List).map<RosModel>((json) => RosModel.fromJson(json)).toList();
       }
 
       return [];

@@ -12,8 +12,7 @@ class MemoryLeakChecker {
     if (kReleaseMode) return;
 
     _instanceCounts[className] = (_instanceCounts[className] ?? 0) + 1;
-    AppLogger.v(
-        'Instance created: $className (count: ${_instanceCounts[className]})');
+    AppLogger.v('Instance created: $className (count: ${_instanceCounts[className]})');
   }
 
   /// 인스턴스 해제 추적
@@ -25,14 +24,12 @@ class MemoryLeakChecker {
       if (_instanceCounts[className]! <= 0) {
         _instanceCounts.remove(className);
       }
-      AppLogger.v(
-          'Instance released: $className (remaining: ${_instanceCounts[className] ?? 0})');
+      AppLogger.v('Instance released: $className (remaining: ${_instanceCounts[className] ?? 0})');
     }
   }
 
   /// 주기적 메모리 체크 시작
-  static void startPeriodicCheck(
-      {Duration interval = const Duration(minutes: 1)}) {
+  static void startPeriodicCheck({Duration interval = const Duration(minutes: 1)}) {
     if (kReleaseMode) return;
 
     _periodicChecker?.cancel();

@@ -9,8 +9,7 @@ class VesselRepositoryImpl implements VesselRepository {
   VesselRepositoryImpl(this._vesselSearchSource);
 
   @override
-  Future<List<VesselSearchModel>> getVesselList(
-      {String? regDt, int? mmsi}) async {
+  Future<List<VesselSearchModel>> getVesselList({String? regDt, int? mmsi}) async {
     try {
       // DataSource는 Result를 반환하지만, Repository는 기존 인터페이스 유지
       final result = await _vesselSearchSource.getVesselList(

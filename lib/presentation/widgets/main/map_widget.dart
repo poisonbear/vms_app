@@ -34,8 +34,7 @@ class MapWidget extends StatelessWidget {
         return FlutterMap(
           mapController: mapController,
           options: MapOptions(
-            initialCenter:
-                currentPosition ?? const LatLng(35.374509, 126.132268),
+            initialCenter: currentPosition ?? const LatLng(35.374509, 126.132268),
             initialZoom: 12.0,
             maxZoom: 14.0,
             minZoom: 5.5,
@@ -99,9 +98,7 @@ class MapWidget extends StatelessWidget {
             child: Transform.rotate(
               angle: (vessel.cog ?? 0) * (pi / 180),
               child: SvgPicture.asset(
-                isCurrentUser
-                    ? 'assets/kdn/home/img/myVessel.svg'
-                    : 'assets/kdn/home/img/otherVessel.svg',
+                isCurrentUser ? 'assets/kdn/home/img/myVessel.svg' : 'assets/kdn/home/img/otherVessel.svg',
                 width: 40,
                 height: 40,
               ),

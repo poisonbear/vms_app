@@ -50,11 +50,9 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
                 getSize56(),
                 '시정',
                 getSize160(),
-                viewModel
-                    .getFormattedVisibilityThresholdText(viewModel.visibility),
+                viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
                 isSelected: isVisibilitySelected,
-                onTap: () => setState(
-                    () => isVisibilitySelected = !isVisibilitySelected),
+                onTap: () => setState(() => isVisibilitySelected = !isVisibilitySelected),
               ),
             ],
           ),

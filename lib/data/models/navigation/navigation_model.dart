@@ -256,8 +256,7 @@ class NavigationWarnings {
           dateTime = ' ${item['datetime']}';
         } else if (item.containsKey('period')) {
           dateTime = ' ${item['period']}';
-        } else if (item.containsKey('start_time') &&
-            item.containsKey('end_time')) {
+        } else if (item.containsKey('start_time') && item.containsKey('end_time')) {
           dateTime = ' ${item['start_time']} ~ ${item['end_time']}';
         }
 
@@ -311,8 +310,7 @@ class NavigationWarnings {
         }
 
         // 최종 포맷: [구분자] 위치 메시지 시간
-        warningText =
-            '[$category]$location${location.isNotEmpty && message.isNotEmpty ? ' ' : ''}$message$dateTime';
+        warningText = '[$category]$location${location.isNotEmpty && message.isNotEmpty ? ' ' : ''}$message$dateTime';
       } else if (item is String) {
         // item이 이미 문자열인 경우
         warningText = '[항행경보] $item';
@@ -322,9 +320,7 @@ class NavigationWarnings {
       }
 
       // 빈 문자열이 아닌 경우만 추가
-      if (warningText.trim().isNotEmpty &&
-          warningText != '[항행경보]' &&
-          warningText != '[]') {
+      if (warningText.trim().isNotEmpty && warningText != '[항행경보]' && warningText != '[]') {
         processedWarnings.add(warningText.trim());
       }
     }

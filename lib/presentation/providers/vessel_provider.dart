@@ -39,4 +39,14 @@ class VesselProvider extends BaseProvider {
       safeNotifyListeners();
     });
   }
+
+  @override
+  @override
+  void dispose() {
+    // Vessel 관련 리소스 정리
+    _vessels.clear();
+
+    // BaseProvider의 dispose 호출
+    super.dispose();
+  }
 }

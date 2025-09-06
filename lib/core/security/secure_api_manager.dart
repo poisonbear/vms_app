@@ -31,12 +31,9 @@ class SecureApiManager {
       'vessel_route_api': 'http://118.40.116.129:8080/api/ros/vesselRoute',
       'weather_api': 'http://118.40.116.129:8080/api/wid/Weather',
       'navigation_api': 'http://118.40.116.129:8080/api/ros/navigation',
-      'member_info_api':
-          'http://118.40.116.129:8080/mob/usm/selectMemberInfoData.do',
-      'update_member_api':
-          'http://118.40.116.129:8080/mob/usm/updateMobileMembership.do',
-      'register_api':
-          'http://118.40.116.129:8080/mob/usm/insertMobileMembership.do',
+      'member_info_api': 'http://118.40.116.129:8080/mob/usm/selectMemberInfoData.do',
+      'update_member_api': 'http://118.40.116.129:8080/mob/usm/updateMobileMembership.do',
+      'register_api': 'http://118.40.116.129:8080/mob/usm/insertMobileMembership.do',
     };
 
     for (var entry in endpoints.entries) {
@@ -44,8 +41,7 @@ class SecureApiManager {
       await _storage.write(key: entry.key, value: encrypted);
     }
 
-    await _storage.write(
-        key: 'firebase_project_id', value: _encrypt('vms-app-8ff6d'));
+    await _storage.write(key: 'firebase_project_id', value: _encrypt('vms-app-8ff6d'));
   }
 
   String _encrypt(String plainText) {

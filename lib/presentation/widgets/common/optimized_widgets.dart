@@ -80,8 +80,7 @@ class OptimizedNetworkImage extends StatelessWidget {
         return Center(
           child: CircularProgressIndicator(
             value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                 : null,
           ),
         );

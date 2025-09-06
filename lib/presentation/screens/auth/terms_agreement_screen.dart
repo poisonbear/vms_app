@@ -15,8 +15,7 @@ class CmdChoiceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-        create: (_) => TermsProvider(), child: const _CmdChoiceViewBody());
+    return ChangeNotifierProvider(create: (_) => TermsProvider(), child: const _CmdChoiceViewBody());
   }
 }
 
@@ -71,13 +70,10 @@ class _CmdChoiceViewBody extends StatelessWidget {
             ],
           ),
         ),
-        TextWidgetString('K-VMS', getTextcenter(), getSize32(), getText700(),
-            getColorblack_type2()),
-        TextWidgetString('약관동의', getTextcenter(), getSize32(), getText700(),
-            getColorblack_type2()),
+        TextWidgetString('K-VMS', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
+        TextWidgetString('약관동의', getTextcenter(), getSize32(), getText700(), getColorblack_type2()),
         Padding(
-          padding: EdgeInsets.only(
-              top: getSize12().toDouble(), bottom: getSize60().toDouble()),
+          padding: EdgeInsets.only(top: getSize12().toDouble(), bottom: getSize60().toDouble()),
           child: TextWidgetString(
             '회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
             getTextcenter(),
@@ -90,14 +86,12 @@ class _CmdChoiceViewBody extends StatelessWidget {
     );
   }
 
-  Widget _buildAllAgreementSection(
-      BuildContext context, TermsProvider provider) {
+  Widget _buildAllAgreementSection(BuildContext context, TermsProvider provider) {
     return Container(
       margin: EdgeInsets.only(bottom: getSize20().toDouble()),
       padding: EdgeInsets.all(getSize14().toDouble()),
       decoration: BoxDecoration(
-        border: Border.all(
-            color: getColorgray_Type4(), width: getSize1().toDouble()),
+        border: Border.all(color: getColorgray_Type4(), width: getSize1().toDouble()),
         borderRadius: BorderRadius.circular(getSize4().toDouble()),
       ),
       child: Row(
@@ -106,15 +100,13 @@ class _CmdChoiceViewBody extends StatelessWidget {
             scale: getSize1_333(),
             child: Checkbox(
               value: provider.isAllAgreed,
-              onChanged: (value) =>
-                  provider.updateAllAgreements(value ?? false),
+              onChanged: (value) => provider.updateAllAgreements(value ?? false),
               activeColor: getColorsky_Type3(),
               checkColor: getColorwhite_type1(),
               shape: const CircleBorder(),
             ),
           ),
-          TextWidgetString('약관에 모두 동의합니다', TextAlign.left, getSize14(),
-              getText700(), getColorblack_type2()),
+          TextWidgetString('약관에 모두 동의합니다', TextAlign.left, getSize14(), getText700(), getColorblack_type2()),
         ],
       ),
     );
@@ -192,8 +184,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
               scale: 1.333,
               child: Checkbox(
                 value: agreed,
-                onChanged: (value) =>
-                    provider.updateAgreement(type, value ?? false),
+                onChanged: (value) => provider.updateAgreement(type, value ?? false),
                 activeColor: getColorsky_Type3(),
                 checkColor: getColorwhite_type1(),
                 shape: const CircleBorder(),
@@ -205,8 +196,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      TextWidgetString(title, TextAlign.left, getSize14(),
-                          getText400(), getColorblack_type2()),
+                      TextWidgetString(title, TextAlign.left, getSize14(), getText400(), getColorblack_type2()),
                       SizedBox(width: getSize4().toDouble()),
                       TextWidgetString(
                         subtitle,

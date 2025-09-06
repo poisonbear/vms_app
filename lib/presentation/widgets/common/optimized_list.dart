@@ -95,8 +95,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       _loadMoreData();
     }
   }

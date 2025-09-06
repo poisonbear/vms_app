@@ -25,8 +25,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
   final TextEditingController mmsiController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -52,8 +51,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
 
   // API URLs
   final String apiUrl = dotenv.env['kdn_usm_update_membership_key'] ?? '';
-  final String userInfoUrl =
-      dotenv.env['kdn_usm_select_member_info_data'] ?? '';
+  final String userInfoUrl = dotenv.env['kdn_usm_select_member_info_data'] ?? '';
   final dioRequest = DioRequest();
 
   // Dropdown data
@@ -213,8 +211,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
         data: {'uuid': uuid}, // 원본처럼 uuid만 전송
         options: Options(headers: {
           'Content-Type': 'application/json',
-          'Authorization':
-              'Bearer ${await user.getIdToken()}', // 원본처럼 Authorization 헤더 포함
+          'Authorization': 'Bearer ${await user.getIdToken()}', // 원본처럼 Authorization 헤더 포함
         }),
       );
 
@@ -286,9 +283,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
       String emailDomain = '';
 
       // 전체 이메일 주소 형태
-      if (data.containsKey('email_addr') &&
-          data['email_addr'] != null &&
-          data['email_addr'].isNotEmpty) {
+      if (data.containsKey('email_addr') && data['email_addr'] != null && data['email_addr'].isNotEmpty) {
         final emailParts = data['email_addr'].toString().split('@');
         if (emailParts.length == 2) {
           emailId = emailParts[0];
@@ -298,17 +293,13 @@ class _MembershipviewState extends State<MemberInformationChange> {
       }
 
       // 분리된 이메일 ID
-      if (data.containsKey('email_id') &&
-          data['email_id'] != null &&
-          data['email_id'].isNotEmpty) {
+      if (data.containsKey('email_id') && data['email_id'] != null && data['email_id'].isNotEmpty) {
         emailId = data['email_id'].toString();
         AppLogger.d('이메일 ID: $emailId');
       }
 
       // 분리된 도메인
-      if (data.containsKey('email_domain') &&
-          data['email_domain'] != null &&
-          data['email_domain'].isNotEmpty) {
+      if (data.containsKey('email_domain') && data['email_domain'] != null && data['email_domain'].isNotEmpty) {
         emailDomain = data['email_domain'].toString();
         AppLogger.d('이메일 도메인: $emailDomain');
       }
@@ -389,8 +380,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
     bool isValidMmsi = mmsi.isNotEmpty && isValms;
     bool isValidPhone = phone.isNotEmpty && isValphone;
     bool isValidEmail = email.isNotEmpty && emailaddr.isNotEmpty;
-    bool hasDataToUpdate =
-        isChangingPassword || isValidMmsi || isValidPhone || isValidEmail;
+    bool hasDataToUpdate = isChangingPassword || isValidMmsi || isValidPhone || isValidEmail;
 
     if (!hasDataToUpdate) {
       return '수정할 정보를 하나 이상 올바르게 입력해주세요.';
@@ -403,8 +393,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
   // API 호출 로직 분리 (Firebase 처리)
   // ========================================
 
-  Future<void> _handleFirebasePasswordChange(
-      User user, String currentPassword, String newPassword) async {
+  Future<void> _handleFirebasePasswordChange(User user, String currentPassword, String newPassword) async {
     final credential = EmailAuthProvider.credential(
       email: user.email!,
       password: currentPassword,
@@ -414,8 +403,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
     await user.reload();
   }
 
-  Future<void> _updateServerProfile(
-      User user, Map<String, dynamic> dataToSend) async {
+  Future<void> _updateServerProfile(User user, Map<String, dynamic> dataToSend) async {
     final response = await dioRequest.dio.post(
       apiUrl,
       data: dataToSend,
@@ -513,8 +501,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
       'mmsi': mmsi,
       'mphn_no': phone,
       'choice_time': widget.nowTime.toIso8601String(),
-      if (email.isNotEmpty && emailaddr.isNotEmpty)
-        'email_addr': '${email.trim()}@${emailaddr.trim()}',
+      if (email.isNotEmpty && emailaddr.isNotEmpty) 'email_addr': '${email.trim()}@${emailaddr.trim()}',
       'uuid': user.uid,
       'fcm_tkn': fcmToken,
     };
@@ -536,9 +523,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
       final responseData = e.response?.data;
 
       if (statusCode == 401) {
-        errorMessage = responseData is Map && responseData['message'] != null
-            ? responseData['message']
-            : '기존 비밀번호가 일치하지 않습니다.';
+        errorMessage =
+            responseData is Map && responseData['message'] != null ? responseData['message'] : '기존 비밀번호가 일치하지 않습니다.';
       } else {
         errorMessage = responseData is Map && responseData['message'] != null
             ? responseData['message']
@@ -572,20 +558,17 @@ class _MembershipviewState extends State<MemberInformationChange> {
             left: getSize20().toDouble(),
             right: getSize20().toDouble(),
             top: getSize20().toDouble(),
-            bottom: MediaQuery.of(context).viewInsets.bottom +
-                getSize20().toDouble(),
+            bottom: MediaQuery.of(context).viewInsets.bottom + getSize20().toDouble(),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.only(
-                    top: getSize40().toDouble(), bottom: getSize8().toDouble()),
+                padding: EdgeInsets.only(top: getSize40().toDouble(), bottom: getSize8().toDouble()),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('아이디', getTextcenter(), getSize16(),
-                        getText700(), getColorgray_Type8()),
+                    TextWidgetString('아이디', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -593,8 +576,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget_deactivate(getSize266(), getSize48(),
-                      idController, '', getColorgray_Type7(),
+                  child: inputWidget_deactivate(getSize266(), getSize48(), idController, '', getColorgray_Type7(),
                       isReadOnly: true),
                 ),
               ),
@@ -603,8 +585,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('기존 비밀번호', getTextcenter(), getSize16(),
-                        getText700(), getColorgray_Type8()),
+                    TextWidgetString('기존 비밀번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -612,8 +593,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize13().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(),
-                      passwordController, '비밀번호', getColorgray_Type7(),
+                  child: inputWidget(getSize266(), getSize48(), passwordController, '비밀번호', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -623,12 +603,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidgetString(
-                          '비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
-                          getTextleft(),
-                          getSize12(),
-                          getText700(),
-                          getColorred_type3()),
+                      TextWidgetString('비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.', getTextleft(),
+                          getSize12(), getText700(), getColorred_type3()),
                     ],
                   ),
                 ),
@@ -637,8 +613,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호', getTextcenter(), getSize16(),
-                        getText700(), getColorgray_Type8()),
+                    TextWidgetString('새로운 비밀번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -646,8 +621,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(),
-                      newPasswordController, '비밀번호', getColorgray_Type7(),
+                  child: inputWidget(getSize266(), getSize48(), newPasswordController, '비밀번호', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
@@ -656,8 +630,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호 확인', getTextcenter(),
-                        getSize16(), getText700(), getColorgray_Type8()),
+                    TextWidgetString('새로운 비밀번호 확인', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -666,38 +639,32 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
                   child: inputWidget(
-                      getSize266(),
-                      getSize48(),
-                      confirmPasswordController,
-                      '비밀번호 확인',
-                      getColorgray_Type7(),
+                      getSize266(), getSize48(), confirmPasswordController, '비밀번호 확인', getColorgray_Type7(),
                       obscureText: true),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                child: TextWidgetString('선박 MMSI 번호', getTextcenter(),
-                    getSize16(), getText700(), getColorgray_Type8()),
+                child: TextWidgetString('선박 MMSI 번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), mmsiController,
-                      'MMSI 번호(숫자 9자리)를 입력해주세요', getColorgray_Type7()),
+                  child: inputWidget(
+                      getSize266(), getSize48(), mmsiController, 'MMSI 번호(숫자 9자리)를 입력해주세요', getColorgray_Type7()),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                child: TextWidgetString('휴대폰 번호', getTextcenter(), getSize16(),
-                    getText700(), getColorgray_Type8()),
+                child: TextWidgetString('휴대폰 번호', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: getSize20().toDouble()),
-                  child: inputWidget(getSize266(), getSize48(), phoneController,
-                      "'-' 구분없이 숫자만 입력", getColorgray_Type7()),
+                  child:
+                      inputWidget(getSize266(), getSize48(), phoneController, "'-' 구분없이 숫자만 입력", getColorgray_Type7()),
                 ),
               ),
               Padding(
@@ -705,8 +672,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('이메일', getTextcenter(), getSize16(),
-                        getText700(), getColorgray_Type8()),
+                    TextWidgetString('이메일', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                   ],
                 ),
               ),
@@ -724,10 +690,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: getSize4().toDouble()),
-                      child: TextWidgetString('@', getTextcenter(), getSize16(),
-                          getText700(), getColorgray_Type8()),
+                      padding: EdgeInsets.symmetric(horizontal: getSize4().toDouble()),
+                      child: TextWidgetString('@', getTextcenter(), getSize16(), getText700(), getColorgray_Type8()),
                     ),
                     Expanded(
                       child: Stack(
@@ -740,26 +704,19 @@ class _MembershipviewState extends State<MemberInformationChange> {
                               filled: true,
                               fillColor: getColorwhite_type1(),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    DesignConstants.radiusM),
-                                borderSide: BorderSide(
-                                    color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    DesignConstants.radiusM),
-                                borderSide: BorderSide(
-                                    color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                    DesignConstants.radiusM),
-                                borderSide: BorderSide(
-                                    color: getColorgray_Type7(), width: 1),
+                                borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                                borderSide: BorderSide(color: getColorgray_Type7(), width: 1),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: DesignConstants.spacing20,
-                                  vertical: DesignConstants.spacing12),
+                                  horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
                             ),
                           ),
                           PopupMenuButton<String>(

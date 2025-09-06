@@ -18,70 +18,14 @@ class WindDebugUtils {
 
     // 8방위 테스트 케이스
     final testCases = [
-      {
-        'name': '정북풍',
-        'u': 0.0,
-        'v': -5.7,
-        'expectedSpeed': 6,
-        'expectedWind': 0,
-        'expectedText': '북풍'
-      },
-      {
-        'name': '북동풍',
-        'u': -4.0,
-        'v': -4.0,
-        'expectedSpeed': 6,
-        'expectedWind': 45,
-        'expectedText': '북동풍'
-      },
-      {
-        'name': '정동풍',
-        'u': -4.3,
-        'v': 0.0,
-        'expectedSpeed': 4,
-        'expectedWind': 90,
-        'expectedText': '동풍'
-      },
-      {
-        'name': '남동풍',
-        'u': -3.0,
-        'v': 3.0,
-        'expectedSpeed': 4,
-        'expectedWind': 135,
-        'expectedText': '남동풍'
-      },
-      {
-        'name': '정남풍',
-        'u': 0.0,
-        'v': 8.6,
-        'expectedSpeed': 9,
-        'expectedWind': 180,
-        'expectedText': '남풍'
-      },
-      {
-        'name': '남서풍',
-        'u': 3.5,
-        'v': 3.5,
-        'expectedSpeed': 5,
-        'expectedWind': 225,
-        'expectedText': '남서풍'
-      },
-      {
-        'name': '정서풍',
-        'u': 3.4,
-        'v': 0.0,
-        'expectedSpeed': 3,
-        'expectedWind': 270,
-        'expectedText': '서풍'
-      },
-      {
-        'name': '북서풍',
-        'u': 2.8,
-        'v': -2.8,
-        'expectedSpeed': 4,
-        'expectedWind': 315,
-        'expectedText': '북서풍'
-      },
+      {'name': '정북풍', 'u': 0.0, 'v': -5.7, 'expectedSpeed': 6, 'expectedWind': 0, 'expectedText': '북풍'},
+      {'name': '북동풍', 'u': -4.0, 'v': -4.0, 'expectedSpeed': 6, 'expectedWind': 45, 'expectedText': '북동풍'},
+      {'name': '정동풍', 'u': -4.3, 'v': 0.0, 'expectedSpeed': 4, 'expectedWind': 90, 'expectedText': '동풍'},
+      {'name': '남동풍', 'u': -3.0, 'v': 3.0, 'expectedSpeed': 4, 'expectedWind': 135, 'expectedText': '남동풍'},
+      {'name': '정남풍', 'u': 0.0, 'v': 8.6, 'expectedSpeed': 9, 'expectedWind': 180, 'expectedText': '남풍'},
+      {'name': '남서풍', 'u': 3.5, 'v': 3.5, 'expectedSpeed': 5, 'expectedWind': 225, 'expectedText': '남서풍'},
+      {'name': '정서풍', 'u': 3.4, 'v': 0.0, 'expectedSpeed': 3, 'expectedWind': 270, 'expectedText': '서풍'},
+      {'name': '북서풍', 'u': 2.8, 'v': -2.8, 'expectedSpeed': 4, 'expectedWind': 315, 'expectedText': '북서풍'},
     ];
 
     bool allPassed = true;
@@ -121,10 +65,8 @@ class WindDebugUtils {
       AppLogger.d('  입력: U=$u, V=$v');
       AppLogger.d(
           '  풍속: ${windSpeedValue.toStringAsFixed(2)} → $calculatedSpeed m/s ${speedOk ? "✅" : "❌ (예상: $expectedSpeed)"}');
-      AppLogger.d(
-          '  풍향: $calculatedWind° ${windOk ? "✅" : "❌ (예상: $expectedWind°)"}');
-      AppLogger.d(
-          '  방위: $calculatedText ${textOk ? "✅" : "❌ (예상: $expectedText)"}');
+      AppLogger.d('  풍향: $calculatedWind° ${windOk ? "✅" : "❌ (예상: $expectedWind°)"}');
+      AppLogger.d('  방위: $calculatedText ${textOk ? "✅" : "❌ (예상: $expectedText)"}');
       AppLogger.d('  화살표: $calculatedArrow°');
       AppLogger.d('');
     }
@@ -160,12 +102,10 @@ class WindDebugUtils {
   }
 
   /// 풍향/풍속 정보 요약
-  static void printWindSummary(
-      String directionText, int windSpeed, int arrowRotation) {
+  static void printWindSummary(String directionText, int windSpeed, int arrowRotation) {
     AppLogger.d('📊 바람 정보 (8방위):');
     AppLogger.d('  • 풍향: $directionText');
-    AppLogger.d(
-        '  • 풍속: $windSpeed m/s (${getWindStrengthDescription(windSpeed)})');
+    AppLogger.d('  • 풍속: $windSpeed m/s (${getWindStrengthDescription(windSpeed)})');
     AppLogger.d('  • 화살표 회전: $arrowRotation°');
   }
 

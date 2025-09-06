@@ -47,8 +47,7 @@ class AppLogger {
       _log('ERROR', message, error);
       if (stackTrace != null && !kReleaseMode) {
         // StackTrace는 별도로 출력
-        developer.log('StackTrace:\n${stackTrace.toString()}',
-            name: '$_appName:STACK');
+        developer.log('StackTrace:\n${stackTrace.toString()}', name: '$_appName:STACK');
       }
     }
   }

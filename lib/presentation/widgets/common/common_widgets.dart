@@ -68,8 +68,7 @@ Widget inputWidget(
     child: TextField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(
-          fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
+      style: const TextStyle(fontSize: DesignConstants.fontSizeM, decorationThickness: 0),
       decoration: InputDecoration(
         hintText: title,
         hintStyle: TextStyle(color: color),
@@ -248,8 +247,8 @@ class _CircularButtonState extends State<CircularButton> {
 // buildCircularButtonSlideOn 함수 제거됨 - 원래 스타일로 대체
 
 // 원래 스타일의 슬라이드 버튼 함수 복원
-Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize,
-    int heightsize, String labelText, int widthSizeline, String statusText,
+Widget buildCircularButtonSlideOn(
+    String svgPath, Color color, int widthsize, int heightsize, String labelText, int widthSizeline, String statusText,
     {VoidCallback? onTap, bool isSelected = true}) {
   return Padding(
     padding: EdgeInsets.only(bottom: getSize12().toDouble()),
@@ -265,13 +264,11 @@ Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize,
             top: 0,
             child: AnimatedContainer(
               duration: AnimationConstants.durationQuick,
-              width:
-                  isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
+              width: isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
               height: heightsize.toDouble(),
               decoration: BoxDecoration(
                 color: getColorblack_type1(), // 원래 배경색
-                borderRadius:
-                    BorderRadius.circular(getSize30().toDouble()), // 원래 둥근 모서리
+                borderRadius: BorderRadius.circular(getSize30().toDouble()), // 원래 둥근 모서리
               ),
             ),
           ),
@@ -287,10 +284,8 @@ Widget buildCircularButtonSlideOn(String svgPath, Color color, int widthsize,
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString(labelText, getTextleft(), getSize14(),
-                        getText700(), getColorgray_Type2()),
-                    TextWidgetString(statusText, getTextleft(), getSize14(),
-                        getText700(), getColorwhite_type1()),
+                    TextWidgetString(labelText, getTextleft(), getSize14(), getText700(), getColorgray_Type2()),
+                    TextWidgetString(statusText, getTextleft(), getSize14(), getText700(), getColorwhite_type1()),
                   ],
                 ),
               ),

@@ -7,8 +7,7 @@ import 'package:vms_app/data/models/navigation/navigation_model.dart';
 class RosSource {
   final dioRequest = DioRequest();
 
-  Future<List<RosModel>> getRosList(
-      {String? startDate, String? endDate, int? mmsi, String? shipName}) async {
+  Future<List<RosModel>> getRosList({String? startDate, String? endDate, int? mmsi, String? shipName}) async {
     try {
       final String apiUrl = ApiEndpoints.navigationHistory;
 
@@ -23,8 +22,7 @@ class RosSource {
         receiveTimeout: const Duration(seconds: 100),
       );
 
-      final response =
-          await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
+      final response = await dioRequest.dio.get(apiUrl, data: queryParams, options: options);
 
       // 로그 출력
       //logger.d("[API URL] : ${apiUrl}");
@@ -36,9 +34,7 @@ class RosSource {
       }
 
       if (response.data is List) {
-        return (response.data as List)
-            .map<RosModel>((json) => RosModel.fromJson(json))
-            .toList();
+        return (response.data as List).map<RosModel>((json) => RosModel.fromJson(json)).toList();
       }
 
       return [];

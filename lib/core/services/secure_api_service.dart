@@ -66,9 +66,7 @@ class SecureApiService {
           'uuid': uuid,
         },
         options: Options(
-          headers: firebaseToken != null
-              ? {'Authorization': 'Bearer $firebaseToken'}
-              : null,
+          headers: firebaseToken != null ? {'Authorization': 'Bearer $firebaseToken'} : null,
         ),
       );
 
@@ -88,8 +86,7 @@ class SecureApiService {
       throw Exception('Role API URL not configured');
     }
 
-    AppLogger.api(
-        'POST', apiUrl, {'user_id': AppLogger.maskSensitive(username)});
+    AppLogger.api('POST', apiUrl, {'user_id': AppLogger.maskSensitive(username)});
 
     try {
       final response = await _dioRequest.dio.post(
@@ -127,8 +124,7 @@ class SecureApiService {
 
   /// 선박 목록 조회 API
   Future<Response> getVesselList({String? regDt, int? mmsi}) async {
-    final apiUrl =
-        await getApiUrl('vessel_list_api', 'kdn_gis_select_vessel_List');
+    final apiUrl = await getApiUrl('vessel_list_api', 'kdn_gis_select_vessel_List');
 
     if (apiUrl.isEmpty) {
       throw Exception('Vessel API URL not configured');

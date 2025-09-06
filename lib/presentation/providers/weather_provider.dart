@@ -113,10 +113,8 @@ class WidWeatherInfoViewModel extends BaseProvider {
       _windIcon.add(iconName);
 
       AppLogger.d('   계산 결과:');
-      AppLogger.d(
-          '     • 풍속: ${windSpeedValue.toStringAsFixed(2)} → $windSpeedRounded m/s');
-      AppLogger.d(
-          '     • 풍향 각도: ${windDirectionDegrees.toStringAsFixed(1)}° → $windDirectionInt°');
+      AppLogger.d('     • 풍속: ${windSpeedValue.toStringAsFixed(2)} → $windSpeedRounded m/s');
+      AppLogger.d('     • 풍향 각도: ${windDirectionDegrees.toStringAsFixed(1)}° → $windDirectionInt°');
       AppLogger.d('     • 풍향 방위: $windDirectionText (바람이 불어오는 방향)');
       AppLogger.d('     • 화살표 회전: $arrowRotation° (바람이 가는 방향)');
       AppLogger.d('     • 아이콘: $iconName');
@@ -133,23 +131,18 @@ class WidWeatherInfoViewModel extends BaseProvider {
   }
 
   /// 풍향 계산 검증
-  void _verifyWindDirection(
-      double u, double v, int direction, String directionText) {
+  void _verifyWindDirection(double u, double v, int direction, String directionText) {
     AppLogger.d('   📐 검증:');
 
     // 주요 방향 확인
     if (u.abs() < 0.5 && v < -2) {
-      AppLogger.d(
-          '     예상: 북풍 (V가 음수로 큼) → 실제: $directionText ${directionText == '북풍' ? '✅' : '⚠️'}');
+      AppLogger.d('     예상: 북풍 (V가 음수로 큼) → 실제: $directionText ${directionText == '북풍' ? '✅' : '⚠️'}');
     } else if (u < -2 && v.abs() < 0.5) {
-      AppLogger.d(
-          '     예상: 동풍 (U가 음수로 큼) → 실제: $directionText ${directionText == '동풍' ? '✅' : '⚠️'}');
+      AppLogger.d('     예상: 동풍 (U가 음수로 큼) → 실제: $directionText ${directionText == '동풍' ? '✅' : '⚠️'}');
     } else if (u.abs() < 0.5 && v > 2) {
-      AppLogger.d(
-          '     예상: 남풍 (V가 양수로 큼) → 실제: $directionText ${directionText == '남풍' ? '✅' : '⚠️'}');
+      AppLogger.d('     예상: 남풍 (V가 양수로 큼) → 실제: $directionText ${directionText == '남풍' ? '✅' : '⚠️'}');
     } else if (u > 2 && v.abs() < 0.5) {
-      AppLogger.d(
-          '     예상: 서풍 (U가 양수로 큼) → 실제: $directionText ${directionText == '서풍' ? '✅' : '⚠️'}');
+      AppLogger.d('     예상: 서풍 (U가 양수로 큼) → 실제: $directionText ${directionText == '서풍' ? '✅' : '⚠️'}');
     }
   }
 
@@ -176,11 +169,7 @@ class WidWeatherInfoViewModel extends BaseProvider {
       return {'direction': '무풍', 'speed': '0 m/s', 'icon': 'ro0'};
     }
 
-    return {
-      'direction': _windDirection[index],
-      'speed': _windSpeed[index],
-      'icon': _windIcon[index]
-    };
+    return {'direction': _windDirection[index], 'speed': _windSpeed[index], 'icon': _windIcon[index]};
   }
 
   /// 디버깅용 - 모든 풍향 데이터 출력
@@ -190,8 +179,7 @@ class WidWeatherInfoViewModel extends BaseProvider {
     for (int i = 0; i < _windDirection.length; i++) {
       final windInfo = getWindInfoAt(i);
       final iconAngle = windInfo['icon'].toString().replaceAll('ro', '');
-      AppLogger.d(
-          '[$i] ${windInfo['direction']} ${windInfo['speed']} → 화살표 $iconAngle°');
+      AppLogger.d('[$i] ${windInfo['direction']} ${windInfo['speed']} → 화살표 $iconAngle°');
     }
     AppLogger.d('🌪️ ================================');
   }
@@ -224,10 +212,19 @@ class WidWeatherInfoViewModel extends BaseProvider {
 
       AppLogger.d('$name ($windDir°):');
       AppLogger.d('  화살표 회전: $calculatedIcon° → $rounded° (5도 단위)');
-      AppLogger.d(
-          '  예상값: $expectedIcon° ${(calculatedIcon - expectedIcon).abs() <= 5 ? '✅' : '⚠️'}');
+      AppLogger.d('  예상값: $expectedIcon° ${(calculatedIcon - expectedIcon).abs() <= 5 ? '✅' : '⚠️'}');
     }
 
     AppLogger.d('🧪 ====================');
+  }
+
+  @override
+  @override
+  void dispose() {
+    // Weather 관련 리소스 정리
+    // 실제 변수가 있다면 여기서 정리
+
+    // BaseProvider의 dispose 호출
+    super.dispose();
   }
 }

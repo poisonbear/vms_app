@@ -23,9 +23,8 @@ class VesselSearchSourceCached {
       final cachedData = await CacheManager.getCache(cacheKey);
       if (cachedData != null) {
         logger.d('Vessel list from cache');
-        final vessels = (cachedData as List)
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        final vessels =
+            (cachedData as List).map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
         return Success(vessels);
       }
 
@@ -58,14 +57,10 @@ class VesselSearchSourceCached {
 
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
-        vessels = items
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        vessels = items.map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
         dataToCache = items;
       } else if (response.data is List) {
-        vessels = (response.data as List)
-            .map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json))
-            .toList();
+        vessels = (response.data as List).map<VesselSearchModel>((json) => VesselSearchModel.fromJson(json)).toList();
         dataToCache = response.data;
       }
 

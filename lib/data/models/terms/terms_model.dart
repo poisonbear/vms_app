@@ -8,9 +8,6 @@ class CmdModel {
 
   factory CmdModel.fromJson(Map<String, dynamic> json) {
     return CmdModel(
-        terms_dt: json['terms_dt'],
-        terms_nm: json['terms_nm'],
-        id: json['id'],
-        terms_ctt: json['terms_ctt']);
+        terms_dt: json['terms_dt'], terms_nm: json['terms_nm'], id: json['id'], terms_ctt: json['terms_ctt']);
   }
 }
