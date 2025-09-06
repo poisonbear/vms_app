@@ -103,7 +103,8 @@ Future<void> warningPop(
     barrierLabel: '',
     barrierColor: Colors.transparent,
     transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    pageBuilder: (BuildContext context, Animation<double> animation,
+        Animation<double> secondaryAnimation) {
       return Stack(
         children: [
           // 배경
@@ -150,7 +151,8 @@ Future<void> warningPop(
                         alarmIcon,
                         width: 48,
                         height: 48,
-                        colorFilter: ColorFilter.mode(titleColor, BlendMode.srcIn),
+                        colorFilter:
+                            ColorFilter.mode(titleColor, BlendMode.srcIn),
                       ),
                     const SizedBox(height: 16),
                     // 제목
@@ -216,7 +218,8 @@ Future<void> warningPopdetail(
     barrierLabel: '',
     barrierColor: Colors.transparent,
     transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    pageBuilder: (BuildContext context, Animation<double> animation,
+        Animation<double> secondaryAnimation) {
       return Stack(
         children: [
           // 배경
@@ -263,7 +266,8 @@ Future<void> warningPopdetail(
                         alarmIcon,
                         width: 48,
                         height: 48,
-                        colorFilter: ColorFilter.mode(titleColor, BlendMode.srcIn),
+                        colorFilter:
+                            ColorFilter.mode(titleColor, BlendMode.srcIn),
                       ),
                     const SizedBox(height: 16),
                     // 제목

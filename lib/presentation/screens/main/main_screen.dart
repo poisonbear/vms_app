@@ -1,15 +1,10 @@
 import 'dart:async';
-// ===== 분리된 위젯 Import =====
-// ================================
 import 'package:vms_app/core/services/timer_service.dart';
 import 'package:vms_app/core/services/popup_service.dart';
 import 'package:vms_app/core/services/location_focus_service.dart';
 import 'package:vms_app/core/services/state_manager.dart';
 import 'package:vms_app/core/services/memory_manager.dart';
-// =====================================
-
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'dart:convert';
 import 'dart:math';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -36,22 +31,10 @@ import 'package:vms_app/presentation/screens/profile/profile_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-//GeoJSON 파싱 함수
-List<LatLng> parseGeoJsonLineString(String geoJsonStr) {
-  try {
-    final decodedOnce = jsonDecode(geoJsonStr);
-    final geoJson = decodedOnce is String ? jsonDecode(decodedOnce) : decodedOnce;
-    final coords = geoJson['coordinates'] as List;
-    return coords.map<LatLng>((c) {
-      final lon = double.tryParse(c[0].toString());
-      final lat = double.tryParse(c[1].toString());
-      if (lat == null || lon == null) throw const FormatException();
-      return LatLng(lat, lon);
-    }).toList();
-  } catch (_) {
-    return [];
-  }
-}
+import 'utils/geo_utils.dart';
+import 'utils/location_utils.dart';
+import 'widgets/vessel_info_table.dart';
+import 'widgets/popup_dialogs.dart';
 
 // MapControllerProvider 지도조작을 위한 컨트롤러 생성
 class MapControllerProvider extends ChangeNotifier {
@@ -105,9 +88,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   bool _isTrackingEnabled = false; // 항적 표시 활성화 플래그를 클래스 내부 변수로 이동
 
   bool isOtherVesselsVisible = true; // 기본값은 다른 선박이 보이는 상태
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  final LocationService _locationService = LocationService();
-  final UpdatePoint _updatePoint = UpdatePoint();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  final MainLocationService _locationService = MainLocationService();
+  final MainUpdatePoint _updatePoint = MainUpdatePoint();
   bool positionStreamStarted = false;
   late FirebaseMessaging messaging;
   late String fcmToken; // FCM 토큰 저장 변수 추가
@@ -184,7 +168,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         timeLimit: const Duration(seconds: 10),
       );
 
-      AppLogger.d('✅ 위치 획득 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+      AppLogger.d(
+          '✅ 위치 획득 - 위도: ${position.latitude}, 경도: ${position.longitude}');
 
       // 지도를 현재 위치로 이동
       LatLng currentLocation = LatLng(position.latitude, position.longitude);
@@ -220,7 +205,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _popupService = PopupService();
     _locationFocusService = LocationFocusService();
     _stateManager = StateManager();
-    _routeSearchViewModel = widget.routeSearchViewModel ?? RouteSearchProvider();
+    _routeSearchViewModel =
+        widget.routeSearchViewModel ?? RouteSearchProvider();
 
     selectedIndex = widget.initTabIndex;
     _selectedIndex = widget.initTabIndex;
@@ -288,18 +274,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _showForegroundNotification(message);
 
         //알림 type 종류에 따라 팝업 화면 다르게 분기
-        if (type == 'turbine_entry_alert' && !_popupService.isPopupActive(PopupService.TURBINE_ENTRY_ALERT)) {
+        if (type == 'turbine_entry_alert' &&
+            !_popupService.isPopupActive(PopupService.TURBINE_ENTRY_ALERT)) {
           _popupService.showPopup(PopupService.TURBINE_ENTRY_ALERT);
           _startFlashing();
-          _showRosPopup(context, message.notification?.title ?? '알림', message.notification?.body ?? '새로운 메시지');
-        } else if (type == 'weather_alert' && !_popupService.isPopupActive(PopupService.WEATHER_ALERT)) {
+          MainScreenPopups.showTurbineWarningPopup(context, message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT); });
+        } else if (type == 'weather_alert' &&
+            !_popupService.isPopupActive(PopupService.WEATHER_ALERT)) {
           _popupService.showPopup(PopupService.WEATHER_ALERT);
-          _showWeatherPopup(context, message.notification?.title ?? '알림', message.notification?.body ?? '새로운 메시지');
+          MainScreenPopups.showWeatherWarningPopup(context, message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.WEATHER_ALERT); });
         } else if (type == 'submarine_cable_alert' &&
             !_popupService.isPopupActive(PopupService.SUBMARINE_CABLE_ALERT)) {
           _popupService.showPopup(PopupService.SUBMARINE_CABLE_ALERT);
           _startFlashing();
-          _showMarinPopup(context, message.notification?.title ?? '알림', message.notification?.body ?? '새로운 메시지');
+          MainScreenPopups.showSubmarineWarningPopup(context, message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT); });
         }
       });
     }
@@ -318,7 +309,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           // final prevWave = Provider.of<NavigationProvider>(context, listen: false).wave;
           // final prevVisibility = Provider.of<NavigationProvider>(context, listen: false).visibility;
 
-          Provider.of<NavigationProvider>(context, listen: false).getWeatherInfo().then((_) {
+          Provider.of<NavigationProvider>(context, listen: false)
+              .getWeatherInfo()
+              .then((_) {
             // 실제로 값이 변경되었는지 확인
             if (mounted) {
               setState(() {});
@@ -327,30 +320,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         });
 
     // 항행경보 알림 데이터 가져오기
-    Provider.of<NavigationProvider>(context, listen: false).getNavigationWarnings();
-  }
-
-  //선박정보 표시
-  TableRow _infoRow(String label, String value) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: getSize10().toDouble()),
-          child: Text(
-            label,
-            style: TextStyle(fontSize: DesignConstants.fontSizeS, fontWeight: FontWeight.w500, color: Colors.grey[800]),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: getSize10().toDouble()),
-          child: Text(
-            value,
-            style:
-                const TextStyle(fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.w500, color: Colors.black),
-          ),
-        ),
-      ],
-    );
+    Provider.of<NavigationProvider>(context, listen: false)
+        .getNavigationWarnings();
   }
 
 //선박정보 팝업에서 항로 조회 버튼 함수
@@ -361,7 +332,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       barrierDismissible: true,
       barrierLabel: '',
       transitionDuration: Duration(milliseconds: getSize300()),
-      pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+      pageBuilder: (BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation) {
         return SafeArea(
           child: Stack(
             children: [
@@ -376,12 +348,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     padding: EdgeInsets.all(getSize20().toDouble()),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                      borderRadius:
+                          BorderRadius.circular(DesignConstants.radiusM),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: getSize10().toDouble(),
-                          offset: Offset(getSize0().toDouble(), getSize4().toDouble()),
+                          offset: Offset(
+                              getSize0().toDouble(), getSize4().toDouble()),
                         ),
                       ],
                     ),
@@ -390,7 +364,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(children: [
-                          TextWidgetString('선박 정보', getTextleft(), getSize24(), getTextbold(), getColorblack_type1()),
+                          TextWidgetString('선박 정보', getTextleft(), getSize24(),
+                              getTextbold(), getColorblack_type1()),
                           const Spacer(),
                           TextButton(
                             onPressed: () {
@@ -398,8 +373,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero, // 패딩 제거
-                              minimumSize: Size(getSize24().toDouble(), getSize24().toDouble()), // 최소 크기 설정 (선택 사항)
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
+                              minimumSize: Size(getSize24().toDouble(),
+                                  getSize24().toDouble()), // 최소 크기 설정 (선택 사항)
+                              tapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
                             ),
                             child: SvgPicture.asset(
                               'assets/kdn/ros/img/close_popup.svg',
@@ -411,23 +388,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         ]),
                         SizedBox(height: getSize12().toDouble()),
                         Container(
-                          child: Table(
-                            columnWidths: const {
-                              0: FixedColumnWidth(80),
-                              1: FlexColumnWidth(),
-                            },
-                            children: [
-                              _infoRow('선박명', vessel.ship_nm ?? '-'),
-                              _infoRow('MMSI', vessel.mmsi?.toString() ?? '-'),
-                              _infoRow('선종', vessel.cd_nm ?? '-'),
-                              _infoRow('흘수', vessel.draft != null ? '${vessel.draft} m' : '-'),
-                              _infoRow('대지속도', vessel.sog != null ? '${vessel.sog} kn' : '-'),
-                              _infoRow('대지침로', vessel.cog != null ? '${vessel.cog}°' : '-'),
-                            ],
+                          child: VesselInfoTable(
+                            shipName: vessel.ship_nm,
+                            mmsi: vessel.mmsi,
+                            vesselType: vessel.cd_nm,
+                            draft: vessel.draft,
+                            sog: vessel.sog,
+                            cog: vessel.cog,
                           ),
                         ),
                         SizedBox(height: getSize32().toDouble()),
-                        if (_routeSearchViewModel.isNavigationHistoryMode != true) ...[
+                        if (_routeSearchViewModel.isNavigationHistoryMode !=
+                            true) ...[
                           Align(
                             alignment: Alignment.center,
                             child: Row(
@@ -435,7 +407,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () async {
-                                      final loadingContext = Navigator.of(context);
+                                      final loadingContext =
+                                          Navigator.of(context);
 
                                       showDialog(
                                         context: context,
@@ -450,27 +423,38 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                         if (vessel.mmsi != null) {
                                           // 기존 궤적 초기화는 예측항로 버튼 누를 때만
                                           _routeSearchViewModel.clearRoutes();
-                                          _routeSearchViewModel.setNavigationHistoryMode(false);
+                                          _routeSearchViewModel
+                                              .setNavigationHistoryMode(false);
                                           _stopRouteUpdates();
 
-                                          await _routeSearchViewModel.getVesselRoute(
-                                              mmsi: vessel.mmsi ?? 0,
-                                              regDt: DateFormat('yyyy-MM-dd').format(DateTime.now()));
-                                          _mapControllerProvider.mapController.move(
-                                            LatLng(vessel.lttd ?? 35.3790988, vessel.lntd ?? 126.167763),
+                                          await _routeSearchViewModel
+                                              .getVesselRoute(
+                                                  mmsi: vessel.mmsi ?? 0,
+                                                  regDt: DateFormat(
+                                                          'yyyy-MM-dd')
+                                                      .format(DateTime.now()));
+                                          _mapControllerProvider.mapController
+                                              .move(
+                                            LatLng(vessel.lttd ?? 35.3790988,
+                                                vessel.lntd ?? 126.167763),
                                             12.0,
                                           );
-                                          _selectedVesselMmsi = vessel.mmsi ?? 0; // 선택된 선박의 MMSI 저장
-                                          _isTrackingEnabled = true; // 항적 표시 활성화
-                                          _timerService.stopTimer("vessel_update"); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
-                                          _timerService.stopTimer(TimerService.ROUTE_UPDATE); // 기존에 실행 중인 타이머가 있다면 취소
+                                          _selectedVesselMmsi = vessel.mmsi ??
+                                              0; // 선택된 선박의 MMSI 저장
+                                          _isTrackingEnabled =
+                                              true; // 항적 표시 활성화
+                                          _timerService.stopTimer(
+                                              "vessel_update"); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
+                                          _timerService.stopTimer(TimerService
+                                              .ROUTE_UPDATE); // 기존에 실행 중인 타이머가 있다면 취소
 
                                           // final startTime = DateTime.now();
 
                                           // 선박 위치 갱신 타이머 재시작
                                           _timerService.startPeriodicTimer(
                                             timerId: "vessel_update",
-                                            duration: AnimationConstants.autoScrollDelay,
+                                            duration: AnimationConstants
+                                                .autoScrollDelay,
                                             callback: () {
                                               _loadVesselDataAndUpdateMap();
                                             },
@@ -479,14 +463,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                           // 3초마다 데이터 갱신하는 타이머 시작
                                           _timerService.startPeriodicTimer(
                                               timerId: "route_update",
-                                              duration: AnimationConstants.autoScrollDelay,
+                                              duration: AnimationConstants
+                                                  .autoScrollDelay,
                                               callback: () {
                                                 try {
                                                   if (_isTrackingEnabled) {
                                                     // 플래그 체크 없이 항상 갱신
-                                                    _routeSearchViewModel.getVesselRoute(
-                                                        mmsi: _selectedVesselMmsi!,
-                                                        regDt: DateFormat('yyyy-MM-dd').format(DateTime.now()));
+                                                    _routeSearchViewModel
+                                                        .getVesselRoute(
+                                                            mmsi:
+                                                                _selectedVesselMmsi!,
+                                                            regDt: DateFormat(
+                                                                    'yyyy-MM-dd')
+                                                                .format(DateTime
+                                                                    .now()));
 
                                                     // UI 업데이트
                                                     if (mounted) {
@@ -506,8 +496,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                         Navigator.of(context).pop(); // 본래 팝업 닫기
                                       } catch (e) {
                                         Navigator.of(context).pop(); // 로딩 팝업 닫기
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('예측항로 로딩 중 오류 발생')),
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text('예측항로 로딩 중 오류 발생')),
                                         );
                                       }
                                     },
@@ -521,7 +513,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       elevation: getSize0().toDouble(),
-                                      padding: EdgeInsets.all(getSize18().toDouble()),
+                                      padding: EdgeInsets.all(
+                                          getSize18().toDouble()),
                                     ),
                                     child: TextWidgetString(
                                       '예측항로 및 과거항적',
@@ -533,7 +526,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                   ),
                                 ),
 
-                                SizedBox(width: getSize12().toDouble()), // 버튼 사이 간격
+                                SizedBox(
+                                    width: getSize12().toDouble()), // 버튼 사이 간격
                               ],
                             ),
                           ),
@@ -581,7 +575,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Future<void> _requestPermissionsSequentially() async {
     // 먼저 권한 상태 확인
     LocationPermission locationPermission = await Geolocator.checkPermission();
-    if (locationPermission == LocationPermission.whileInUse || locationPermission == LocationPermission.always) {
+    if (locationPermission == LocationPermission.whileInUse ||
+        locationPermission == LocationPermission.always) {
       AppLogger.d('✅ 이미 위치 권한이 허용되어 있습니다.');
       // 위치 권한이 이미 있으면 바로 위치 업데이트
       await _updateCurrentLocation();
@@ -593,7 +588,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     // 알림 권한 확인
-    NotificationSettings notifSettings = await FirebaseMessaging.instance.getNotificationSettings();
+    NotificationSettings notifSettings =
+        await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus == AuthorizationStatus.authorized) {
       AppLogger.d('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {
@@ -674,9 +670,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   //  연속 알람시 구별
   Future<void> _showForegroundNotification(RemoteMessage message) async {
-    final int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    final int notificationId =
+        DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
-    AndroidNotificationDetails androidPlatformChannelSpecifics = const AndroidNotificationDetails(
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        const AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: '중요 알림을 위한 채널입니다.',
@@ -690,7 +688,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       styleInformation: BigTextStyleInformation(''),
     );
 
-    NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+    NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
       notificationId,
@@ -716,303 +715,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  // 기상알림 팝업 (터빈 스타일 UI + 서버 메시지 사용)
-  void _showWeatherPopup(BuildContext context, String title, String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 310,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  'assets/kdn/home/img/red_triangle-exclamation.svg',
-                  width: 60,
-                  height: 60,
-                ),
-                const SizedBox(height: DesignConstants.spacing8),
-                Text(
-                  title, // 서버에서 받은 제목
-                  style: const TextStyle(
-                    fontSize: DesignConstants.fontSizeXL,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFDF2B2E),
-                    height: 1.0,
-                    letterSpacing: 0,
-                    fontFamily: 'Pretendard Variable',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: DesignConstants.spacing8),
-                SizedBox(
-                  width: 300,
-                  child: Text(
-                    message, // 서버에서 받은 메시지
-                    style: const TextStyle(
-                      fontSize: DesignConstants.fontSizeS,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF999999),
-                      height: 1.0,
-                      letterSpacing: 0,
-                      fontFamily: 'Pretendard Variable',
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: 270,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _stopFlashing();
-                      _popupService.hidePopup(PopupService.WEATHER_ALERT); // 이 줄 추가
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(270, 48),
-                    ),
-                    child: const Text(
-                      '알람 종료하기',
-                      style: TextStyle(
-                        color: Color(0xFF5CA1F6),
-                        fontSize: DesignConstants.fontSizeS,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.visible,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  //터빈진입 알림 팝업
-  void _showRosPopup(BuildContext context, String title, String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 310, // 전체 팝업 너비
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20), // 팝업 패딩
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  'assets/kdn/home/img/red_triangle-exclamation.svg',
-                  width: 60,
-                  height: 60,
-                ),
-                const SizedBox(height: DesignConstants.spacing8), // 간격
-                const Text(
-                  '터빈 구역 진입 금지 경고',
-                  style: TextStyle(
-                    fontSize: DesignConstants.fontSizeXL,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFDF2B2E),
-                    height: 1.0,
-                    letterSpacing: 0,
-                    fontFamily: 'Pretendard Variable',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: DesignConstants.spacing8), // 간격
-                const SizedBox(
-                  width: 300, // 너비를 더 키움
-                  child: Text(
-                    '터빈 진입 금지 구역입니다. 지금 바로 우회하세요.',
-                    style: TextStyle(
-                      fontSize: DesignConstants.fontSizeXS, // 폰트 크기 약간 줄임
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF999999),
-                      height: 1.0,
-                      letterSpacing: 0,
-                      fontFamily: 'Pretendard Variable',
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis, // visible 대신 ellipsis 사용
-                    maxLines: 2, // 최대 2줄 허용 (1줄로 표시될 수 있지만, 필요하면 2줄 사용)
-                  ),
-                ),
-                const SizedBox(height: 32), // 내용과 버튼 사이 간격
-                SizedBox(
-                  width: 270, // 버튼 너비
-                  height: 48, // 버튼 높이
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _stopFlashing();
-                      _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT); // 이 줄 추가
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(270, 48), // 버튼 최소 크기 설정
-                    ),
-                    child: const Text(
-                      '알람 종료하기',
-                      style: TextStyle(
-                        color: Color(0xFF5CA1F6),
-                        fontSize: DesignConstants.fontSizeS, // 폰트 크기 약간 줄임
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.visible, // 텍스트가 잘리지 않도록
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  //해저케이블진입 알림 팝업
-  void _showMarinPopup(BuildContext context, String title, String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 310, // 전체 팝업 너비
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20), // 팝업 패딩
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(
-                  'assets/kdn/home/img/red_triangle-exclamation.svg',
-                  width: 60,
-                  height: 60,
-                ),
-                const SizedBox(height: DesignConstants.spacing8), // 간격
-                const Text(
-                  '해저케이블 구역 진입 경보',
-                  style: TextStyle(
-                    fontSize: DesignConstants.fontSizeXL,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFDF2B2E),
-                    height: 1.0,
-                    letterSpacing: 0,
-                    fontFamily: 'Pretendard Variable',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: DesignConstants.spacing8), // 간격
-                const SizedBox(
-                  width: 300, // 너비를 더 키움
-                  child: Text(
-                    '헤저케이블 구역입니다. 지금 바로 우회하세요.',
-                    style: TextStyle(
-                      fontSize: DesignConstants.fontSizeXS, // 폰트 크기 약간 줄임
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF999999),
-                      height: 1.0,
-                      letterSpacing: 0,
-                      fontFamily: 'Pretendard Variable',
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis, // visible 대신 ellipsis 사용
-                    maxLines: 2, // 최대 2줄 허용 (1줄로 표시될 수 있지만, 필요하면 2줄 사용)
-                  ),
-                ),
-                const SizedBox(height: 32), // 내용과 버튼 사이 간격
-                SizedBox(
-                  width: 270, // 버튼 너비
-                  height: 48, // 버튼 높이
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _stopFlashing();
-                      _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT); // 이 줄 추가
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10, horizontal: DesignConstants.spacing10), // 패딩 수정
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                        side: const BorderSide(color: Color(0xFF5CA1F6), width: 1),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(270, 48), // 버튼 최소 크기 설정
-                    ),
-                    child: const Text(
-                      '알람 종료하기',
-                      style: TextStyle(
-                        color: Color(0xFF5CA1F6),
-                        fontSize: DesignConstants.fontSizeS, // 폰트 크기 약간 줄임
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.visible, // 텍스트가 잘리지 않도록
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   int selectedIndex = 0; // 선택된 인덱스를 클래스 변수로 선언
   Color getItemColor(int index) {
-    return selectedIndex == index ? getColorgray_Type8() : getColorblack_type2();
+    return selectedIndex == index
+        ? getColorgray_Type8()
+        : getColorblack_type2();
   }
 
   int _selectedIndex = 0;
@@ -1103,122 +810,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _showCustomPopuplive(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: StreamBuilder<Position>(
-              stream: _updatePoint.toggleListening(), // 실시간 위치 스트림
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: DesignConstants.spacing16),
-                      Text('현재 위치를 가져오는 중...'),
-                    ],
-                  );
-                } else if (snapshot.hasError || !snapshot.hasData) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('현재 위치를 가져올 수 없습니다.', style: TextStyle(color: Colors.red)),
-                      const SizedBox(height: DesignConstants.spacing20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('닫기'),
-                      ),
-                    ],
-                  );
-                } else {
-                  Position position = snapshot.data!;
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('실시간 위치',
-                          style: TextStyle(fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: DesignConstants.spacing16),
-                      Text('위도: ${position.latitude}'),
-                      Text('경도: ${position.longitude}'),
-                      const SizedBox(height: DesignConstants.spacing20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('닫기'),
-                      ),
-                    ],
-                  );
-                }
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showCustomPopup(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: FutureBuilder<Position?>(
-              future: _locationService.getCurrentPosition(), // 현재 위치 가져오기
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: DesignConstants.spacing16),
-                      Text('현재 위치를 가져오는 중...'),
-                    ],
-                  );
-                } else if (snapshot.hasError || !snapshot.hasData) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('현재 위치를 가져올 수 없습니다.', style: TextStyle(color: Colors.red)),
-                      const SizedBox(height: DesignConstants.spacing20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('닫기'),
-                      ),
-                    ],
-                  );
-                } else {
-                  Position position = snapshot.data!;
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('현재 위치',
-                          style: TextStyle(fontSize: DesignConstants.fontSizeL, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: DesignConstants.spacing16),
-                      Text('위도: ${position.latitude}'),
-                      Text('경도: ${position.longitude}'),
-                      const SizedBox(height: DesignConstants.spacing20),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('닫기'),
-                      ),
-                    ],
-                  );
-                }
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
+  
+  
   @override
   Widget build(BuildContext context) {
     final role = context.watch<UserState>().role; //로그인한 사용자 역할 가져오기
@@ -1230,7 +823,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     if (role == 'ROLE_USER') {
       // ROLE_USER인 경우: 자신의 MMSI 선박만 조회
-      vessels = vesselsViewModel.vessels.where((vessel) => vessel.mmsi == mmsi).toList();
+      vessels = vesselsViewModel.vessels
+          .where((vessel) => vessel.mmsi == mmsi)
+          .toList();
     } else {
       // 관리자인 경우: 모든 선박 조회
       vessels = vesselsViewModel.vessels;
@@ -1246,7 +841,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ),
         ChangeNotifierProvider<TimerService>.value(value: _timerService),
         ChangeNotifierProvider<PopupService>.value(value: _popupService),
-        ChangeNotifierProvider<LocationFocusService>.value(value: _locationFocusService),
+        ChangeNotifierProvider<LocationFocusService>.value(
+            value: _locationFocusService),
         ChangeNotifierProvider<StateManager>.value(value: _stateManager),
       ],
       child: Scaffold(
@@ -1256,7 +852,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             Consumer<RouteSearchProvider>(
               builder: (context, routeSearchViewModel, child) {
                 // Consumer 또는 Provider.of를 통해 동일 인스턴스를 받아와 FlutterMap에 전달
-                final mapController = Provider.of<MapControllerProvider>(context).mapController;
+                final mapController =
+                    Provider.of<MapControllerProvider>(context).mapController;
                 //point 줄이기 작업(변침+14노트 선박은 AIS신호가 4초마다 들어오는 선박 때문에 point가 너무 많이찍이고, 지도가 느려지기 때문에 줄임)
                 int cnt = 20;
                 if ((routeSearchViewModel.pastRoutes.length ?? 0) <= cnt) {
@@ -1269,21 +866,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 if (routeSearchViewModel.pastRoutes.isNotEmpty == true) {
                   // 첫 번째 포인트 추가
                   final firstPoint = routeSearchViewModel.pastRoutes.first;
-                  pastRouteLine.add(LatLng(firstPoint.lttd ?? 0, firstPoint.lntd ?? 0));
+                  pastRouteLine
+                      .add(LatLng(firstPoint.lttd ?? 0, firstPoint.lntd ?? 0));
 
                   // 중간 포인트들 추가 (인덱스 1부터 마지막-1까지)
                   if ((routeSearchViewModel.pastRoutes.length ?? 0) > 2) {
-                    for (int i = 1; i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1; i++) {
+                    for (int i = 1;
+                        i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1;
+                        i++) {
                       if (i % cnt == 0) {
                         final route = routeSearchViewModel.pastRoutes[i];
-                        pastRouteLine.add(LatLng(route.lttd ?? 0, route.lntd ?? 0));
+                        pastRouteLine
+                            .add(LatLng(route.lttd ?? 0, route.lntd ?? 0));
                       }
                     }
                   }
 
                   // 마지막 포인트 추가
                   final lastPoint = routeSearchViewModel.pastRoutes.last;
-                  pastRouteLine.add(LatLng(lastPoint.lttd ?? 0, lastPoint.lntd ?? 0));
+                  pastRouteLine
+                      .add(LatLng(lastPoint.lttd ?? 0, lastPoint.lntd ?? 0));
                 }
 
                 //예측항로 LatLng 리스트 생성
@@ -1302,7 +904,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 //_isTrackingEnabled -> main지도에서 선박 클릭을 통해 그려진 과거항적 및 예측항로
                 //isNavigationHistoryMode -> 항행이력 탭을 통해 그려진 과거항적
                 //즉, refresh버튼을 눌러서 과거항적 및 예측항로를 지웠고, 항행이력 탭을 통해 그려진 과거항적이 아닌경우 항적 지우기!
-                if (!_isTrackingEnabled && routeSearchViewModel.isNavigationHistoryMode != true) {
+                if (!_isTrackingEnabled &&
+                    routeSearchViewModel.isNavigationHistoryMode != true) {
                   pastRouteLine.clear();
                   predRouteLine.clear();
                 }
@@ -1310,7 +913,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 return FlutterMap(
                   mapController: mapController,
                   options: MapOptions(
-                    initialCenter: _currentPosition ?? const LatLng(35.374509, 126.132268),
+                    initialCenter:
+                        _currentPosition ?? const LatLng(35.374509, 126.132268),
                     initialZoom: 12.0,
                     maxZoom: 14.0, // 최대 줌 레벨 설정
                     minZoom: 5.5, // 필요한 경우 최소 줌 레벨도 설정 가능
@@ -1318,7 +922,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                     ),
-                    onPositionChanged: (MapPosition position, bool hasGesture) {},
+                    onPositionChanged:
+                        (MapPosition position, bool hasGesture) {},
                   ),
                   children: [
                     //전자해도 수심면 레이어
@@ -1376,7 +981,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 color: Colors.orangeAccent, // 노란색
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1),
+                                border:
+                                    Border.all(color: Colors.white, width: 1),
                               ),
                             ),
                           );
@@ -1390,7 +996,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               decoration: BoxDecoration(
                                 color: Colors.orangeAccent,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 0.5),
+                                border:
+                                    Border.all(color: Colors.white, width: 0.5),
                               ),
                             ),
                           );
@@ -1418,7 +1025,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             decoration: BoxDecoration(
                               color: Colors.red,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 0.5),
+                              border:
+                                  Border.all(color: Colors.white, width: 0.5),
                             ),
                           ),
                         );
@@ -1428,8 +1036,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     // 1. 점선 경로
                     PolylineLayer(
                       polylineCulling: false,
-                      polylines: vessels.where((v) => v.escapeRouteGeojson != null).map((v) {
-                        final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
+                      polylines: vessels
+                          .where((v) => v.escapeRouteGeojson != null)
+                          .map((v) {
+                        final pts = GeoUtils.parseGeoJsonLineString(
+                            v.escapeRouteGeojson ?? '');
                         return Polyline(
                           points: pts,
                           strokeWidth: 2.0,
@@ -1444,7 +1055,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       polygons: vessels
                           .where((v) => v.escapeRouteGeojson != null)
                           .map((v) {
-                            final pts = parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
+                            final pts = GeoUtils.parseGeoJsonLineString(
+                                v.escapeRouteGeojson ?? '');
                             if (pts.length < 2) return null;
                             final end = pts.last;
                             final prev = pts[pts.length - 2];
@@ -1504,14 +1116,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     //현재 선박 레이어
                     MarkerLayer(
                       markers: vessels
-                          .where((vessel) => (vessel.mmsi ?? 0) == mmsi) // 내 선박만 필터링
+                          .where((vessel) =>
+                              (vessel.mmsi ?? 0) == mmsi) // 내 선박만 필터링
                           .map((vessel) {
                         return Marker(
                           point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
                           width: 25,
                           height: 25,
                           child: Transform.rotate(
-                            angle: (vessel.cog ?? 0) * (pi / 180), // COG를 라디안으로 변환
+                            angle:
+                                (vessel.cog ?? 0) * (pi / 180), // COG를 라디안으로 변환
                             child: SvgPicture.asset(
                               'assets/kdn/home/img/myVessel.svg',
                               width: 40,
@@ -1526,9 +1140,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       opacity: isOtherVesselsVisible ? 1.0 : 0.0, // 가시성 제어
                       // 완전히 투명하게 만들면 상호작용도 불가능해짐
                       child: IgnorePointer(
-                        ignoring: !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
+                        ignoring:
+                            !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
                         child: MarkerLayer(
-                          markers: vessels.where((vessel) => (vessel.mmsi ?? 0) != mmsi).map((vessel) {
+                          markers: vessels
+                              .where((vessel) => (vessel.mmsi ?? 0) != mmsi)
+                              .map((vessel) {
                             return Marker(
                               point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
                               width: 25,
@@ -1582,7 +1199,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               getSize56(),
                               '파고',
                               getSize160(),
-                              viewModel.getFormattedWaveThresholdText(viewModel.wave),
+                              viewModel.getFormattedWaveThresholdText(
+                                  viewModel.wave),
                               isSelected: isWaveSelected,
                               onTap: () {
                                 setState(() {
@@ -1594,12 +1212,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             // 시정 버튼
                             buildCircularButtonSlideOn(
                               'assets/kdn/home/img/top_visibility_img.svg',
-                              viewModel.getVisibilityColor(viewModel.visibility),
+                              viewModel
+                                  .getVisibilityColor(viewModel.visibility),
                               getSize56(),
                               getSize56(),
                               '시정',
                               getSize160(),
-                              viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
+                              viewModel.getFormattedVisibilityThresholdText(
+                                  viewModel.visibility),
                               isSelected: isVisibilitySelected,
                               onTap: () {
                                 setState(() {
@@ -1633,14 +1253,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             Consumer<RouteSearchProvider>(
                               builder: (context, routeViewModel, _) {
                                 //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 MainScreen에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
-                                if ((routeViewModel.pastRoutes.isNotEmpty == true ||
-                                        (routeViewModel.predRoutes.isNotEmpty == true)) &&
-                                    routeViewModel.isNavigationHistoryMode != true &&
+                                if ((routeViewModel.pastRoutes.isNotEmpty ==
+                                            true ||
+                                        (routeViewModel.predRoutes.isNotEmpty ==
+                                            true)) &&
+                                    routeViewModel.isNavigationHistoryMode !=
+                                        true &&
                                     _isTrackingEnabled) {
                                   return Column(
                                     children: [
                                       CircularButton(
-                                        svgPath: 'assets/kdn/home/img/refresh.svg',
+                                        svgPath:
+                                            'assets/kdn/home/img/refresh.svg',
                                         colorOn: getColorgray_Type8(),
                                         colorOff: getColorgray_Type8(),
                                         widthSize: getSize56(),
@@ -1648,15 +1272,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                         onTap: () {
                                           _stopRouteUpdates();
                                           // 사용자에게 피드백 제공
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
-                                              content: Text('항적 데이터가 초기화되었습니다.'),
+                                              content:
+                                                  Text('항적 데이터가 초기화되었습니다.'),
                                               duration: Duration(seconds: 1),
                                             ),
                                           );
                                         },
                                       ),
-                                      const SizedBox(height: DesignConstants.spacing12),
+                                      const SizedBox(
+                                          height: DesignConstants.spacing12),
                                     ],
                                   );
                                 }
@@ -1666,14 +1293,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             //관리자만 접근 가능
                             if (role == 'ROLE_ADMIN') ...[
                               CircularButton(
-                                svgPath: 'assets/kdn/home/img/bouttom_ship_img.svg',
+                                svgPath:
+                                    'assets/kdn/home/img/bouttom_ship_img.svg',
                                 colorOn: getColorgray_Type9(),
                                 colorOff: getColorgray_Type8(),
                                 widthSize: getSize56(),
                                 heightSize: getSize56(),
                                 onTap: () {
                                   setState(() {
-                                    isOtherVesselsVisible = !isOtherVesselsVisible;
+                                    isOtherVesselsVisible =
+                                        !isOtherVesselsVisible;
                                   });
                                   // 관리자 전용 기능
                                 },
@@ -1683,16 +1312,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             // 현재 위치 버튼 - Builder로 감싸서 MultiProvider의 하위 컨텍스트 전달
                             Builder(
                               builder: (context) {
-                                final mmsi = context.read<UserState>().mmsi ?? 0; // 현재 사용자 mmsi 값
-                                final vessels = context.watch<VesselProvider>().vessels; // 선박 목록을 감시
+                                final mmsi = context.read<UserState>().mmsi ??
+                                    0; // 현재 사용자 mmsi 값
+                                final vessels = context
+                                    .watch<VesselProvider>()
+                                    .vessels; // 선박 목록을 감시
 
                                 // mmsi가 없거나 선박 목록에 사용자의 mmsi가 없으면 버튼을 표시하지 않음
-                                if (!vessels.any((vessel) => vessel.mmsi == mmsi)) {
+                                if (!vessels
+                                    .any((vessel) => vessel.mmsi == mmsi)) {
                                   return const SizedBox.shrink(); // 빈 위젯 반환
                                 }
 
                                 return CircularButton(
-                                  svgPath: 'assets/kdn/home/img/bouttom_location_img.svg',
+                                  svgPath:
+                                      'assets/kdn/home/img/bouttom_location_img.svg',
                                   colorOn: getColorgray_Type8(),
                                   colorOff: getColorgray_Type8(),
                                   widthSize: getSize56(),
@@ -1701,12 +1335,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                     // 해당 mmsi의 선박 목록을 조회합니다.
                                     if (role == 'ROLE_ADMIN') {
                                       //관리자일 경우
-                                      await context.read<VesselProvider>().getVesselList(mmsi: 0);
+                                      await context
+                                          .read<VesselProvider>()
+                                          .getVesselList(mmsi: 0);
                                     } else {
-                                      await context.read<VesselProvider>().getVesselList(mmsi: mmsi);
+                                      await context
+                                          .read<VesselProvider>()
+                                          .getVesselList(mmsi: mmsi);
                                     }
 
-                                    final vessels = context.read<VesselProvider>().vessels;
+                                    final vessels =
+                                        context.read<VesselProvider>().vessels;
 
                                     VesselSearchModel? myVessel;
 
@@ -1721,14 +1360,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                     // myVessel 객체가 유효하면 그 좌표를 사용하여 지도 중심을 이동합니다.
                                     if (myVessel != null) {
                                       final vesselPoint = LatLng(
-                                        myVessel.lttd ?? 35.3790988, // 위도 (null이면 기본값 사용)
-                                        myVessel.lntd ?? 126.167763, // 경도 (null이면 기본값 사용)
+                                        myVessel.lttd ??
+                                            35.3790988, // 위도 (null이면 기본값 사용)
+                                        myVessel.lntd ??
+                                            126.167763, // 경도 (null이면 기본값 사용)
                                       );
 
                                       // Builder 내의 context는 MultiProvider 자식이므로 Provider 접근이 가능합니다.
                                       final mapController =
-                                          Provider.of<MapControllerProvider>(context, listen: false).mapController;
-                                      mapController.move(vesselPoint, mapController.camera.zoom);
+                                          Provider.of<MapControllerProvider>(
+                                                  context,
+                                                  listen: false)
+                                              .mapController;
+                                      mapController.move(vesselPoint,
+                                          mapController.camera.zoom);
                                     }
                                   },
                                 );
@@ -1744,8 +1389,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               heightSize: getSize56(),
                               onTap: () {
                                 //_showCustomPopuplive(context);
-                                _mapControllerProvider.mapController.moveAndRotate(
-                                    const LatLng(35.374509, 126.132268), 12.0, 0.0); // 지도를 기본 위치와 줌 레벨로 이동
+                                _mapControllerProvider.mapController
+                                    .moveAndRotate(
+                                        const LatLng(35.374509, 126.132268),
+                                        12.0,
+                                        0.0); // 지도를 기본 위치와 줌 레벨로 이동
 
                                 //_routeSearchViewModel.clearRoutes(); // 과거항적과 예측항로 데이터 초기화
                                 //_stopRouteUpdates();                  // 항로 업데이트 중지 및 데이터 초기화
@@ -1763,7 +1411,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       return Container(
                         height: 52,
                         alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: DesignConstants.spacing12),
                         decoration: BoxDecoration(
                           color: getColorred_type1(),
                         ),
@@ -1789,9 +1438,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 velocity: 35.0,
                                 pauseAfterRound: const Duration(seconds: 1),
                                 startPadding: 10.0,
-                                accelerationDuration: const Duration(seconds: 1),
+                                accelerationDuration:
+                                    const Duration(seconds: 1),
                                 accelerationCurve: Curves.linear,
-                                decelerationDuration: const Duration(seconds: 1),
+                                decelerationDuration:
+                                    const Duration(seconds: 1),
                                 decelerationCurve: Curves.easeOut,
                               ),
                             ),
@@ -1826,7 +1477,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(
+                                    255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1846,7 +1498,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(
+                                    255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1866,7 +1519,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(
+                                    255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1886,7 +1540,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               begin: Alignment.centerRight,
                               end: Alignment.centerLeft,
                               colors: [
-                                Color.fromRGBO(255, 0, 0, 0.6 * _flashController.value),
+                                Color.fromRGBO(
+                                    255, 0, 0, 0.6 * _flashController.value),
                                 Colors.transparent,
                               ],
                             ),
@@ -1903,7 +1558,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: Colors.white, // 배경색 설정
             border: Border(
-              top: BorderSide(color: getColorgray_Type4(), width: 1), // 상단 Border 추가
+              top: BorderSide(
+                  color: getColorgray_Type4(), width: 1), // 상단 Border 추가
             ),
           ),
           child: Builder(
@@ -1913,8 +1569,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               elevation: 0, // 그림자 제거
               selectedItemColor: getColorgray_Type8(),
               unselectedItemColor: getColorgray_Type2(),
-              selectedLabelStyle: TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
-              unselectedLabelStyle: TextStyle(fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              selectedLabelStyle: TextStyle(
+                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
+              unselectedLabelStyle: TextStyle(
+                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
               currentIndex: selectedIndex,
               onTap: (index) {
                 setState(() {
@@ -1934,7 +1592,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           width: getSize24().toDouble(),
                           height: getSize24().toDouble(),
                           child: SvgPicture.asset(
-                            selectedIndex == 0 ? 'assets/kdn/ros/img/Home_on.svg' : 'assets/kdn/ros/img/Home_off.svg',
+                            selectedIndex == 0
+                                ? 'assets/kdn/ros/img/Home_on.svg'
+                                : 'assets/kdn/ros/img/Home_off.svg',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -1974,7 +1634,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           width: getSize24().toDouble(),
                           height: getSize24().toDouble(),
                           child: SvgPicture.asset(
-                            selectedIndex == 2 ? 'assets/kdn/ros/img/ship_on.svg' : 'assets/kdn/ros/img/ship_off.svg',
+                            selectedIndex == 2
+                                ? 'assets/kdn/ros/img/ship_on.svg'
+                                : 'assets/kdn/ros/img/ship_off.svg',
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -2013,92 +1675,4 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 }
 
-Widget _warningPopOn(String svgPath, Color color, int widthsize, int heightsize, String labelText, int widthSizeline,
-    context, String title, Color titleColor, String detail, Color detailColor, String alarmicon, shadowcolor) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: getSize12().toDouble()),
-    child: GestureDetector(
-      onTap: () {
-        // 버튼 클릭 시 동작 추가
-        warningPop(context, title, titleColor, detail, detailColor, alarmicon, shadowcolor);
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: widthSizeline.toDouble(),
-            height: heightsize.toDouble(),
-          ),
-          Positioned(
-            left: getSize0().toDouble(),
-            child: Container(
-              width: widthsize.toDouble(),
-              height: heightsize.toDouble(),
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: SvgPicture.asset(
-                svgPath,
-                width: getSize24().toDouble(),
-                height: getSize24().toDouble(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
-Widget _warningPopOnDetail(
-    String svgPath,
-    Color color,
-    int widthsize,
-    int heightsize,
-    String labelText,
-    int widthSizeline,
-    context,
-    String title,
-    Color titleColor,
-    String detail,
-    Color detailColor,
-    String alarmicon,
-    shadowcolor) {
-  return Padding(
-    padding: EdgeInsets.only(bottom: getSize12().toDouble()),
-    child: GestureDetector(
-      onTap: () {
-        // 버튼 클릭 시 동작 추가
-        warningPopdetail(context, title, titleColor, detail, detailColor, '', alarmicon, shadowcolor);
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: widthSizeline.toDouble(),
-            height: heightsize.toDouble(),
-          ),
-          Positioned(
-            left: getSize0().toDouble(),
-            child: Container(
-              width: widthsize.toDouble(),
-              height: heightsize.toDouble(),
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: SvgPicture.asset(
-                svgPath,
-                width: getSize24().toDouble(),
-                height: getSize24().toDouble(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
