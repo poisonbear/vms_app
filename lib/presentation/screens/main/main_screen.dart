@@ -14,7 +14,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +34,9 @@ import 'utils/geo_utils.dart';
 import 'utils/location_utils.dart';
 import 'widgets/vessel_info_table.dart';
 import 'widgets/popup_dialogs.dart';
+import 'widgets/bottom_navigation.dart';
+import 'widgets/flash_overlay.dart';
+import 'widgets/map_control_buttons.dart';
 
 // MapControllerProvider 지도조작을 위한 컨트롤러 생성
 class MapControllerProvider extends ChangeNotifier {
@@ -46,17 +48,17 @@ class MapControllerProvider extends ChangeNotifier {
 }
 
 class MainScreen extends StatefulWidget {
-  final String username; // username 저장
-  final RouteSearchProvider? routeSearchViewModel; // 선택적 viewModel 파라미터 추가
-  final int initTabIndex; // ✅ 추가
-  final bool autoFocusLocation; // ✅ 자동 위치 포커스 플래그 추가
+  final String username;
+  final RouteSearchProvider? routeSearchViewModel;
+  final int initTabIndex;
+  final bool autoFocusLocation;
 
   const MainScreen({
     super.key,
     required this.username,
     this.routeSearchViewModel,
     this.initTabIndex = 0,
-    this.autoFocusLocation = false, // ✅ 기본값 false
+    this.autoFocusLocation = false,
   });
 
   @override
@@ -64,52 +66,42 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  late LatLng defaultLocation = const LatLng(35.374509, 126.132268); // 기본 위치
+  late LatLng defaultLocation = const LatLng(35.374509, 126.132268);
 
-  // ===== Timer 변수 (자동 추가됨) =====
-
-  // 팝업 관리 Map
   final Map<String, bool> _activePopups = {
     'turbine_entry_alert': false,
     'weather_alert': false,
     'submarine_cable_alert': false,
   };
-  // =====================================
+
   late final PopupService _popupService;
   late final LocationFocusService _locationFocusService;
   late final StateManager _stateManager;
   final MemoryManager _memoryManager = MemoryManager();
 
-  late RouteSearchProvider _routeSearchViewModel; //[GIS] 항행이력 조회 모델
+  late RouteSearchProvider _routeSearchViewModel;
   final MapControllerProvider _mapControllerProvider = MapControllerProvider();
 
-  int? _selectedVesselMmsi; // 항적을 그려주고 있는 선박의 MMSI를 저장하는 변수 추가
+  int? _selectedVesselMmsi;
+  bool _isTrackingEnabled = false;
+  bool isOtherVesselsVisible = true;
 
-  bool _isTrackingEnabled = false; // 항적 표시 활성화 플래그를 클래스 내부 변수로 이동
-
-  bool isOtherVesselsVisible = true; // 기본값은 다른 선박이 보이는 상태
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   final MainLocationService _locationService = MainLocationService();
   final MainUpdatePoint _updatePoint = MainUpdatePoint();
   bool positionStreamStarted = false;
   late FirebaseMessaging messaging;
-  late String fcmToken; // FCM 토큰 저장 변수 추가
+  late String fcmToken;
   LatLng? _currentPosition;
 
-  bool isWaveSelected = true; // 파고 선택 여부
-  bool isVisibilitySelected = true; // 시정 선택 여부
-  bool _isFCMListenerRegistered = false; //fcm lintener
+  bool _isFCMListenerRegistered = false;
 
-  //화면 깜빡임
   late AnimationController _flashController;
   bool _isFlashing = false;
 
-  // ===== 리팩토링 서비스 변수 =====
   late final TimerService _timerService;
-  // ==================================
 
-  /// 바텀시트가 닫혔을 때 공통으로 호출할 리셋 로직
   void _resetNavigationHistory() {
     _stopRouteUpdates();
     _routeSearchViewModel.clearRoutes();
@@ -120,23 +112,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     });
   }
 
-  // 현재 표시중인 팝업을 관리하는 Map 추가
-
-  // ✅ 자동으로 내 위치로 이동하는 메소드 추가
   Future<void> _autoFocusToMyLocation() async {
     try {
       AppLogger.d('🎯 자동 위치 포커스 시작...');
 
-      // 먼저 SharedPreferences 확인 (첫 로그인인지 체크)
       final prefs = await SharedPreferences.getInstance();
       final isFirstAutoFocus = prefs.getBool('first_auto_focus') ?? true;
 
-      // 첫 로그인이 아니면 자동 위치 이동 안함
       if (!isFirstAutoFocus && !widget.autoFocusLocation) {
         return;
       }
 
-      // 위치 권한 확인
       LocationPermission permission = await Geolocator.checkPermission();
 
       if (permission == LocationPermission.denied) {
@@ -153,7 +139,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         return;
       }
 
-      // 위치 서비스 활성화 확인
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         AppLogger.d('❌ 위치 서비스가 비활성화됨');
@@ -161,17 +146,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         return;
       }
 
-      // 현재 위치 가져오기
       AppLogger.d('📍 현재 위치 가져오는 중...');
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
 
-      AppLogger.d(
-          '✅ 위치 획득 - 위도: ${position.latitude}, 경도: ${position.longitude}');
+      AppLogger.d('✅ 위치 획득 - 위도: ${position.latitude}, 경도: ${position.longitude}');
 
-      // 지도를 현재 위치로 이동
       LatLng currentLocation = LatLng(position.latitude, position.longitude);
 
       if (mounted) {
@@ -180,17 +162,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           _currentPosition = currentLocation;
         });
 
-        // 첫 번째 자동 이동 완료 표시
         await prefs.setBool('first_auto_focus', false);
-
         showTopSnackBar(context, '현재 위치로 이동했습니다.');
       }
     } catch (e) {
       AppLogger.e('❌ 자동 위치 포커스 오류: $e');
 
-      // 오류가 발생해도 앱은 정상 작동
       if (mounted) {
-        // 기본 위치(목포)로 이동
         defaultLocation = const LatLng(35.374509, 126.132268);
         _mapControllerProvider.mapController.move(defaultLocation, 12.0);
       }
@@ -205,57 +183,46 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _popupService = PopupService();
     _locationFocusService = LocationFocusService();
     _stateManager = StateManager();
-    _routeSearchViewModel =
-        widget.routeSearchViewModel ?? RouteSearchProvider();
+    _routeSearchViewModel = widget.routeSearchViewModel ?? RouteSearchProvider();
 
     selectedIndex = widget.initTabIndex;
     _selectedIndex = widget.initTabIndex;
 
-    // Firebase Messaging 초기화
     messaging = FirebaseMessaging.instance;
 
-    // FCM 토큰 초기화 추가
     messaging.getToken().then((token) {
       fcmToken = token!;
     });
 
-    // 화면이 완전히 빌드된 후 선박 데이터 로드 초기화
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _loadVesselDataAndUpdateMap(); // 최초 데이터 로드 및 이동
-      // 3초마다 데이터 갱신
+      await _loadVesselDataAndUpdateMap();
       _timerService.startPeriodicTimer(
           timerId: "vessel_update",
           duration: AnimationConstants.autoScrollDelay,
           callback: () {
-            if (!mounted) {
-              // // timer.cancel(); // ✅ TimerService가 자동 관리 // ✅ TimerService가 자동 관리
-              return;
-            }
-            _loadVesselDataAndUpdateMap(); // 주기적 데이터 로드
+            if (!mounted) return;
+            _loadVesselDataAndUpdateMap();
           });
     });
 
-    // 터빈진입 && 해저케이블진입 깜빡임 애니메이션 컨트롤러 초기화
     _flashController = AnimationController(
       vsync: this,
       duration: AnimationConstants.durationNormal,
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _flashController.reverse();
-        } else if (status == AnimationStatus.dismissed) {
-          if (_isFlashing) {
-            _flashController.forward();
-          }
+      if (status == AnimationStatus.completed) {
+        _flashController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        if (_isFlashing) {
+          _flashController.forward();
         }
-      });
+      }
+    });
 
-    // 중요: 화면이 완전히 렌더링된 후 권한 요청
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(AnimationConstants.durationVerySlow, () {
         _requestPermissionsSequentially();
       });
 
-      // ✅ 로그인 시 자동 위치 포커스 (widget.autoFocusLocation이 true인 경우)
       if (widget.autoFocusLocation) {
         Future.delayed(const Duration(seconds: 2), () {
           _autoFocusToMyLocation();
@@ -263,7 +230,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       }
     });
 
-    //Firebase Cloud Messaging (FCM) 포그라운드 알림 수신 리스너
     if (!_isFCMListenerRegistered) {
       _isFCMListenerRegistered = true;
 
@@ -273,58 +239,67 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
         _showForegroundNotification(message);
 
-        //알림 type 종류에 따라 팝업 화면 다르게 분기
         if (type == 'turbine_entry_alert' &&
             !_popupService.isPopupActive(PopupService.TURBINE_ENTRY_ALERT)) {
           _popupService.showPopup(PopupService.TURBINE_ENTRY_ALERT);
           _startFlashing();
-          MainScreenPopups.showTurbineWarningPopup(context, message.notification?.title ?? '알림',
-              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT); });
+          MainScreenPopups.showTurbineWarningPopup(
+              context,
+              message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지',
+                  () {
+                _stopFlashing();
+                _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT);
+              });
         } else if (type == 'weather_alert' &&
             !_popupService.isPopupActive(PopupService.WEATHER_ALERT)) {
           _popupService.showPopup(PopupService.WEATHER_ALERT);
-          MainScreenPopups.showWeatherWarningPopup(context, message.notification?.title ?? '알림',
-              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.WEATHER_ALERT); });
+          MainScreenPopups.showWeatherWarningPopup(
+              context,
+              message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지',
+                  () {
+                _stopFlashing();
+                _popupService.hidePopup(PopupService.WEATHER_ALERT);
+              });
         } else if (type == 'submarine_cable_alert' &&
             !_popupService.isPopupActive(PopupService.SUBMARINE_CABLE_ALERT)) {
           _popupService.showPopup(PopupService.SUBMARINE_CABLE_ALERT);
           _startFlashing();
-          MainScreenPopups.showSubmarineWarningPopup(context, message.notification?.title ?? '알림',
-              message.notification?.body ?? '새로운 메시지', () { _stopFlashing(); _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT); });
+          MainScreenPopups.showSubmarineWarningPopup(
+              context,
+              message.notification?.title ?? '알림',
+              message.notification?.body ?? '새로운 메시지',
+                  () {
+                _stopFlashing();
+                _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT);
+              });
         }
       });
     }
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {});
 
-    // 파고와 시정 데이터 가져오기
     Provider.of<NavigationProvider>(context, listen: false).getWeatherInfo();
 
-    // 파고 알람 데이터 30초마다 데이터 갱신
     _timerService.startPeriodicTimer(
         timerId: "main_timer",
         duration: AnimationConstants.autoScrollDelay,
         callback: () {
-          // 기존 값 저장
-          // final prevWave = Provider.of<NavigationProvider>(context, listen: false).wave;
-          // final prevVisibility = Provider.of<NavigationProvider>(context, listen: false).visibility;
-
           Provider.of<NavigationProvider>(context, listen: false)
               .getWeatherInfo()
               .then((_) {
-            // 실제로 값이 변경되었는지 확인
             if (mounted) {
               setState(() {});
             }
           }).catchError((error) {});
         });
 
-    // 항행경보 알림 데이터 가져오기
     Provider.of<NavigationProvider>(context, listen: false)
         .getNavigationWarnings();
   }
 
-//선박정보 팝업에서 항로 조회 버튼 함수
+  // 선박정보 팝업 함수 (올바르게 수정됨)
   Future<void> routePop(BuildContext context, VesselSearchModel vessel) {
     double currentZoom = _mapControllerProvider.mapController.camera.zoom;
     return showGeneralDialog(
@@ -338,9 +313,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           child: Stack(
             children: [
               Positioned(
-                top: getSize26().toDouble(), // 팝업의 Top 위치 설정
-                left: getSize20().toDouble(), // 왼쪽 기준 위치 설정
-                right: getSize20().toDouble(), // 오른쪽 기준 위치 설정
+                top: getSize26().toDouble(),
+                left: getSize20().toDouble(),
+                right: getSize20().toDouble(),
                 child: Material(
                   color: Colors.transparent,
                   child: Container(
@@ -348,190 +323,64 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     padding: EdgeInsets.all(getSize20().toDouble()),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(DesignConstants.radiusM),
+                      borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: getSize10().toDouble(),
-                          offset: Offset(
-                              getSize0().toDouble(), getSize4().toDouble()),
+                          offset: Offset(getSize0().toDouble(), getSize4().toDouble()),
                         ),
                       ],
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, // 왼쪽 정렬 적용
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(children: [
-                          TextWidgetString('선박 정보', getTextleft(), getSize24(),
-                              getTextbold(), getColorblack_type1()),
-                          const Spacer(),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero, // 패딩 제거
-                              minimumSize: Size(getSize24().toDouble(),
-                                  getSize24().toDouble()), // 최소 크기 설정 (선택 사항)
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap, // 터치 영역 최소화
+                        Row(
+                          children: [
+                            TextWidgetString('선박 정보', getTextleft(), getSize24(),
+                                getTextbold(), getColorblack_type1()),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Icon(Icons.close, color: getColorgray_Type8()),
                             ),
-                            child: SvgPicture.asset(
-                              'assets/kdn/ros/img/close_popup.svg',
-                              height: getSize24().toDouble(),
-                              width: getSize24().toDouble(),
-                              fit: BoxFit.contain,
-                            ),
-                          )
-                        ]),
-                        SizedBox(height: getSize12().toDouble()),
-                        Container(
-                          child: VesselInfoTable(
-                            shipName: vessel.ship_nm,
-                            mmsi: vessel.mmsi,
-                            vesselType: vessel.cd_nm,
-                            draft: vessel.draft,
-                            sog: vessel.sog,
-                            cog: vessel.cog,
-                          ),
+                          ],
                         ),
-                        SizedBox(height: getSize32().toDouble()),
-                        if (_routeSearchViewModel.isNavigationHistoryMode !=
-                            true) ...[
-                          Align(
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      final loadingContext =
-                                          Navigator.of(context);
-
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext dialogContext) {
-                                          return const Center(
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        },
-                                      );
-                                      try {
-                                        if (vessel.mmsi != null) {
-                                          // 기존 궤적 초기화는 예측항로 버튼 누를 때만
-                                          _routeSearchViewModel.clearRoutes();
-                                          _routeSearchViewModel
-                                              .setNavigationHistoryMode(false);
-                                          _stopRouteUpdates();
-
-                                          await _routeSearchViewModel
-                                              .getVesselRoute(
-                                                  mmsi: vessel.mmsi ?? 0,
-                                                  regDt: DateFormat(
-                                                          'yyyy-MM-dd')
-                                                      .format(DateTime.now()));
-                                          _mapControllerProvider.mapController
-                                              .move(
-                                            LatLng(vessel.lttd ?? 35.3790988,
-                                                vessel.lntd ?? 126.167763),
-                                            12.0,
-                                          );
-                                          _selectedVesselMmsi = vessel.mmsi ??
-                                              0; // 선택된 선박의 MMSI 저장
-                                          _isTrackingEnabled =
-                                              true; // 항적 표시 활성화
-                                          _timerService.stopTimer(
-                                              "vessel_update"); // 기존에 실행되던 선박 위치 표시 타이머도 초기화
-                                          _timerService.stopTimer(TimerService
-                                              .ROUTE_UPDATE); // 기존에 실행 중인 타이머가 있다면 취소
-
-                                          // final startTime = DateTime.now();
-
-                                          // 선박 위치 갱신 타이머 재시작
-                                          _timerService.startPeriodicTimer(
-                                            timerId: "vessel_update",
-                                            duration: AnimationConstants
-                                                .autoScrollDelay,
-                                            callback: () {
-                                              _loadVesselDataAndUpdateMap();
-                                            },
-                                          );
-
-                                          // 3초마다 데이터 갱신하는 타이머 시작
-                                          _timerService.startPeriodicTimer(
-                                              timerId: "route_update",
-                                              duration: AnimationConstants
-                                                  .autoScrollDelay,
-                                              callback: () {
-                                                try {
-                                                  if (_isTrackingEnabled) {
-                                                    // 플래그 체크 없이 항상 갱신
-                                                    _routeSearchViewModel
-                                                        .getVesselRoute(
-                                                            mmsi:
-                                                                _selectedVesselMmsi!,
-                                                            regDt: DateFormat(
-                                                                    'yyyy-MM-dd')
-                                                                .format(DateTime
-                                                                    .now()));
-
-                                                    // UI 업데이트
-                                                    if (mounted) {
-                                                      setState(() {
-                                                        // 여기서는 상태 변경 없이 화면만 갱신
-                                                      });
-                                                    }
-                                                  }
-                                                } catch (e) {
-                                                  // TODO: Handle error
-                                                  AppLogger.e("Error: $e");
-                                                }
-                                              });
-                                        }
-
-                                        loadingContext.pop(); // 로딩 팝업 닫기
-                                        Navigator.of(context).pop(); // 본래 팝업 닫기
-                                      } catch (e) {
-                                        Navigator.of(context).pop(); // 로딩 팝업 닫기
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text('예측항로 로딩 중 오류 발생')),
-                                        );
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: getColorwhite_type1(),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: getTextradius6_direct(),
-                                        side: BorderSide(
-                                          color: getColorsky_Type2(),
-                                          width: getSize1().toDouble(),
-                                        ),
-                                      ),
-                                      elevation: getSize0().toDouble(),
-                                      padding: EdgeInsets.all(
-                                          getSize18().toDouble()),
-                                    ),
-                                    child: TextWidgetString(
-                                      '예측항로 및 과거항적',
-                                      getTextcenter(),
-                                      getSize16(),
-                                      getText700(),
-                                      getColorsky_Type2(),
-                                    ),
-                                  ),
+                        SizedBox(height: getSize16().toDouble()),
+                        VesselInfoTable(
+                          shipName: vessel.ship_nm,
+                          mmsi: vessel.mmsi,
+                          vesselType: vessel.ship_knd,
+                          draft: vessel.draft,
+                          sog: vessel.sog,
+                          cog: vessel.cog,
+                        ),
+                        SizedBox(height: getSize20().toDouble()),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                // 항로 조회 로직
+                                _selectedVesselMmsi = vessel.mmsi;
+                                _isTrackingEnabled = true;
+                                // 항로 업데이트 시작
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: getColorsky_Type2(),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                                 ),
-
-                                SizedBox(
-                                    width: getSize12().toDouble()), // 버튼 사이 간격
-                              ],
+                              ),
+                              child: TextWidgetString('항로 조회', getTextcenter(), getSize16(),
+                                  getText600(), getColorwhite_type1()),
                             ),
-                          ),
-                        ]
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -544,8 +393,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  //선박 데이터 로드 및 이동 메소드
-  // 1️⃣ async/await 스타일로 변경
   Future<void> _loadVesselDataAndUpdateMap() async {
     if (!mounted) return;
 
@@ -553,54 +400,42 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       final mmsi = context.read<UserState>().mmsi ?? 0;
       final role = context.read<UserState>().role;
 
-      // 2️⃣ 한 번만 데이터 가져오기
       if (role == 'ROLE_USER') {
         await context.read<VesselProvider>().getVesselList(mmsi: mmsi);
       } else {
         await context.read<VesselProvider>().getVesselList(mmsi: 0);
       }
 
-      // 3️⃣ 마침내 한 번만 리빌드
       if (!mounted) return;
-      setState(() {
-        // vesselsViewModel.vessels 안에
-        // escapeRouteGeojson 까지 모두 들어있습니다.
-      });
+      setState(() {});
     } catch (e) {
       AppLogger.d('[_loadVesselDataAndUpdateMap] error: $e');
     }
   }
 
-// 추가: 권한을 순차적으로 요청하는 메소드
   Future<void> _requestPermissionsSequentially() async {
-    // 먼저 권한 상태 확인
     LocationPermission locationPermission = await Geolocator.checkPermission();
     if (locationPermission == LocationPermission.whileInUse ||
         locationPermission == LocationPermission.always) {
       AppLogger.d('✅ 이미 위치 권한이 허용되어 있습니다.');
-      // 위치 권한이 이미 있으면 바로 위치 업데이트
       await _updateCurrentLocation();
     } else {
-      // 위치 권한이 없는 경우에만 요청
       await Future.delayed(AnimationConstants.durationNormal);
       await PointRequestUtil.requestPermissionUntilGranted(context);
       await _updateCurrentLocation();
     }
 
-    // 알림 권한 확인
     NotificationSettings notifSettings =
-        await FirebaseMessaging.instance.getNotificationSettings();
+    await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus == AuthorizationStatus.authorized) {
       AppLogger.d('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {
-      // 알림 권한이 없는 경우에만 요청
       await Future.delayed(AnimationConstants.durationNormal);
       await NotificationRequestUtil.requestPermissionUntilGranted(context);
       await _requestNotificationPermission();
     }
   }
 
-  //화면이 종료될때 타이머 취소
   @override
   void dispose() {
     _flashController.dispose();
@@ -612,27 +447,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _timerService.stopTimer(TimerService.WEATHER_UPDATE);
     _timerService.stopTimer(TimerService.ROUTE_UPDATE);
     _timerService.stopTimer(TimerService.VESSEL_UPDATE);
-
     super.dispose();
   }
 
-  // 항로 갱신 중지 및 데이터 초기화 메소드
   void _stopRouteUpdates() {
-    // ViewModel 상태 리셋
     _routeSearchViewModel.clearRoutes();
     _routeSearchViewModel.setNavigationHistoryMode(false);
 
-    // 1) 즉시 한 번 실행
     _timerService.stopTimer(TimerService.ROUTE_UPDATE);
-    // _routeUpdateTimer = null - handled by TimerService;
 
-    // UI 리셋
     setState(() {
       _selectedVesselMmsi = null;
-      _isTrackingEnabled = false; // 항적 표시 비활성화
+      _isTrackingEnabled = false;
     });
 
-    // 선박 위치 갱신 타이머가 없으면 재시작
     _timerService.startPeriodicTimer(
       timerId: "vessel_update",
       duration: AnimationConstants.autoScrollDelay,
@@ -642,7 +470,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  // 권한 요청
   Future<void> _requestNotificationPermission() async {
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
@@ -668,28 +495,26 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  //  연속 알람시 구별
   Future<void> _showForegroundNotification(RemoteMessage message) async {
     final int notificationId =
-        DateTime.now().millisecondsSinceEpoch.remainder(100000);
+    DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
     AndroidNotificationDetails androidPlatformChannelSpecifics =
-        const AndroidNotificationDetails(
+    const AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: '중요 알림을 위한 채널입니다.',
-      importance: Importance.max, // 🟦 Heads-up 알림
+      importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
       playSound: true,
       enableVibration: true,
       fullScreenIntent: true,
-
       styleInformation: BigTextStyleInformation(''),
     );
 
     NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await flutterLocalNotificationsPlugin.show(
       notificationId,
@@ -715,7 +540,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  int selectedIndex = 0; // 선택된 인덱스를 클래스 변수로 선언
+  int selectedIndex = 0;
   Color getItemColor(int index) {
     return selectedIndex == index
         ? getColorgray_Type8()
@@ -726,15 +551,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   PersistentBottomSheetController? _bottomSheetController;
 
   void _onItemTapped(int index, BuildContext context) {
-    // 선택된 탭을 먼저 변경
     setState(() {
       _selectedIndex = index;
       selectedIndex = index;
     });
 
-    // 기존 바텀시트가 있으면 닫기
     if (_bottomSheetController != null) {
-      _bottomSheetController!.close(); // null이 아님을 명시하는 ! 연산자 추가
+      _bottomSheetController!.close();
       _bottomSheetController = null;
     }
 
@@ -742,11 +565,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _routeSearchViewModel.clearRoutes();
     _routeSearchViewModel.setNavigationHistoryMode(true);
 
-    // 홈 탭이 아닌 경우에만 바텀시트 표시
     if (index != 0) {
       if (index == 1) {
         _bottomSheetController = Scaffold.of(context).showBottomSheet(
-          (context) => WillPopScope(
+              (context) => WillPopScope(
             onWillPop: () async {
               setState(() {
                 _selectedIndex = 0;
@@ -768,19 +590,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         );
       } else if (index == 2) {
         _bottomSheetController = Scaffold.of(context).showBottomSheet(
-          (context) => WillPopScope(
+              (context) => WillPopScope(
             onWillPop: () async {
-              // 뒤로가기 시에도 1번 기능 완전 초기화
               _resetNavigationHistory();
               return true;
             },
             child: MainViewNavigationSheet(
               onClose: () {
-                // 닫기 버튼 눌렀을 때도 1번 기능 초기화
                 _resetNavigationHistory();
               },
-              resetDate: true, // 여기서는 날짜를 초기화함
-              resetSearch: true, // MMSI, 선박명 초기화함
+              resetDate: true,
+              resetSearch: true,
             ),
           ),
           backgroundColor: getColorblack_type3(),
@@ -810,24 +630,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  
-  
   @override
   Widget build(BuildContext context) {
-    final role = context.watch<UserState>().role; //로그인한 사용자 역할 가져오기
-    final mmsi = context.watch<UserState>().mmsi ?? 0; //로그인한 사용자 mmsi 가져오기
+    final role = context.watch<UserState>().role;
+    final mmsi = context.watch<UserState>().mmsi ?? 0;
 
-    // VesselProvider 추가 - 역할에 따라 자신의 선박 또는 모든 선박 조회
     final vesselsViewModel = context.watch<VesselProvider>();
-    List<VesselSearchModel> vessels; // 여기에 추가
+    List<VesselSearchModel> vessels;
 
     if (role == 'ROLE_USER') {
-      // ROLE_USER인 경우: 자신의 MMSI 선박만 조회
       vessels = vesselsViewModel.vessels
           .where((vessel) => vessel.mmsi == mmsi)
           .toList();
     } else {
-      // 관리자인 경우: 모든 선박 조회
       vessels = vesselsViewModel.vessels;
     }
 
@@ -848,32 +663,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       child: Scaffold(
         body: Stack(
           children: [
-            // Consumer를 사용하여 Provider에서 predRoutes를 가져와 Polyline으로 그린 FlutterMap
+            // 1. 지도 레이어
             Consumer<RouteSearchProvider>(
               builder: (context, routeSearchViewModel, child) {
-                // Consumer 또는 Provider.of를 통해 동일 인스턴스를 받아와 FlutterMap에 전달
                 final mapController =
                     Provider.of<MapControllerProvider>(context).mapController;
-                //point 줄이기 작업(변침+14노트 선박은 AIS신호가 4초마다 들어오는 선박 때문에 point가 너무 많이찍이고, 지도가 느려지기 때문에 줄임)
+
                 int cnt = 20;
                 if ((routeSearchViewModel.pastRoutes.length ?? 0) <= cnt) {
                   cnt = 1;
                 }
 
-                var pastRouteLine = <LatLng>[]; // 과거항적 LatLng 리스트 생성
+                var pastRouteLine = <LatLng>[];
 
-                // 데이터가 있는 경우
                 if (routeSearchViewModel.pastRoutes.isNotEmpty == true) {
-                  // 첫 번째 포인트 추가
                   final firstPoint = routeSearchViewModel.pastRoutes.first;
                   pastRouteLine
                       .add(LatLng(firstPoint.lttd ?? 0, firstPoint.lntd ?? 0));
 
-                  // 중간 포인트들 추가 (인덱스 1부터 마지막-1까지)
                   if ((routeSearchViewModel.pastRoutes.length ?? 0) > 2) {
                     for (int i = 1;
-                        i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1;
-                        i++) {
+                    i < (routeSearchViewModel.pastRoutes.length ?? 0) - 1;
+                    i++) {
                       if (i % cnt == 0) {
                         final route = routeSearchViewModel.pastRoutes[i];
                         pastRouteLine
@@ -882,28 +693,20 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     }
                   }
 
-                  // 마지막 포인트 추가
                   final lastPoint = routeSearchViewModel.pastRoutes.last;
                   pastRouteLine
                       .add(LatLng(lastPoint.lttd ?? 0, lastPoint.lntd ?? 0));
                 }
 
-                //예측항로 LatLng 리스트 생성
                 var predRouteLine = <LatLng>[];
-
-                // 기존 예측항로 포인트들 추가
                 predRouteLine.addAll((routeSearchViewModel.predRoutes ?? [])
                     .map((route) => LatLng(route.lttd ?? 0, route.lntd ?? 0))
                     .toList());
 
-                // 과거항적의 마지막 포인트가 있다면 예측항로 리스트의 맨 앞에 추가
                 if (predRouteLine.isNotEmpty) {
                   pastRouteLine.add(predRouteLine.first);
                 }
 
-                //_isTrackingEnabled -> main지도에서 선박 클릭을 통해 그려진 과거항적 및 예측항로
-                //isNavigationHistoryMode -> 항행이력 탭을 통해 그려진 과거항적
-                //즉, refresh버튼을 눌러서 과거항적 및 예측항로를 지웠고, 항행이력 탭을 통해 그려진 과거항적이 아닌경우 항적 지우기!
                 if (!_isTrackingEnabled &&
                     routeSearchViewModel.isNavigationHistoryMode != true) {
                   pastRouteLine.clear();
@@ -914,11 +717,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   mapController: mapController,
                   options: MapOptions(
                     initialCenter:
-                        _currentPosition ?? const LatLng(35.374509, 126.132268),
+                    _currentPosition ?? const LatLng(35.374509, 126.132268),
                     initialZoom: 12.0,
-                    maxZoom: 14.0, // 최대 줌 레벨 설정
-                    minZoom: 5.5, // 필요한 경우 최소 줌 레벨도 설정 가능
-                    // 회전 비활성화 설정
+                    maxZoom: 14.0,
+                    minZoom: 5.5,
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                     ),
@@ -926,7 +728,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         (MapPosition position, bool hasGesture) {},
                   ),
                   children: [
-                    //전자해도 수심면 레이어
+                    // WMS 타일 레이어들
                     TileLayer(
                       wmsOptions: WMSTileLayerOptions(
                         baseUrl: "${dotenv.env['GEOSERVER_URL']}?",
@@ -945,7 +747,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         version: '1.1.1',
                       ),
                     ),
-                    //터빈 레이어
                     TileLayer(
                       wmsOptions: WMSTileLayerOptions(
                         baseUrl: "${dotenv.env['GEOSERVER_URL']}?",
@@ -955,7 +756,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         version: '1.1.1',
                       ),
                     ),
-                    //과거항적 선 레이어
+                    // 과거항적 선 레이어
                     PolylineLayer(
                       polylines: [
                         Polyline(
@@ -965,29 +766,27 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
-                    //과거항적 포인트 레이어
+                    // 과거항적 포인트 레이어
                     MarkerLayer(
                       markers: pastRouteLine.asMap().entries.map((entry) {
                         int index = entry.key;
                         LatLng point = entry.value;
 
-                        // 과거항적의 첫 시작점을 큰 노란색 원으로 표시
                         if (index == 0) {
                           return Marker(
                             point: point,
-                            width: 10, // 더 큰 크기
+                            width: 10,
                             height: 10,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.orangeAccent, // 노란색
+                                color: Colors.orangeAccent,
                                 shape: BoxShape.circle,
                                 border:
-                                    Border.all(color: Colors.white, width: 1),
+                                Border.all(color: Colors.white, width: 1),
                               ),
                             ),
                           );
-                        } // 나머지 모든 포인트는 작은 오렌지색 원으로 표시
-                        else {
+                        } else {
                           return Marker(
                             point: point,
                             width: 4,
@@ -997,14 +796,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 color: Colors.orangeAccent,
                                 shape: BoxShape.circle,
                                 border:
-                                    Border.all(color: Colors.white, width: 0.5),
+                                Border.all(color: Colors.white, width: 0.5),
                               ),
                             ),
                           );
                         }
                       }).toList(),
                     ),
-                    //예측항로 선 레이어
+                    // 예측항로 선 레이어
                     PolylineLayer(
                       polylines: [
                         Polyline(
@@ -1014,7 +813,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         ),
                       ],
                     ),
-                    //예측항로 포인트 레이어
+                    // 예측항로 포인트 레이어
                     MarkerLayer(
                       markers: predRouteLine.map((point) {
                         return Marker(
@@ -1026,14 +825,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               color: Colors.red,
                               shape: BoxShape.circle,
                               border:
-                                  Border.all(color: Colors.white, width: 0.5),
+                              Border.all(color: Colors.white, width: 0.5),
                             ),
                           ),
                         );
                       }).toList(),
                     ),
-                    //퇴각항로 레이어
-                    // 1. 점선 경로
+                    // 퇴각항로 레이어
                     PolylineLayer(
                       polylineCulling: false,
                       polylines: vessels
@@ -1049,83 +847,73 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         );
                       }).toList(),
                     ),
-
-                    // 2. 끝점에 삼각형
+                    // 퇴각항로 끝점 삼각형
                     PolygonLayer(
                       polygons: vessels
                           .where((v) => v.escapeRouteGeojson != null)
                           .map((v) {
-                            final pts = GeoUtils.parseGeoJsonLineString(
-                                v.escapeRouteGeojson ?? '');
-                            if (pts.length < 2) return null;
-                            final end = pts.last;
-                            final prev = pts[pts.length - 2];
+                        final pts = GeoUtils.parseGeoJsonLineString(
+                            v.escapeRouteGeojson ?? '');
+                        if (pts.length < 2) return null;
+                        final end = pts.last;
+                        final prev = pts[pts.length - 2];
 
-                            // 1) 진행 벡터와 단위벡터 u
-                            final dx = end.longitude - prev.longitude;
-                            final dy = end.latitude - prev.latitude;
-                            final dist = sqrt(dx * dx + dy * dy);
-                            if (dist == 0) return null;
-                            final ux = dx / dist;
-                            final uy = dy / dist;
+                        final dx = end.longitude - prev.longitude;
+                        final dy = end.latitude - prev.latitude;
+                        final dist = sqrt(dx * dx + dy * dy);
+                        if (dist == 0) return null;
+                        final ux = dx / dist;
+                        final uy = dy / dist;
 
-                            // 2) 수직 단위벡터 (왼쪽)
-                            final vx = -uy;
-                            final vy = ux;
+                        final vx = -uy;
+                        final vy = ux;
 
-                            // 3) 삼각형 크기 설정 (size: 높이)
-                            double size = 0.0005;
+                        double size = 0.0005;
 
-                            // 4) 꼭짓점 계산
-                            // apex: 진행 방향으로 size만큼 전진
-                            final apex = LatLng(
-                              end.latitude + uy * size,
-                              end.longitude + ux * size,
-                            );
+                        final apex = LatLng(
+                          end.latitude + uy * size,
+                          end.longitude + ux * size,
+                        );
 
-                            // baseCenter: 뒤쪽으로 size*0.5만큼
-                            final baseCenter = LatLng(
-                              end.latitude - uy * (size * 0.5),
-                              end.longitude - ux * (size * 0.5),
-                            );
+                        final baseCenter = LatLng(
+                          end.latitude - uy * (size * 0.5),
+                          end.longitude - ux * (size * 0.5),
+                        );
 
-                            // base half-width: 정삼각형 한 변 = size*2/sqrt(3) ⇒ half-width = (변/2) = size/√3
-                            final halfWidth = size / sqrt(3);
+                        final halfWidth = size / sqrt(3);
 
-                            final b1 = LatLng(
-                              baseCenter.latitude + vy * halfWidth,
-                              baseCenter.longitude + vx * halfWidth,
-                            );
-                            final b2 = LatLng(
-                              baseCenter.latitude - vy * halfWidth,
-                              baseCenter.longitude - vx * halfWidth,
-                            );
+                        final b1 = LatLng(
+                          baseCenter.latitude + vy * halfWidth,
+                          baseCenter.longitude + vx * halfWidth,
+                        );
+                        final b2 = LatLng(
+                          baseCenter.latitude - vy * halfWidth,
+                          baseCenter.longitude - vx * halfWidth,
+                        );
 
-                            return Polygon(
-                              points: [apex, b1, b2],
-                              color: Colors.black,
-                              borderColor: Colors.black,
-                              borderStrokeWidth: 1,
-                              isFilled: true,
-                            );
-                          })
+                        return Polygon(
+                          points: [apex, b1, b2],
+                          color: Colors.black,
+                          borderColor: Colors.black,
+                          borderStrokeWidth: 1,
+                          isFilled: true,
+                        );
+                      })
                           .where((poly) => poly != null)
                           .cast<Polygon>()
                           .toList(),
                     ),
-                    //현재 선박 레이어
+                    // 현재 선박 레이어
                     MarkerLayer(
                       markers: vessels
-                          .where((vessel) =>
-                              (vessel.mmsi ?? 0) == mmsi) // 내 선박만 필터링
+                          .where((vessel) => (vessel.mmsi ?? 0) == mmsi)
                           .map((vessel) {
                         return Marker(
                           point: LatLng(vessel.lttd ?? 0, vessel.lntd ?? 0),
                           width: 25,
                           height: 25,
                           child: Transform.rotate(
-                            angle:
-                                (vessel.cog ?? 0) * (pi / 180), // COG를 라디안으로 변환
+                            angle: (vessel.cog ?? 0) * (pi / 180),
                             child: SvgPicture.asset(
                               'assets/kdn/home/img/myVessel.svg',
                               width: 40,
@@ -1135,13 +923,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         );
                       }).toList(),
                     ),
-                    // 다른 선박 레이어 (항상 포함되지만 가시성 제어)
+                    // 다른 선박 레이어
                     Opacity(
-                      opacity: isOtherVesselsVisible ? 1.0 : 0.0, // 가시성 제어
-                      // 완전히 투명하게 만들면 상호작용도 불가능해짐
+                      opacity: isOtherVesselsVisible ? 1.0 : 0.0,
                       child: IgnorePointer(
-                        ignoring:
-                            !isOtherVesselsVisible, // 보이지 않을 때는 터치 이벤트도 무시
+                        ignoring: !isOtherVesselsVisible,
                         child: MarkerLayer(
                           markers: vessels
                               .where((vessel) => (vessel.mmsi ?? 0) != mmsi)
@@ -1152,7 +938,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               height: 25,
                               child: GestureDetector(
                                 onTap: () {
-                                  // 선박 정보 팝업 표시
                                   routePop(context, vessel);
                                 },
                                 child: Transform.rotate(
@@ -1173,506 +958,122 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 );
               },
             ),
-            // 나머지 위젯들 (버튼, 네비게이션바 등)
-            SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Consumer<NavigationProvider>(
-                    builder: (context, viewModel, _) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          top: getSize56().toDouble(),
-                          bottom: getSize32().toDouble(),
-                          right: getSize20().toDouble(),
-                          left: getSize20().toDouble(),
-                        ),
-                        child: Column(
-                          children: [
-                            // 파고 버튼
-                            buildCircularButtonSlideOn(
-                              'assets/kdn/home/img/top_pago_img.svg',
-                              viewModel.getWaveColor(viewModel.wave),
-                              getSize56(),
-                              getSize56(),
-                              '파고',
-                              getSize160(),
-                              viewModel.getFormattedWaveThresholdText(
-                                  viewModel.wave),
-                              isSelected: isWaveSelected,
-                              onTap: () {
-                                setState(() {
-                                  isWaveSelected = !isWaveSelected;
-                                });
-                              },
-                            ),
 
-                            // 시정 버튼
-                            buildCircularButtonSlideOn(
-                              'assets/kdn/home/img/top_visibility_img.svg',
-                              viewModel
-                                  .getVisibilityColor(viewModel.visibility),
-                              getSize56(),
-                              getSize56(),
-                              '시정',
-                              getSize160(),
-                              viewModel.getFormattedVisibilityThresholdText(
-                                  viewModel.visibility),
-                              isSelected: isVisibilitySelected,
-                              onTap: () {
-                                setState(() {
-                                  isVisibilitySelected = !isVisibilitySelected;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+            // 2. 상단 파고/시정 버튼 (위젯 사용)
+            const WeatherControlButtons(),
+
+            // 3. 우측 하단 지도 컨트롤 버튼 (위젯 사용)
+            MapControlButtons(
+              isOtherVesselsVisible: isOtherVesselsVisible,
+              onOtherVesselsToggle: () {
+                setState(() {
+                  isOtherVesselsVisible = !isOtherVesselsVisible;
+                });
+              },
+              mapController: _mapControllerProvider.mapController,
+              onHomeButtonTap: (context) {
+                _mapControllerProvider.mapController.moveAndRotate(
+                    const LatLng(35.374509, 126.132268),
+                    12.0,
+                    0.0
+                );
+              },
+            ),
+
+            // 4. Refresh 버튼 (독립적으로 유지)
+            Positioned(
+              right: getSize20().toDouble(),
+              top: MediaQuery.of(context).size.height / 2 - 100,
+              child: Consumer<RouteSearchProvider>(
+                builder: (context, routeViewModel, _) {
+                  if ((routeViewModel.pastRoutes.isNotEmpty == true ||
+                      (routeViewModel.predRoutes.isNotEmpty == true)) &&
+                      routeViewModel.isNavigationHistoryMode != true &&
+                      _isTrackingEnabled) {
+                    return CircularButton(
+                      svgPath: 'assets/kdn/home/img/refresh.svg',
+                      colorOn: getColorgray_Type8(),
+                      colorOff: getColorgray_Type8(),
+                      widthSize: getSize56(),
+                      heightSize: getSize56(),
+                      onTap: () {
+                        _stopRouteUpdates();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('항적 데이터가 초기화되었습니다.'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ),
 
-            SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Spacer(),
-                  Padding(
-                    padding: EdgeInsets.only(right: getSize20().toDouble()),
+            // 5. 하단 항행경보 마키
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Consumer<NavigationProvider>(
+                builder: (context, viewModel, child) {
+                  return Container(
+                    height: 52,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: DesignConstants.spacing12),
+                    decoration: BoxDecoration(
+                      color: getColorred_type1(),
+                    ),
                     child: Row(
                       children: [
-                        const Spacer(),
-                        Column(
-                          children: [
-                            Consumer<RouteSearchProvider>(
-                              builder: (context, routeViewModel, _) {
-                                //과거항적 및 예측항로가 있는지 확인하고, 과거항적을 MainScreen에서 조회했는지/mainview_navigation에서 조회했는지 체크 isNavigationHistoryMode=true면 항행이력 과거항적 조회
-                                if ((routeViewModel.pastRoutes.isNotEmpty ==
-                                            true ||
-                                        (routeViewModel.predRoutes.isNotEmpty ==
-                                            true)) &&
-                                    routeViewModel.isNavigationHistoryMode !=
-                                        true &&
-                                    _isTrackingEnabled) {
-                                  return Column(
-                                    children: [
-                                      CircularButton(
-                                        svgPath:
-                                            'assets/kdn/home/img/refresh.svg',
-                                        colorOn: getColorgray_Type8(),
-                                        colorOff: getColorgray_Type8(),
-                                        widthSize: getSize56(),
-                                        heightSize: getSize56(),
-                                        onTap: () {
-                                          _stopRouteUpdates();
-                                          // 사용자에게 피드백 제공
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content:
-                                                  Text('항적 데이터가 초기화되었습니다.'),
-                                              duration: Duration(seconds: 1),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(
-                                          height: DesignConstants.spacing12),
-                                    ],
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              },
+                        SvgPicture.asset(
+                          'assets/kdn/ros/img/circle-exclamation_white.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                        SizedBox(width: getSize8().toDouble()),
+                        Expanded(
+                          child: Marquee(
+                            text: viewModel.combinedNavigationWarnings,
+                            style: TextStyle(
+                              color: getColorwhite_type1(),
+                              fontSize: DesignConstants.fontSizeM,
+                              fontWeight: getText700(),
                             ),
-                            //관리자만 접근 가능
-                            if (role == 'ROLE_ADMIN') ...[
-                              CircularButton(
-                                svgPath:
-                                    'assets/kdn/home/img/bouttom_ship_img.svg',
-                                colorOn: getColorgray_Type9(),
-                                colorOff: getColorgray_Type8(),
-                                widthSize: getSize56(),
-                                heightSize: getSize56(),
-                                onTap: () {
-                                  setState(() {
-                                    isOtherVesselsVisible =
-                                        !isOtherVesselsVisible;
-                                  });
-                                  // 관리자 전용 기능
-                                },
-                              ),
-                              const SizedBox(height: DesignConstants.spacing12),
-                            ],
-                            // 현재 위치 버튼 - Builder로 감싸서 MultiProvider의 하위 컨텍스트 전달
-                            Builder(
-                              builder: (context) {
-                                final mmsi = context.read<UserState>().mmsi ??
-                                    0; // 현재 사용자 mmsi 값
-                                final vessels = context
-                                    .watch<VesselProvider>()
-                                    .vessels; // 선박 목록을 감시
-
-                                // mmsi가 없거나 선박 목록에 사용자의 mmsi가 없으면 버튼을 표시하지 않음
-                                if (!vessels
-                                    .any((vessel) => vessel.mmsi == mmsi)) {
-                                  return const SizedBox.shrink(); // 빈 위젯 반환
-                                }
-
-                                return CircularButton(
-                                  svgPath:
-                                      'assets/kdn/home/img/bouttom_location_img.svg',
-                                  colorOn: getColorgray_Type8(),
-                                  colorOff: getColorgray_Type8(),
-                                  widthSize: getSize56(),
-                                  heightSize: getSize56(),
-                                  onTap: () async {
-                                    // 해당 mmsi의 선박 목록을 조회합니다.
-                                    if (role == 'ROLE_ADMIN') {
-                                      //관리자일 경우
-                                      await context
-                                          .read<VesselProvider>()
-                                          .getVesselList(mmsi: 0);
-                                    } else {
-                                      await context
-                                          .read<VesselProvider>()
-                                          .getVesselList(mmsi: mmsi);
-                                    }
-
-                                    final vessels =
-                                        context.read<VesselProvider>().vessels;
-
-                                    VesselSearchModel? myVessel;
-
-                                    try {
-                                      myVessel = vessels.firstWhere(
-                                        (vessel) => vessel.mmsi == mmsi,
-                                      );
-                                    } catch (e) {
-                                      myVessel = null;
-                                    }
-
-                                    // myVessel 객체가 유효하면 그 좌표를 사용하여 지도 중심을 이동합니다.
-                                    if (myVessel != null) {
-                                      final vesselPoint = LatLng(
-                                        myVessel.lttd ??
-                                            35.3790988, // 위도 (null이면 기본값 사용)
-                                        myVessel.lntd ??
-                                            126.167763, // 경도 (null이면 기본값 사용)
-                                      );
-
-                                      // Builder 내의 context는 MultiProvider 자식이므로 Provider 접근이 가능합니다.
-                                      final mapController =
-                                          Provider.of<MapControllerProvider>(
-                                                  context,
-                                                  listen: false)
-                                              .mapController;
-                                      mapController.move(vesselPoint,
-                                          mapController.camera.zoom);
-                                    }
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: DesignConstants.spacing12),
-                            // 실시간 위치 딜레이 있음
-                            CircularButton(
-                              svgPath: 'assets/kdn/home/img/ico_home.svg',
-                              colorOn: getColorgray_Type8(),
-                              colorOff: getColorgray_Type8(),
-                              widthSize: getSize56(),
-                              heightSize: getSize56(),
-                              onTap: () {
-                                //_showCustomPopuplive(context);
-                                _mapControllerProvider.mapController
-                                    .moveAndRotate(
-                                        const LatLng(35.374509, 126.132268),
-                                        12.0,
-                                        0.0); // 지도를 기본 위치와 줌 레벨로 이동
-
-                                //_routeSearchViewModel.clearRoutes(); // 과거항적과 예측항로 데이터 초기화
-                                //_stopRouteUpdates();                  // 항로 업데이트 중지 및 데이터 초기화
-                              },
-                            ),
-                            const SizedBox(height: DesignConstants.spacing12),
-                          ],
+                            scrollAxis: Axis.horizontal,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            blankSpace: 300.0,
+                            velocity: 35.0,
+                            pauseAfterRound: const Duration(seconds: 1),
+                            startPadding: 10.0,
+                            accelerationDuration: const Duration(seconds: 1),
+                            accelerationCurve: Curves.linear,
+                            decelerationDuration: const Duration(seconds: 1),
+                            decelerationCurve: Curves.easeOut,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: getSize32().toDouble()),
-                  Consumer<NavigationProvider>(
-                    builder: (context, viewModel, child) {
-                      return Container(
-                        height: 52,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: DesignConstants.spacing12),
-                        decoration: BoxDecoration(
-                          color: getColorred_type1(),
-                        ),
-                        child: Row(
-                          children: [
-                            SvgPicture.asset(
-                              'assets/kdn/ros/img/circle-exclamation_white.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            SizedBox(width: getSize8().toDouble()),
-                            Expanded(
-                              child: Marquee(
-                                text: viewModel.combinedNavigationWarnings,
-                                style: TextStyle(
-                                  color: getColorwhite_type1(),
-                                  fontSize: DesignConstants.fontSizeM,
-                                  fontWeight: getText700(),
-                                ),
-                                scrollAxis: Axis.horizontal,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                blankSpace: 300.0,
-                                velocity: 35.0,
-                                pauseAfterRound: const Duration(seconds: 1),
-                                startPadding: 10.0,
-                                accelerationDuration:
-                                    const Duration(seconds: 1),
-                                accelerationCurve: Curves.linear,
-                                decelerationDuration:
-                                    const Duration(seconds: 1),
-                                decelerationCurve: Curves.easeOut,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                  );
+                },
               ),
             ),
 
-            // Stack의 맨 마지막에 추가 (가장 위에 렌더링되도록)
-            if (_isFlashing)
-              AnimatedBuilder(
-                animation: _flashController,
-                builder: (context, child) {
-                  return Stack(
-                    children: [
-                      // 전체 투명
-                      Container(color: Colors.transparent),
-
-                      // 상단
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 250,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // 하단 (navigation bar는 안 가리게)
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 250,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // 왼쪽
-                      Positioned(
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        width: 100,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // 오른쪽
-                      Positioned(
-                        top: 0,
-                        bottom: 0,
-                        right: 0,
-                        width: 100,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerRight,
-                              end: Alignment.centerLeft,
-                              colors: [
-                                Color.fromRGBO(
-                                    255, 0, 0, 0.6 * _flashController.value),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              )
+            // 6. 플래시 오버레이
+            FlashOverlay(
+              flashController: _flashController,
+              isFlashing: _isFlashing,
+            ),
           ],
         ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white, // 배경색 설정
-            border: Border(
-              top: BorderSide(
-                  color: getColorgray_Type4(), width: 1), // 상단 Border 추가
-            ),
-          ),
-          child: Builder(
-            builder: (context) => BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent, // 부모 Container 배경색 사용
-              elevation: 0, // 그림자 제거
-              selectedItemColor: getColorgray_Type8(),
-              unselectedItemColor: getColorgray_Type2(),
-              selectedLabelStyle: TextStyle(
-                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
-              unselectedLabelStyle: TextStyle(
-                  fontSize: getSize16().toDouble(), fontWeight: getText700()),
-              currentIndex: selectedIndex,
-              onTap: (index) {
-                setState(() {
-                  selectedIndex = index;
-                });
-
-                _onItemTapped(index, context);
-              },
-              items: <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                    child: Column(
-                      children: [
-                        SizedBox(height: getSize12().toDouble()),
-                        SizedBox(
-                          width: getSize24().toDouble(),
-                          height: getSize24().toDouble(),
-                          child: SvgPicture.asset(
-                            selectedIndex == 0
-                                ? 'assets/kdn/ros/img/Home_on.svg'
-                                : 'assets/kdn/ros/img/Home_off.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  label: '홈',
-                ),
-                BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                    child: Column(
-                      children: [
-                        SizedBox(height: getSize12().toDouble()),
-                        SizedBox(
-                          width: getSize24().toDouble(),
-                          height: getSize24().toDouble(),
-                          child: SvgPicture.asset(
-                            selectedIndex == 1
-                                ? 'assets/kdn/ros/img/cloud-sun_on.svg'
-                                : 'assets/kdn/ros/img/cloud-sun_off.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  label: '기상정보',
-                ),
-                BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                    child: Column(
-                      children: [
-                        SizedBox(height: getSize12().toDouble()),
-                        SizedBox(
-                          width: getSize24().toDouble(),
-                          height: getSize24().toDouble(),
-                          child: SvgPicture.asset(
-                            selectedIndex == 2
-                                ? 'assets/kdn/ros/img/ship_on.svg'
-                                : 'assets/kdn/ros/img/ship_off.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  label: '항행이력',
-                ),
-                BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: EdgeInsets.only(bottom: getSize8().toDouble()),
-                    child: Column(
-                      children: [
-                        SizedBox(height: getSize12().toDouble()),
-                        SizedBox(
-                          width: getSize24().toDouble(),
-                          height: getSize24().toDouble(),
-                          child: SvgPicture.asset(
-                            selectedIndex == 3
-                                ? 'assets/kdn/ros/img/user-alt-1_on.svg'
-                                : 'assets/kdn/ros/img/user-alt-1_off.svg',
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  label: '마이',
-                ),
-              ],
-            ),
-          ),
+        bottomNavigationBar: MainBottomNavigation(
+          selectedIndex: selectedIndex,
+          onItemTapped: _onItemTapped,
         ),
       ),
     );
   }
 }
-
-
