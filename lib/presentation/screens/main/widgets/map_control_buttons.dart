@@ -63,18 +63,16 @@ class MapControlButtons extends StatelessWidget {
                       orElse: () => vessels.first,
                     );
 
-                    if (myVessel != null) {
-                      final vesselPoint = LatLng(
-                        myVessel.lttd ?? 35.3790988,
-                        myVessel.lntd ?? 126.167763,
-                      );
+                    final vesselPoint = LatLng(
+                      myVessel.lttd ?? 35.3790988,
+                      myVessel.lntd ?? 126.167763,
+                    );
 
-                      mapController.move(
-                          vesselPoint,
-                          mapController.camera.zoom
-                      );
-                    }
-                  },
+                    mapController.move(
+                        vesselPoint,
+                        mapController.camera.zoom
+                    );
+                                    },
                 );
               },
             ),

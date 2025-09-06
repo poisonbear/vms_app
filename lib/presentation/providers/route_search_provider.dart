@@ -25,6 +25,9 @@ class RouteSearchProvider extends BaseProvider {
   // 기존 메서드 유지
   Future<void> getVesselRoute({String? regDt, int? mmsi}) async {
     final response = await executeAsync(() async {
+    // 🔍 디버깅: getVesselRoute 호출
+    print('🔍 [RouteSearchProvider] getVesselRoute 호출 - regDt: $regDt, mmsi: $mmsi');
+    
       return await _routeSearchRepository.getVesselRoute(
         regDt: regDt,
         mmsi: mmsi,
@@ -33,6 +36,9 @@ class RouteSearchProvider extends BaseProvider {
 
     if (response != null) {
       _pastRouteList = response.past;
+      // 🔍 디버깅: 응답 처리
+      print('🔍 [RouteSearchProvider] 응답 수신 - past: ${response.past.length}, pred: ${response.pred.length}');
+      
       _predRouteList = response.pred;
       notifyListeners();
     }

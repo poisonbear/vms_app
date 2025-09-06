@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import '../controllers/main_screen_controller.dart';
+import '../utils/navigation_debug.dart';
 
 final TextEditingController globalMmsiController = TextEditingController();
 final TextEditingController globalShipNameController = TextEditingController();
@@ -41,6 +43,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   @override
   void initState() {
     super.initState();
+
+    NavigationDebugHelper.debugPrint('NavigationSheet initState', location: 'nav_tab');
 
     // MMSI 및 선박명은 resetSearch 플래그가 true일 때만 초기화
     if (widget.resetSearch) {
@@ -76,10 +80,18 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             ? null
             : globalShipNameController.text.toUpperCase() // 대문자로 변환
         );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.postFrame');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // 🔍 디버깅 추가
+    NavigationDebugHelper.debugPrint('NavigationSheet build', location: 'nav_tab.build');
+    NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.build');
+
     final routeSearchViewModel = Provider.of<RouteSearchProvider>(context,
         listen: false); // RouteSearchProvider 가져오기
     return WillPopScope(
@@ -560,8 +572,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               },
             );
 
+            // 로딩 다이얼로그 표시 전에 추가
+            NavigationDebugHelper.debugPrint('항행이력 조회 시작 - mmsi: $mmsi', location: 'nav_tab.onTap');
+
             try {
               viewModel.setNavigationHistoryMode(true); // 항행 이력 조회 모드 설정
+
+              // 🔍 디버깅: API 호출 전
+              NavigationDebugHelper.debugPrint('API 호출 전', location: 'nav_tab.beforeAPI');
 
               // 항행 이력 데이터 로드
               await viewModel.getVesselRoute(
@@ -569,6 +587,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       ? "${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}"
                       : null,
                   mmsi: int.tryParse(mmsi));
+
+              // 🔍 디버깅: API 호출 후
+              NavigationDebugHelper.debugPrint(
+                  'API 호출 후 - past: ${viewModel.pastRoutes.length}, pred: ${viewModel.predRoutes.length}',
+                  location: 'nav_tab.afterAPI'
+              );
 
               // 첫 번째 과거 항적 포인트로 지도 이동
               if (viewModel.pastRoutes.isNotEmpty) {
@@ -578,11 +602,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
                 // 상위 위젯의 MapController에 접근해서 지도 중심 이동
 
-                // Provider를 사용하여 MapController 접근
-                final mapControllerProvider =
-                    Provider.of<MapControllerProvider>(context, listen: false);
-                // 지도 이동
-                mapControllerProvider.mapController.move(firstPoint, 12.0);
+                // Provider를 사용하여 MapController 접근 (수정됨)
+                try {
+                  final mainController = Provider.of<MainScreenController>(context, listen: false);
+                  mainController.mapController.move(firstPoint, 12.0);
+                                } catch (e) {
+                  NavigationDebugHelper.debugPrint("지도 이동 실패: \$e", location: "nav_tab.mapError");
+                }
               }
 
               navigationContext.pop(); // LoadingDialog 닫기
@@ -632,6 +658,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 ),
               );
             } catch (e) {
+              // 🔍 디버깅: 에러
+              NavigationDebugHelper.debugPrint('에러 발생: $e', location: 'nav_tab.error');
+
               // 에러 처리
               Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
               ScaffoldMessenger.of(context).showSnackBar(
