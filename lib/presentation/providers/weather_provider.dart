@@ -4,10 +4,12 @@ import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/weather/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
+import 'package:vms_app/core/cache/simple_cache.dart';
 
 // 기존 WidWeatherInfoViewModel 클래스명 유지
 class WidWeatherInfoViewModel extends BaseProvider {
   late final WeatherRepository _widRepository;
+  final _cache = SimpleCache(); // 캐시 매니저
 
   List<WidModel>? _widList;
   final List<String> _windDirection = []; // 한글 방위명 저장
@@ -27,6 +29,40 @@ class WidWeatherInfoViewModel extends BaseProvider {
   }
 
   Future<void> getWidList() async {
+        // ========== 캐싱 로직 시작 ==========
+    final now = DateTime.now();
+    final cacheKey = 'wid_list_${now.hour}_${now.minute ~/ 30}'; // 30분 단위
+    
+    // 캐시 확인
+    final cachedData = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cachedData != null) {
+      print('✅ [캐시 사용] 기상정보 리스트');
+      print('📦 캐시 데이터 타입: ${cachedData['widList'].runtimeType}');
+
+      // 캐시된 데이터 복원
+      if (cachedData['widList'] != null) {
+        try {
+          _widList = cachedData['widList'] as List<WidModel>?;
+          print('📊 _widList 길이: ${_widList?.length}');
+          print('📊 첫 번째 데이터: ${_widList?.first}');
+
+          if (_widList != null && _widList!.isNotEmpty) {
+            print('🌡️ 첫 데이터 온도: ${_widList!.first.current_temp}');
+            print('🌊 첫 데이터 파고: ${_widList!.first.wave_height}');
+          }
+
+          _processWindData(_widList!);
+          safeNotifyListeners();
+        } catch(e) {
+          print('❌ 캐시 복원 에러: $e');  // 추가
+          print('❌ 타입 캐스팅 실패, API 재호출 필요');
+        }
+      }
+      return;
+    }
+    
+    print('🔄 [API 호출] 기상정보 리스트');
+
     final result = await executeAsync(() async {
       return await _widRepository.getWidList();
     }, errorMessage: '기상 정보 로드 중 오류 발생');
@@ -34,6 +70,17 @@ class WidWeatherInfoViewModel extends BaseProvider {
     if (result != null) {
       _widList = result;
       _processWindData(result);
+
+      print('💾 저장 전 _widList 타입: ${_widList.runtimeType}');
+      print('💾 저장 전 _widList 길이: ${_widList?.length}');
+
+      final dataToCache = {
+        'widList': result,
+      };
+      
+      _cache.put(cacheKey, dataToCache, const Duration(minutes: 30));
+      print('💾 [캐시 저장] 기상정보 리스트 (30분간 유효)');
+      // ========== 캐시 저장 끝 ==========
       safeNotifyListeners();
     }
   }
@@ -221,6 +268,8 @@ class WidWeatherInfoViewModel extends BaseProvider {
   @override
   @override
   void dispose() {
+    // 캐시 정리
+    //_cache.clear();
     // Weather 관련 리소스 정리
     // 실제 변수가 있다면 여기서 정리
 

@@ -1,5 +1,4 @@
-// lib/presentation/providers/navigation_provider.dart
-// 최종 버전 - 기존 코드 + 누락된 메서드 2개 추가
+// NavigationProvider 수정 버전 - 캐싱 적용
 
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/di/injection.dart';
@@ -7,11 +6,15 @@ import 'package:vms_app/domain/repositories/navigation_repository.dart';
 import 'package:vms_app/domain/usecases/navigation/get_navigation_history.dart';
 import 'package:vms_app/domain/usecases/navigation/get_weather_info.dart' as weather_usecase;
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
+import 'package:vms_app/core/cache/simple_cache.dart';
 
 class NavigationProvider extends BaseProvider {
   late final GetNavigationHistory _getNavigationHistory;
   late final weather_usecase.GetWeatherInfo _getWeatherInfo;
   late final NavigationRepository _navigationRepository;
+
+  // 캐시 매니저 추가
+  final _cache = SimpleCache(); // ← 추가
 
   // 기존 구조 유지 - State variables
   List<dynamic> _rosList = [];
@@ -78,8 +81,39 @@ class NavigationProvider extends BaseProvider {
   }
 
   Future<void> getWeatherInfo() async {
+    print('getWeatherInfo 호출됨');
+    // ========== 캐싱 로직 추가 시작 ==========
+    // 캐시 키 생성 (10분 단위)
+    final now = DateTime.now();
+    final cacheKey = 'weather_${now.hour}_${now.minute ~/ 10}';
+
+    // 캐시에서 먼저 확인
+    final cachedData = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cachedData != null) {
+      print('✅ [캐시 사용] 날씨 정보');
+      print('📦 캐시 데이터: $cachedData');
+      // 캐시된 데이터 복원
+      wave = cachedData['wave'] ?? 0;
+      visibility = cachedData['visibility'] ?? 0;
+      walm1 = cachedData['walm1'] ?? 0.0;
+      walm2 = cachedData['walm2'] ?? 0.0;
+      walm3 = cachedData['walm3'] ?? 0.0;
+      walm4 = cachedData['walm4'] ?? 0.0;
+      valm1 = cachedData['valm1'] ?? 0.0;
+      valm2 = cachedData['valm2'] ?? 0.0;
+      valm3 = cachedData['valm3'] ?? 0.0;
+      valm4 = cachedData['valm4'] ?? 0.0;
+
+      print('🌊 wave: $wave, visibility: $visibility');
+      notifyListeners();
+      return;
+    }
+
+    print('🔄 [API 호출] 날씨 정보');
+    // ========== 캐싱 로직 추가 끝 ==========
+
     final weatherInfo = await executeAsync(
-      () => _getWeatherInfo.execute(),
+          () => _getWeatherInfo.execute(),
       errorMessage: '기상 정보 로드 중 오류',
       showLoading: false,
     );
@@ -95,24 +129,64 @@ class NavigationProvider extends BaseProvider {
       valm2 = weatherInfo.valm2;
       valm3 = weatherInfo.valm3;
       valm4 = weatherInfo.valm4;
+
+      // ========== 캐시 저장 추가 ==========
+      final dataToCache = {
+        'wave': wave,
+        'visibility': visibility,
+        'walm1': walm1,
+        'walm2': walm2,
+        'walm3': walm3,
+        'walm4': walm4,
+        'valm1': valm1,
+        'valm2': valm2,
+        'valm3': valm3,
+        'valm4': valm4,
+      };
+
+      _cache.put(cacheKey, dataToCache, const Duration(minutes: 10));
+      print('💾 [캐시 저장] 날씨 정보 (10분간 유효)');
+      // ========== 캐시 저장 끝 ==========
+
       notifyListeners();
     }
   }
 
   Future<void> getNavigationWarnings() async {
+    // ========== 항행경보 캐싱 추가 ==========
+    final cacheKey = 'nav_warnings_${DateTime.now().hour}';
+
+    // 캐시 확인
+    final cached = _cache.get<List<String>>(cacheKey);
+    if (cached != null) {
+      print('✅ [캐시 사용] 항행경보');
+      _navigationWarnings = cached;
+      notifyListeners();
+      return;
+    }
+
+    print('🔄 [API 호출] 항행경보');
+    // ========== 캐싱 로직 끝 ==========
+
     final warnings = await executeAsync(
-      () => _navigationRepository.getNavigationWarnings(),
+          () => _navigationRepository.getNavigationWarnings(),
       errorMessage: '항행경보 로드 중 오류',
       showLoading: false,
     );
 
     if (warnings != null) {
       _navigationWarnings = warnings;
+
+      // ========== 캐시 저장 ==========
+      _cache.put(cacheKey, warnings, const Duration(minutes: 30));
+      print('💾 [캐시 저장] 항행경보 (30분간 유효)');
+      // ========== 캐시 저장 끝 ==========
+
       notifyListeners();
     }
   }
 
-  // 기존 코드에서 사용하는 Color 반환 메서드들
+  // 기존 Color 반환 메서드들 - 변경 없음
   Color getWaveColor(double waveValue) {
     if (waveValue <= walm1) return Colors.green;
     if (waveValue <= walm2) return Colors.yellow;
@@ -127,40 +201,32 @@ class NavigationProvider extends BaseProvider {
     return Colors.red;
   }
 
-  // ✅ 추가된 메서드 1: 파고 임계값 포맷팅 텍스트
   String getFormattedWaveThresholdText(double waveValue) {
     return '파고: ${waveValue.toStringAsFixed(1)}m';
   }
 
-  // ✅ 추가된 메서드 2: 시정 임계값 포맷팅 텍스트
   String getFormattedVisibilityThresholdText(double visibilityValue) {
-    // 시정값이 1000m 이상이면 km로 표시
     if (visibilityValue >= 1000) {
       double visibilityInKm = visibilityValue / 1000;
-
-      // 정수로 떨어지면 소수점 없이, 아니면 소수점 1자리까지
       if (visibilityInKm % 1 == 0) {
         return '시정: ${visibilityInKm.toStringAsFixed(0)}km';
       } else {
         return '시정: ${visibilityInKm.toStringAsFixed(1)}km';
       }
     } else {
-      // 1000m 미만은 m로 표시
       return '시정: ${visibilityValue.toStringAsFixed(0)}m';
     }
   }
 
-  // ✅ dispose 메서드 추가 - 메모리 누수 방지
   @override
   void dispose() {
-    // Navigation 관련 리소스 정리
     _rosList.clear();
     _navigationWarnings.clear();
-
-    // 상태 초기화
     _isInitialized = false;
 
-    // Weather 데이터 초기화
+    // 캐시 정리 추가
+    _cache.clear(); // ← 추가
+
     wave = 0;
     visibility = 0;
     walm1 = 0.0;
@@ -172,7 +238,6 @@ class NavigationProvider extends BaseProvider {
     valm3 = 0.0;
     valm4 = 0.0;
 
-    // BaseProvider의 dispose 호출 (중요!)
     super.dispose();
   }
 }

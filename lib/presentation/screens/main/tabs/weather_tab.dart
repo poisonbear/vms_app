@@ -9,24 +9,34 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/weather_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
+// 싱글톤 인스턴스 관리
+class WeatherProviderManager {
+  static WidWeatherInfoViewModel? _instance;
+
+  static WidWeatherInfoViewModel getInstance() {
+    _instance ??= WidWeatherInfoViewModel();
+    return _instance!;
+  }
+
+  static void dispose() {
+    // 앱 종료 시에만 호출
+    _instance = null;
+  }
+}
+
 // 택스트 위젯 - string
 Widget MainScreenWindy(context, {Function? onClose}) {
   PersistentBottomSheetController? bottomSheetController;
-  return FutureProvider<WidWeatherInfoViewModel>(
-    create: (_) async {
-      final viewModel = WidWeatherInfoViewModel();
-      await viewModel.getWidList();
-      return viewModel;
-    },
-    initialData: WidWeatherInfoViewModel(),
+
+  // FutureProvider 대신 ChangeNotifierProvider 사용
+  return ChangeNotifierProvider<WidWeatherInfoViewModel>.value(
+    value: WeatherProviderManager.getInstance(), // 싱글톤 인스턴스 사용
     child: Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        // height: 450, // 고정 높이 제거
         constraints: BoxConstraints(
-          minHeight: 350, // 최소 높이 설정
-          maxHeight:
-              MediaQuery.of(context).size.height * 0.61, // 화면 높이의 80%로 제한
+          minHeight: 350,
+          maxHeight: MediaQuery.of(context).size.height * 0.61,
         ),
         width: double.infinity,
         padding: EdgeInsets.all(getSize20().toDouble()),
@@ -62,7 +72,6 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                           if (onClose != null) {
                             onClose();
                           }
-
                           // BottomSheet 닫기
                           Navigator.pop(context);
                         },
@@ -191,20 +200,21 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                       Expanded(
                         child: Consumer<WidWeatherInfoViewModel>(
                           builder: (context, provider, child) {
-                            // 로딩 중인 경우 뻥글이(로딩 인디케이터) 표시
+                            // 로딩 중인 경우 로딩 인디케이터 표시
                             if (provider.isLoading) {
                               return SizedBox(
-                                height: MediaQuery.of(context).size.height *
-                                    0.4, // 전체 높이의 절반을 사용
+                                height: MediaQuery.of(context).size.height * 0.4,
                                 child: const Center(
                                   child: CircularProgressIndicator(),
                                 ),
                               );
                             }
+
                             var widList = provider.WidList;
                             if (widList == null || widList.isEmpty) {
                               return const Center(child: Text('데이터가 없습니다'));
                             }
+
                             return SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
@@ -218,11 +228,11 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                               getSize10().toDouble()),
                                           child: TextWidgetString(
                                               ('${widList[i].ts}').substring(
-                                                              11, 13) ==
-                                                          '00' ||
-                                                      i == 0
+                                                  11, 13) ==
+                                                  '00' ||
+                                                  i == 0
                                                   ? ('${widList[i].ts}')
-                                                      .substring(0, 10)
+                                                  .substring(0, 10)
                                                   : '',
                                               getTextleft(),
                                               getSize12(),
@@ -234,7 +244,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal:
-                                                  DesignConstants.spacing8),
+                                              DesignConstants.spacing8),
                                           child: DottedBorder(
                                             borderType: BorderType.RRect,
                                             radius: const Radius.circular(
@@ -246,7 +256,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                               decoration: BoxDecoration(
                                                 color: getColorgray_Type12(),
                                                 borderRadius:
-                                                    BorderRadius.circular(6.0),
+                                                BorderRadius.circular(6.0),
                                               ),
                                               child: Column(
                                                 children: [
@@ -276,20 +286,20 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                                 40,
                                                                 40,
                                                                 i <
-                                                                        provider
-                                                                            .windIcon
-                                                                            .length
+                                                                    provider
+                                                                        .windIcon
+                                                                        .length
                                                                     ? provider
-                                                                            .windIcon[
-                                                                        i]
+                                                                    .windIcon[
+                                                                i]
                                                                     : 'ro0',
                                                                 i <
-                                                                        provider
-                                                                            .windSpeed
-                                                                            .length
+                                                                    provider
+                                                                        .windSpeed
+                                                                        .length
                                                                     ? provider
-                                                                            .windSpeed[
-                                                                        i]
+                                                                    .windSpeed[
+                                                                i]
                                                                     : '0 m/s'),
                                                             builder: (context,
                                                                 snapshot) {
@@ -304,16 +314,15 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                             }),
                                                         // 풍향 텍스트
                                                         const SizedBox(
-                                                            height:
-                                                                5), // 아이콘과 텍스트 사이 간격
+                                                            height: 5),
                                                         TextWidgetString(
                                                             i <
-                                                                    provider
-                                                                        .windDirection
-                                                                        .length
+                                                                provider
+                                                                    .windDirection
+                                                                    .length
                                                                 ? provider
-                                                                        .windDirection[
-                                                                    i]
+                                                                .windDirection[
+                                                            i]
                                                                 : '',
                                                             getTextleft(),
                                                             getSize10(),
@@ -330,11 +339,11 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                         getSize10().toDouble()),
                                                     child: TextWidgetString(
                                                         i <
-                                                                provider
-                                                                    .windSpeed
-                                                                    .length
+                                                            provider
+                                                                .windSpeed
+                                                                .length
                                                             ? provider
-                                                                .windSpeed[i]
+                                                            .windSpeed[i]
                                                             : '0 m/s',
                                                         getTextleft(),
                                                         getSize16(),
@@ -343,7 +352,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                             ? getColorblack_type2()
                                                             : getColorsky_Type2()),
                                                   ),
-                                                  // 파고 - 수정됨
+                                                  // 파고
                                                   Padding(
                                                     padding: EdgeInsets.all(
                                                         getSize10().toDouble()),
@@ -356,7 +365,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                             ? getColorblack_type2()
                                                             : getColorsky_Type2()),
                                                   ),
-                                                  // 돌풍 - 수정됨
+                                                  // 돌풍
                                                   Padding(
                                                     padding: EdgeInsets.all(
                                                         getSize10().toDouble()),
@@ -369,7 +378,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
                                                             ? getColorblack_type2()
                                                             : getColorsky_Type2()),
                                                   ),
-                                                  // 온도 - 수정됨
+                                                  // 온도
                                                   Padding(
                                                     padding: EdgeInsets.all(
                                                         getSize10().toDouble()),
@@ -408,6 +417,7 @@ Widget MainScreenWindy(context, {Function? onClose}) {
   );
 }
 
+// svgload 함수는 그대로 유지
 Future<Widget> svgload(String svgurl, double height, double width,
     String windIcon, String windSpeed) async {
   try {
@@ -416,7 +426,7 @@ Future<Widget> svgload(String svgurl, double height, double width,
 
     // 기본값 사용
     final speedStr =
-        windSpeed.isEmpty ? '0' : windSpeed.replaceAll('m/s', '').trim();
+    windSpeed.isEmpty ? '0' : windSpeed.replaceAll('m/s', '').trim();
     final speed = double.tryParse(speedStr) ?? 0;
 
     final String svgString = await rootBundle.loadString(svgurl);
@@ -433,7 +443,7 @@ Future<Widget> svgload(String svgurl, double height, double width,
     // 정규식으로 path 태그만 찾기
     RegExp pathRegex = RegExp(r'<path[^>]*>');
     RegExp strokeRectRegex =
-        RegExp(r'<rect[^>]*stroke="#[0-9A-Fa-f]{6}"[^>]*>');
+    RegExp(r'<rect[^>]*stroke="#[0-9A-Fa-f]{6}"[^>]*>');
     String modifiedSvg = svgString;
 
     // path 태그를 찾아서 해당 부분만 fill 색상 변경
