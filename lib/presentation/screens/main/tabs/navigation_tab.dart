@@ -12,8 +12,6 @@ import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 import '../controllers/main_screen_controller.dart';
 import '../utils/navigation_debug.dart';
 
-final TextEditingController globalMmsiController = TextEditingController();
-final TextEditingController globalShipNameController = TextEditingController();
 String selectedStartDate =
     "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
 String selectedEndDate =
@@ -37,19 +35,27 @@ class MainViewNavigationSheet extends StatefulWidget {
 }
 
 class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
+  
+  // TextEditingController 인스턴스 변수로 변경
+  late TextEditingController mmsiController;
+  late TextEditingController shipNameController;
   late NavigationProvider navigationViewModel;
   PersistentBottomSheetController? _bottomSheetController;
 
   @override
   void initState() {
     super.initState();
+    
+    // TextEditingController 초기화
+    mmsiController = TextEditingController();
+    shipNameController = TextEditingController();
 
     NavigationDebugHelper.debugPrint('NavigationSheet initState', location: 'nav_tab');
 
     // MMSI 및 선박명은 resetSearch 플래그가 true일 때만 초기화
     if (widget.resetSearch) {
-      globalMmsiController.clear();
-      globalShipNameController.clear();
+      mmsiController.clear();
+      shipNameController.clear();
     }
 
     // 날짜는 resetDate 플래그가 true일 때만 초기화
@@ -73,12 +79,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         endDate: selectedEndDate,
         mmsi: role == 'ROLE_USER'
             ? mmsi
-            : (globalMmsiController.text.isEmpty
+            : (mmsiController.text.isEmpty
                 ? null
-                : int.tryParse(globalMmsiController.text)),
-        shipName: globalShipNameController.text.isEmpty
+                : int.tryParse(mmsiController.text)),
+        shipName: shipNameController.text.isEmpty
             ? null
-            : globalShipNameController.text.toUpperCase() // 대문자로 변환
+            : shipNameController.text.toUpperCase() // 대문자로 변환
         );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -281,13 +287,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                             child: SizedBox(
                               height: getSize40().toDouble(),
                               child: TextFormField(
-                                controller: globalMmsiController,
+                                controller: mmsiController,
                                 onTap: () {
                                   // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
                                 },
                                 onChanged: (value) {
                                   //입력값이 변경될 때 전역 변수와 동기화
-                                  globalMmsiController.text = value;
+                                  mmsiController.text = value;
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'MMSI 입력',
@@ -324,13 +330,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                             child: SizedBox(
                               height: getSize40().toDouble(),
                               child: TextFormField(
-                                controller: globalShipNameController,
+                                controller: shipNameController,
                                 onTap: () {
                                   // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
                                 },
                                 onChanged: (value) {
                                   //입력값이 변경될 때 전역 변수와 동기화
-                                  globalShipNameController.text = value;
+                                  shipNameController.text = value;
                                 },
                                 decoration: InputDecoration(
                                   hintText: '선박명 입력',
@@ -381,15 +387,15 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       provider.getRosList(
                                           startDate: selectedStartDate, // 시작일자
                                           endDate: selectedEndDate, // 종료일자
-                                          mmsi: globalMmsiController
+                                          mmsi: mmsiController
                                                   .text.isEmpty
                                               ? null
                                               : int.tryParse(
-                                                  globalMmsiController.text),
-                                          shipName: globalShipNameController
+                                                  mmsiController.text),
+                                          shipName: shipNameController
                                                   .text.isEmpty
                                               ? null
-                                              : globalShipNameController.text
+                                              : shipNameController.text
                                                   .toUpperCase() // 대문자로 변환
                                           );
                                     },
@@ -528,6 +534,29 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   void dispose() {
     navigationViewModel.dispose();
     super.dispose();
+  }
+
+  /// MainScreen 초기화 및 BottomSheet 닫기
+  void _closeNavigationSheet() {
+    // MainScreen의 selectedIndex를 0으로 초기화
+    final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+    if (mainScreenState != null) {
+      (mainScreenState as dynamic).selectedIndex = 0;
+    }
+    
+    // RouteSearch 정리
+    final routeViewModel = Provider.of<RouteSearchProvider>(context, listen: false);
+    routeViewModel.clearRoutes();
+    routeViewModel.setNavigationHistoryMode(false);
+    
+    // BottomSheet 닫기
+    Navigator.pop(context);
+  }
+  
+  /// WillPopScope용 핸들러
+  Future<bool> _onWillPop() async {
+    _closeNavigationSheet();
+    return false; // Navigator.pop이 이미 호출되므로 false 반환
   }
 
 // 항행 이력 아이템 위젯

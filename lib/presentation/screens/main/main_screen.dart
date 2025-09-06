@@ -421,8 +421,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    // 애니메이션 컨트롤러 정리
+    _flashController.stop();
     _flashController.dispose();
+    
+    // Bottom Sheet 정리  
+    _bottomSheetController?.close();
+    _bottomSheetController = null;
+    
+    // 컨트롤러 정리 (timerService는 controller 내부에서 처리)
     _controller.dispose();
+    
     super.dispose();
   }
 
