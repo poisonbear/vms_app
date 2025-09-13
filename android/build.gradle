@@ -1,0 +1,55 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    // Play Services 버전 통합 관리
+    ext {
+        playServicesVersion = '21.5.0'
+    }
+    
+    configurations.all {
+        resolutionStrategy {
+            force "com.google.android.gms:play-services-measurement:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-api:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-base:${playServicesVersion}"
+            force "com.google.android.gms:play-services-measurement-impl:${playServicesVersion}"
+            force "com.google.firebase:firebase-analytics:${playServicesVersion}"
+        }
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+
+    // namespace 설정 개선
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                if (namespace == null) {
+                    def groupId = project.group ?: "com.example"
+                    def projectName = project.name.replace('-', '_').toLowerCase()
+                    namespace = "${groupId}.${projectName}"
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
