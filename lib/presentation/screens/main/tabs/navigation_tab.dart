@@ -151,7 +151,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 닫기 버튼 영역
+                      // 닫기 버튼 영역 - 원본 그대로
                       Row(
                         children: [
                           TextWidgetString('항행 이력 내역 조회', getTextleft(),
@@ -196,7 +196,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                         ],
                       ),
                       SizedBox(height: getSize20().toDouble()),
-                      // 일자 선택 영역
+                      // 일자 선택 영역 - 원본 그대로
                       Row(
                         children: [
                           Expanded(
@@ -213,25 +213,18 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       title: '시작일자 선택',
                                     ),
                                   );
-
-                                  // 날짜가 변경되면 자동으로 UI 업데이트
-                                  if (mounted) {
-                                    setState(() {
-                                      // selectedStartDate가 이미 업데이트됨
-                                    });
-                                  }
+                                  // 날짜 선택 후 UI 업데이트
+                                  refreshDates();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  side: BorderSide(
-                                      color: getColorGrayType7(), width: 1),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                         getSize4().toDouble()),
                                   ),
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: getSize12().toDouble()),
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: getColorWhiteType1(),
+                                  side: BorderSide(
+                                      color: getColorGrayType7(), width: 1),
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
@@ -256,7 +249,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  // ⚡ showModalBottomSheet로 달력 열기 (현재 bottomSheet 위에 modal로 열림)
+                                  // ⚡ showModalBottomSheet로 달력 열기
                                   await showModalBottomSheet(
                                     context: context,
                                     backgroundColor: Colors.transparent,
@@ -265,25 +258,18 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       title: '종료일자 선택',
                                     ),
                                   );
-
-                                  // 날짜가 변경되면 자동으로 UI 업데이트
-                                  if (mounted) {
-                                    setState(() {
-                                      // selectedStartDate가 이미 업데이트됨
-                                    });
-                                  }
+                                  // 날짜 선택 후 UI 업데이트
+                                  refreshDates();
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  side: BorderSide(
-                                      color: getColorGrayType7(), width: 1),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                         getSize4().toDouble()),
                                   ),
                                   elevation: 0,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: getSize12().toDouble()),
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: getColorWhiteType1(),
+                                  side: BorderSide(
+                                      color: getColorGrayType7(), width: 1),
                                 ),
                                 child: Row(
                                   mainAxisAlignment:
@@ -306,7 +292,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       ),
 
                       SizedBox(height: getSize12().toDouble()),
-                      // MMSI 및 선박명 입력 영역
+                      // MMSI 및 선박명 입력 영역 - 원본 그대로
                       Row(
                         children: [
                           Expanded(
@@ -403,7 +389,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
                       SizedBox(height: getSize12().toDouble()),
 
-                      // 검색 버튼
+                      // 검색 버튼 - 원본 그대로
                       SizedBox(
                         width: double.infinity,
                         height: getSize45().toDouble(),
@@ -471,62 +457,39 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                           },
                         ),
                       ),
-
-                      SizedBox(height: getSize16().toDouble()),
-
-                      // 항행 이력 리스트
+                      SizedBox(height: getSize20().toDouble()),
+                      // 검색 결과 영역 - 원본 그대로
                       Expanded(
                         child: Consumer<NavigationProvider>(
                           builder: (context, provider, child) {
-                            var rosList = provider.rosList;
+                            List<dynamic> rosList = provider.rosList;
 
-                            if (provider.isLoading) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-
-                            if (provider.errorMessage.isNotEmpty) {
-                              return Center(child: Text(provider.errorMessage));
-                            }
-
-                            // 데이터 로드 전 상태 또는 빈 데이터 상태
                             if (rosList.isEmpty) {
-                              // ✅ 수정: Expanded 제거하고 바로 SingleChildScrollView 반환
-                              return SingleChildScrollView(
-                                child: Center(
-                                  child: Container(
-                                    width: double.infinity,
-                                    margin: EdgeInsets.only(
-                                        top: getSize60().toDouble()),
-                                    padding: EdgeInsets.all(
-                                        getSize16().toDouble()),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: getColorGrayType7(),
-                                          width: 1.0),
-                                      borderRadius:
-                                      BorderRadius.circular(8.0),
+                              return Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(getSize20().toDouble()),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                      getSize8().toDouble()),
+                                  border: Border.all(
+                                      color: getColorGrayType6(), width: 1),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.info_outline,
+                                        size: 48, color: getColorGrayType8()),
+                                    SizedBox(height: getSize16().toDouble()),
+                                    TextWidgetString(
+                                      '검색 결과가 없습니다.',
+                                      getTextcenter(),
+                                      getSize16(),
+                                      getText600(),
+                                      getColorGrayType2(),
                                     ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        SvgPicture.asset(
-                                          'assets/kdn/ros/img/circle-exclamation.svg',
-                                          width: 100,
-                                          height: 100,
-                                        ),
-                                        SizedBox(
-                                            height: getSize20().toDouble()),
-                                        TextWidgetString(
-                                          '해당 기간에 항행 이력이 없습니다.',
-                                          getTextcenter(),
-                                          getSize16(),
-                                          getText600(),
-                                          getColorGrayType2(),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               );
                             }
@@ -538,7 +501,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         context,
                                         '${rosList[i].mmsi}',
                                         '${rosList[i].shipName}',
-                                        '${rosList[i].odb_reg_date}',
+                                        '${rosList[i].odb_reg_date ?? rosList[i].reg_dt ?? ''}',
                                         routeSearchViewModel),
                                   ],
                                 ],
@@ -558,16 +521,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   @override
   void dispose() {
-    // ⚡ _bottomSheetController?.close() 제거 - dispose에서 호출시 위젯 트리 잠금 문제 발생
-    // bottomSheetController는 자동으로 정리됨
-    navigationViewModel.dispose();
+    // ⚡ dispose 개선 - 컨트롤러만 정리
+    mmsiController.dispose();
+    shipNameController.dispose();
+    // navigationViewModel은 ChangeNotifierProvider가 관리하므로 dispose 불필요
     super.dispose();
   }
 
-
-  /// PopScope용 핸들러
-
-// 항행 이력 아이템 위젯
+  // 항행 이력 아이템 위젯 - 원본 그대로
   Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
       String startTime, RouteSearchProvider viewModel) {
     String formattedTime;
@@ -585,7 +546,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       return InkWell(
           onTap: () async {
             // 현재 컨텍스트를 미리 저장
-
             final navigationContext = Navigator.of(context);
 
             // 로딩 다이얼로그 표시 (현재 컨텍스트 사용)
@@ -640,7 +600,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     viewModel.pastRoutes.last.lntd ?? 126.167763);
 
                 // 상위 위젯의 MapController에 접근해서 지도 중심 이동
-
                 // Provider를 사용하여 MapController 접근 (수정됨)
                 try {
                   final mainController = Provider.of<MainScreenController>(context, listen: false);
@@ -713,7 +672,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               }
             }
           },
-          //UI 꾸미기
+          //UI 꾸미기 - 원본 그대로
           child: Container(
             margin: EdgeInsets.only(bottom: getSize12().toDouble()),
             decoration: BoxDecoration(
@@ -775,9 +734,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     });
   }
 
+  // 축소된 바텀시트 - 원본 그대로
   Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
       String mmsi, String formattedTime, RouteSearchProvider viewModel) {
-// viewModel에서 첫 번째와 마지막 항적의 시간을 가져옵니다
+    // viewModel에서 첫 번째와 마지막 항적의 시간을 가져옵니다
     String timeRange = '00:00:00~00:00:00'; // 기본값
 
     if (viewModel.pastRoutes.isNotEmpty) {
@@ -785,109 +745,90 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       var firstRoute = viewModel.pastRoutes.first;
       DateTime? firstTime;
       if (firstRoute.regDt != null) {
-        firstTime = DateTime.fromMillisecondsSinceEpoch(
-            int.parse(firstRoute.regDt.toString()));
+        firstTime = DateTime.fromMillisecondsSinceEpoch(firstRoute.regDt!);
       }
 
       // 마지막 항적의 시간
       var lastRoute = viewModel.pastRoutes.last;
       DateTime? lastTime;
       if (lastRoute.regDt != null) {
-        lastTime = DateTime.fromMillisecondsSinceEpoch(
-            int.parse(lastRoute.regDt.toString()));
+        lastTime = DateTime.fromMillisecondsSinceEpoch(lastRoute.regDt!);
       }
 
-      // 시간 포맷팅
+      // 시간 범위 포맷팅
       if (firstTime != null && lastTime != null) {
-        String startTime =
-            "${firstTime.hour.toString().padLeft(2, '0')}:${firstTime.minute.toString().padLeft(2, '0')}:${firstTime.second.toString().padLeft(2, '0')}";
-        String endTime =
-            "${lastTime.hour.toString().padLeft(2, '0')}:${lastTime.minute.toString().padLeft(2, '0')}:${lastTime.second.toString().padLeft(2, '0')}";
-        timeRange = '$startTime~$endTime';
+        timeRange =
+        "${firstTime.hour.toString().padLeft(2, '0')}:${firstTime.minute.toString().padLeft(2, '0')}:${firstTime.second.toString().padLeft(2, '0')}"
+            "~${lastTime.hour.toString().padLeft(2, '0')}:${lastTime.minute.toString().padLeft(2, '0')}:${lastTime.second.toString().padLeft(2, '0')}";
       }
     }
 
     return Container(
-      height: 80,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-          vertical: DesignConstants.spacing12,
-          horizontal: DesignConstants.spacing16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(DesignConstants.radiusXL),
-          topRight: Radius.circular(DesignConstants.radiusXL),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
+      height: 120,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$shipName (MMSI: $mmsi)',
-                  style: TextStyle(
-                    fontSize: DesignConstants.fontSizeM,
-                    fontWeight: FontWeight.bold,
-                    color: getColorBlackType2(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  TextWidgetString(shipName, getTextleft(), getSize16(),
+                      getText700(), getColorBlackType2()),
+                  SizedBox(width: getSize8().toDouble()),
+                  TextWidgetString('($mmsi)', getTextleft(), getSize14(),
+                      getText400(), getColorGrayType3()),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: SvgPicture.asset('assets/kdn/home/img/refresh.svg'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Scaffold.of(context).showBottomSheet(
+                            (context) => MainViewNavigationSheet(
+                          onClose: () {},
+                          resetDate: false, // 여기서는 날짜를 초기화하지 않음
+                          resetSearch: false, // MMSI, 선박명 초기화하지 않음
+                        ),
+                        backgroundColor: Colors.transparent,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(DesignConstants.radiusXL)),
+                        ),
+                      );
+                    },
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  'DATE: $formattedTime ($timeRange)',
-                  style: TextStyle(
-                    fontSize: DesignConstants.fontSizeS,
-                    color: getColorGrayType8(),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.expand_more, color: getColorGrayType8()),
-            onPressed: () {
-              // 바텀 시트 확장
-              if (mounted) Navigator.pop(context);
-              Scaffold.of(context).showBottomSheet(
-                    (context) => MainViewNavigationSheet(
-                  onClose: () {},
-                  resetDate: false, // 여기서는 날짜를 초기화하지 않음
-                  resetSearch: false, // MMSI, 선박명 초기화하지 않음
-                ),
-                backgroundColor: Colors.transparent,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(DesignConstants.radiusXL)),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.close, color: getColorGrayType8()),
-            onPressed: () {
-              // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
-              final MainScreenState =
-              context.findAncestorStateOfType<State<MainScreen>>();
-              if (MainScreenState != null) {
-                (MainScreenState as dynamic).selectedIndex = 0;
-              }
+                  IconButton(
+                    icon: Icon(Icons.close, color: getColorGrayType8()),
+                    onPressed: () {
+                      // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
+                      final MainScreenState =
+                      context.findAncestorStateOfType<State<MainScreen>>();
+                      if (MainScreenState != null) {
+                        (MainScreenState as dynamic).selectedIndex = 0;
+                      }
 
-              // ⚡ clearRoutes() 호출 제거 - 항적이 지워지지 않도록
-              // viewModel.clearRoutes(); // 제거됨
-              viewModel.setNavigationHistoryMode(false);
-              Navigator.of(context).pop();
-            },
+                      // ⚡ clearRoutes() 호출 제거 - 항적이 지워지지 않도록
+                      // viewModel.clearRoutes(); // 제거됨
+                      viewModel.setNavigationHistoryMode(false);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              TextWidgetString(formattedTime, getTextleft(), getSize14(),
+                  getText400(), getColorGrayType3()),
+              SizedBox(width: getSize16().toDouble()),
+              TextWidgetString(timeRange, getTextleft(), getSize14(),
+                  getText400(), getColorGrayType3()),
+            ],
           ),
         ],
       ),

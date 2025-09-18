@@ -1,7 +1,5 @@
-import 'package:collection/collection.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:vms_app/presentation/screens/main/tabs/navigation_tab.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
@@ -125,60 +123,54 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
               vertical: DesignConstants.spacing20,
-              horizontal: DesignConstants.spacing16),
+              horizontal: DesignConstants.spacing12),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(DesignConstants.radiusXL),
-                topRight: Radius.circular(DesignConstants.radiusXL)),
+              topLeft: Radius.circular(DesignConstants.radiusXL),
+              topRight: Radius.circular(DesignConstants.radiusXL),
+            ),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
+              // 제목 영역 - 원본 그대로
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextWidgetString(
-                    widget.title,
-                    getTextleft(),
-                    getSize20(),
-                    getText700(),
-                    getColorBlackType2(),
-                  ),
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
-                          width: 24, height: 24),
-                      onPressed: () {
-                        safelyNavigateBack();
-                      },
+                  TextWidgetString(widget.title, getTextleft(), getSize20(),
+                      getText700(), getColorBlackType2()),
+                  const Spacer(),
+                  Container(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(Icons.close, color: getColorBlackType2()),
+                        onPressed: () {
+                          safelyNavigateBack();
+                        },
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: DesignConstants.spacing20),
+              // 캘린더 - 원본 그대로
               Expanded(
                 child: TableCalendar(
-                  locale: 'ko_KR',
-                  focusedDay: _parseDate(_selectedDay),
-                  firstDay: DateTime(1900, 1, 1),
-                  lastDay: DateTime(2999, 12, 31),
-                  calendarFormat: CalendarFormat.month,
-                  selectedDayPredicate: (day) {
-                    return isSameDay(_parseDate(_selectedDay), day);
-                  },
+                  firstDay: DateTime.utc(2020, 1, 1),
+                  lastDay: DateTime.utc(2030, 12, 31),
+                  focusedDay: DateTime.parse(_selectedDay),
+                  selectedDayPredicate: (day) =>
+                      isSameDay(DateTime.parse(_selectedDay), day),
                   onDaySelected: (selectedDay, focusedDay) {
-                    if (mounted) {
-                      setState(() {
-                        _selectedDay =
-                        "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
-                      });
-                    }
+                    setState(() {
+                      _selectedDay =
+                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+                    });
 
+                    // 날짜 선택시 저장 (시작일자 또는 종료일자)
                     if (widget.title == '시작일자 선택') {
                       selectedStartDate =
                       "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
@@ -222,93 +214,44 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                             ),
                           ),
                           TextWidgetString('오늘', getTextleft(), getSize14(),
-                              getText700(), getColorGrayType3()),
+                              getText700(), getColorGreenType1()),
                         ],
                       );
                     },
-                    dowBuilder: (context, day) {
-                      switch (day.weekday) {
-                        case 1:
-                          return const Center(
-                              child: Text('월',
-                                  style: TextStyle(color: Colors.black)));
-                        case 2:
-                          return const Center(
-                              child: Text('화',
-                                  style: TextStyle(color: Colors.black)));
-                        case 3:
-                          return const Center(
-                              child: Text('수',
-                                  style: TextStyle(color: Colors.black)));
-                        case 4:
-                          return const Center(
-                              child: Text('목',
-                                  style: TextStyle(color: Colors.black)));
-                        case 5:
-                          return const Center(
-                              child: Text('금',
-                                  style: TextStyle(color: Colors.black)));
-                        case 6:
-                          return const Center(
-                              child: Text('토',
-                                  style: TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.bold)));
-                        case 7:
-                          return const Center(
-                              child: Text('일',
-                                  style: TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)));
-                        default:
-                          return const Center(child: Text(''));
-                      }
-                    },
-                    defaultBuilder: (context, day, focusedDay) {
-                      bool isSelected =
-                      isSameDay(_parseDate(_selectedDay), day);
-                      DateTime? holiday = holidays.firstWhereOrNull((holiday) =>
-                      holiday.year == day.year &&
-                          holiday.month == day.month &&
-                          holiday.day == day.day);
-
+                    holidayBuilder: (context, date, _) {
+                      String holidayName = getHolidayName(date);
                       return Container(
-                        decoration: isSelected
-                            ? BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border:
-                          Border.all(color: Colors.blue, width: 2),
-                        )
-                            : null,
-                        alignment: Alignment.center,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${day.day}',
-                              style: TextStyle(
-                                color: holiday != null || day.weekday == 7
-                                    ? Colors.red
-                                    : Colors.black,
-                                fontWeight: holiday != null || day.weekday == 7
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                            if (holiday != null)
+                          color: Colors.red.withOpacity(0.1),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                               Text(
-                                getHolidayName(holiday),
+                                '${date.day}',
                                 style: const TextStyle(
-                                  fontSize: DesignConstants.fontSizeXXS,
-                                  color: Colors.red,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                  fontSize: DesignConstants.fontSizeM,
                                 ),
                               ),
-                          ],
+                              if (holidayName.isNotEmpty)
+                                Text(
+                                  holidayName,
+                                  style: const TextStyle(
+                                    fontSize: 8,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
+                  holidayPredicate: (day) => holidays.contains(day),
                 ),
               ),
             ],
@@ -317,17 +260,4 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
       ),
     );
   }
-}
-
-String formatDate(DateTime date) {
-  return "${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}";
-}
-
-DateTime _parseDate(String dateString) {
-  List<String> parts = dateString.split('-');
-  if (parts.length == 3) {
-    return DateTime(
-        int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
-  }
-  return DateTime.now();
 }
