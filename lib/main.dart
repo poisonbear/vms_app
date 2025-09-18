@@ -207,9 +207,9 @@ class _SplashScreenState extends State<SplashScreen>
       AppLogger.d('🔄 로그인 화면으로 이동');
       if (mounted) {
         Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginView()),
-      );
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+        );
       }
     }
   }
@@ -277,14 +277,14 @@ class _SplashScreenState extends State<SplashScreen>
 
       if (mounted) {
         Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MainScreen(
-            username: userId,
-            autoFocusLocation: true, // ✅ 자동 포커스 활성화
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainScreen(
+              username: userId,
+              autoFocusLocation: true, // ✅ 자동 포커스 활성화
+            ),
           ),
-        ),
-      );
+        );
       }
 
       AppLogger.d('========== 자동 로그인 완료 ==========');
@@ -297,9 +297,9 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
       if (mounted) {
         Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginView()),
-      );
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+        );
       }
     }
   }
@@ -339,22 +339,26 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF00BFFF),  // 위: 딥 스카이 블루 (맑은 하늘)
-              Color(0xFFF0FFFF),  // 중간: 연한 청록 구름 (Azure)
-              Color(0xFF1E90FF),  // 아래: 다저 블루 (깊은 바다)
+              Color(0xFF0A1931),  // 진한 네이비 (상단)
+              Color(0xFF185A9D),  // 중간 블루
+              Color(0xFF43A6C6),  // 밝은 블루 (하단)
             ],
             stops: [0.0, 0.5, 1.0],  // 그라데이션 위치
           ),
         ),
         child: Stack(
           children: [
-            Center(
+            // 터빈 애니메이션과 로딩 텍스트를 하단에 배치
+            Positioned(
+              bottom: 50,  // 화면 하단에서 50픽셀 위
+              left: 0,
+              right: 0,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // 터빈 애니메이션 컨테이너
                   SizedBox(
-                    width: 300,
+                    width: MediaQuery.of(context).size.width,
                     height: 500,
                     child: Stack(
                       alignment: Alignment.bottomCenter,
@@ -369,11 +373,11 @@ class _SplashScreenState extends State<SplashScreen>
                             fit: BoxFit.contain,
                           ),
                         ),
-                        // 터빈 날개 컨테이너 (고정)
+                        // 터빈 날개 컨테이너 (1.5배 크기)
                         Positioned(
-                          bottom: 230, // 조정된 위치 (SVG 내부 중심점 보정)
-                          width: 200,
-                          height: 200,
+                          bottom: 200, // 조정된 위치
+                          width: 300,  // 200 → 300 (1.5배)
+                          height: 300, // 200 → 300 (1.5배)
                           child: AnimatedBuilder(
                             animation: _rotationController,
                             builder: (context, child) {
@@ -386,8 +390,8 @@ class _SplashScreenState extends State<SplashScreen>
                             },
                             child: SvgPicture.asset(
                               'assets/kdn/home/img/turbine_blade.svg',
-                              width: 200,
-                              height: 200,
+                              width: 300,  // 200 → 300 (1.5배)
+                              height: 300, // 200 → 300 (1.5배)
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -395,31 +399,13 @@ class _SplashScreenState extends State<SplashScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  // 앱 이름
-                  Text(
-                    'K-VMS',
-                    style: TextStyle(
-                      color: getColorWhiteType1(),
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 3,
-                      shadows: const [
-                        Shadow(
-                          color: Colors.black26,
-                          offset: Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  // 로딩 텍스트
+                  const SizedBox(height: 20),
+                  // 로딩 텍스트 (터빈 아래)
                   Text(
                     'loading...',
                     style: TextStyle(
                       color: getColorWhiteType1().withValues(alpha: 0.9),
-                      fontSize: 16,
+                      fontSize: 25,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 1,
                     ),
