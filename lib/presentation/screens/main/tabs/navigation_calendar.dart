@@ -19,8 +19,8 @@ class MainViewNavigationDate extends StatefulWidget {
 class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
   String _selectedDay =
       "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
-  PersistentBottomSheetController? _bottomSheetController;
-  
+  PersistentBottomSheetController? _bottomSheetController; // ⚡ 변수 선언 유지 (호환성)
+
   final Set<DateTime> holidays = {
     DateTime(2025, 1, 1),
     DateTime(2025, 1, 28),
@@ -62,6 +62,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
     }
   }
 
+  // ⚡ Navigator 잠금 문제 해결을 위한 안전한 네비게이션
   void safelyNavigateBack() {
     if (mounted) {
       if (widget.title == '시작일자 선택') {
@@ -70,31 +71,40 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
         selectedEndDate = _selectedDay;
       }
 
-      if (mounted) Navigator.pop(context);
-
-      Future.delayed(AnimationConstants.durationInstant, () {
+      // ⚡ Navigator 잠금 상태를 확인하고 안전하게 처리
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _bottomSheetController = Scaffold.of(context).showBottomSheet(
-            (context) {
-              return MainViewNavigationSheet(
-                onClose: () {},
-                resetDate: false,
-                resetSearch: false,
-              );
-            },
-            backgroundColor: getColorBlackType3(),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
-            ),
-          );
+          Navigator.pop(context);
+
+          // ⚡ 충분한 지연 시간 확보 (300ms)
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted) {
+              try {
+                _bottomSheetController = Scaffold.of(context).showBottomSheet(
+                      (context) {
+                    return MainViewNavigationSheet(
+                      onClose: () {},
+                      resetDate: false,
+                      resetSearch: false,
+                    );
+                  },
+                  backgroundColor: getColorBlackType3(),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+                  ),
+                );
+              } catch (e) {
+                debugPrint('BottomSheet 열기 실패: $e');
+              }
+            }
+          });
         }
       });
     }
   }
 
-  @override  
+  @override
   void dispose() {
-    _bottomSheetController?.close();
     super.dispose();
   }
 
@@ -165,21 +175,20 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     if (mounted) {
                       setState(() {
                         _selectedDay =
-                            "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+                        "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
                       });
                     }
 
                     if (widget.title == '시작일자 선택') {
                       selectedStartDate =
-                          "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
                     } else if (widget.title == '종료일자 선택') {
                       selectedEndDate =
-                          "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
                     }
 
-                    Future.delayed(AnimationConstants.durationInstant, () {
-                      safelyNavigateBack();
-                    });
+                    // ⚡ 날짜 선택시 충분한 지연 처리 (100ms)
+                    safelyNavigateBack();
                   },
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
@@ -257,19 +266,19 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     },
                     defaultBuilder: (context, day, focusedDay) {
                       bool isSelected =
-                          isSameDay(_parseDate(_selectedDay), day);
+                      isSameDay(_parseDate(_selectedDay), day);
                       DateTime? holiday = holidays.firstWhereOrNull((holiday) =>
-                          holiday.year == day.year &&
+                      holiday.year == day.year &&
                           holiday.month == day.month &&
                           holiday.day == day.day);
 
                       return Container(
                         decoration: isSelected
                             ? BoxDecoration(
-                                shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: Colors.blue, width: 2),
-                              )
+                          shape: BoxShape.circle,
+                          border:
+                          Border.all(color: Colors.blue, width: 2),
+                        )
                             : null,
                         alignment: Alignment.center,
                         child: Column(

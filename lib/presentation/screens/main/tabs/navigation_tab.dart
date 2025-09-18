@@ -40,8 +40,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   late TextEditingController mmsiController;
   late TextEditingController shipNameController;
   late NavigationProvider navigationViewModel;
-  PersistentBottomSheetController? _bottomSheetController;
-  // TODO: Implement _bottomSheetController usage or remove if not needed
+  PersistentBottomSheetController? _bottomSheetController; // ⚡ 변수 선언 유지 (호환성)
+  bool _isClosing = false; // ⚡ 닫기 처리를 위한 플래그
 
   @override
   void initState() {
@@ -93,6 +93,15 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     });
   }
 
+  // ⚡ 날짜 업데이트를 위한 메서드 추가
+  void refreshDates() {
+    if (mounted) {
+      setState(() {
+        // 날짜가 변경되었음을 UI에 반영
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // 🔍 디버깅 추가
@@ -103,9 +112,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         listen: false); // RouteSearchProvider 가져오기
     return PopScope(
       // 추가: PopScope로 감싸서 뒤로가기 처리
-        canPop: false,
+        canPop: _isClosing, // ⚡ 닫기 플래그 확인
         onPopInvokedWithResult: (bool didPop, dynamic result) {
-          if (didPop) return;
+          if (didPop || _isClosing) return; // ⚡ 닫기 중이면 처리하지 않음
           // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
           final MainScreenState =
           context.findAncestorStateOfType<State<MainScreen>>();
@@ -116,7 +125,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
           routeSearchViewModel.clearRoutes(); // 중요: 뒤로가기 시 클리어 처리
           routeSearchViewModel
               .setNavigationHistoryMode(false); //항행이력에서 벗어났다는 플래그값
-           // 뒤로가기 허용
+          // 뒤로가기 허용
           Navigator.of(context).pop();
         },
         child: ChangeNotifierProvider.value(
@@ -174,7 +183,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   routeSearchViewModel.clearRoutes();
                                   routeSearchViewModel
                                       .setNavigationHistoryMode(false);
-                                  if (mounted) Navigator.pop(context);
+
+                                  // ⚡ 닫기 플래그 설정 후 닫기
+                                  setState(() {
+                                    _isClosing = true;
+                                  });
                                   Navigator.of(context).pop();
                                 },
                               ),
@@ -191,19 +204,22 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  _bottomSheetController =
-                                      Scaffold.of(context).showBottomSheet(
-                                            (context) {
-                                          return const MainViewNavigationDate(
-                                              title: '시작일자 선택');
-                                        },
-                                        backgroundColor: getColorBlackType3(),
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(0)),
-                                        ),
-                                      );
-                                  Navigator.of(context).pop();
+                                  // ⚡ showModalBottomSheet로 달력 열기 (현재 bottomSheet 위에 modal로 열림)
+                                  await showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    isScrollControlled: true,
+                                    builder: (context) => const MainViewNavigationDate(
+                                      title: '시작일자 선택',
+                                    ),
+                                  );
+
+                                  // 날짜가 변경되면 자동으로 UI 업데이트
+                                  if (mounted) {
+                                    setState(() {
+                                      // selectedStartDate가 이미 업데이트됨
+                                    });
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   side: BorderSide(
@@ -240,19 +256,22 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  _bottomSheetController =
-                                      Scaffold.of(context).showBottomSheet(
-                                            (context) {
-                                          return const MainViewNavigationDate(
-                                              title: '종료일자 선택');
-                                        },
-                                        backgroundColor: getColorBlackType3(),
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(0)),
-                                        ),
-                                      );
-                                  Navigator.of(context).pop();
+                                  // ⚡ showModalBottomSheet로 달력 열기 (현재 bottomSheet 위에 modal로 열림)
+                                  await showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.transparent,
+                                    isScrollControlled: true,
+                                    builder: (context) => const MainViewNavigationDate(
+                                      title: '종료일자 선택',
+                                    ),
+                                  );
+
+                                  // 날짜가 변경되면 자동으로 UI 업데이트
+                                  if (mounted) {
+                                    setState(() {
+                                      // selectedStartDate가 이미 업데이트됨
+                                    });
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   side: BorderSide(
@@ -297,12 +316,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 controller: mmsiController,
                                 onTap: () {
                                   // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
-                                  Navigator.of(context).pop();
+                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 onChanged: (value) {
                                   //입력값이 변경될 때 전역 변수와 동기화
                                   mmsiController.text = value;
-                                  Navigator.of(context).pop();
+                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'MMSI 입력',
@@ -342,12 +361,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 controller: shipNameController,
                                 onTap: () {
                                   // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
-                                  Navigator.of(context).pop();
+                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 onChanged: (value) {
                                   //입력값이 변경될 때 전역 변수와 동기화
                                   shipNameController.text = value;
-                                  Navigator.of(context).pop();
+                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 decoration: InputDecoration(
                                   hintText: '선박명 입력',
@@ -409,7 +428,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         : shipNameController.text
                                         .toUpperCase() // 대문자로 변환
                                 );
-                                Navigator.of(context).pop();
+                                // ⚡ Navigator.of(context).pop(); 제거
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(
@@ -539,7 +558,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   @override
   void dispose() {
-    _bottomSheetController?.close();
+    // ⚡ _bottomSheetController?.close() 제거 - dispose에서 호출시 위젯 트리 잠금 문제 발생
+    // bottomSheetController는 자동으로 정리됨
     navigationViewModel.dispose();
     super.dispose();
   }
@@ -565,30 +585,30 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       return InkWell(
           onTap: () async {
             // 현재 컨텍스트를 미리 저장
-            
+
             final navigationContext = Navigator.of(context);
 
             // 로딩 다이얼로그 표시 (현재 컨텍스트 사용)
             if (mounted) {
               showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext dialogContext) {
-                return const Dialog(
-                  child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: DesignConstants.spacing16),
-                        Text('항행 경로 데이터를 불러오는 중...'),
-                      ],
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext dialogContext) {
+                  return const Dialog(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: DesignConstants.spacing16),
+                          Text('항행 경로 데이터를 불러오는 중...'),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            );
+                  );
+                },
+              );
             }
 
             // 로딩 다이얼로그 표시 전에 추가
@@ -652,7 +672,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       // 바텀시트 닫기
                       if (mounted) Navigator.pop(context);
                     }
-                    Navigator.of(context).pop();
+                    // ⚡ Navigator.of(context).pop(); 제거
                   },
                   child: PopScope(
                     canPop: false,
@@ -667,7 +687,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
                       viewModel.clearRoutes();
                       viewModel.setNavigationHistoryMode(false);
-                       // 뒤로가기 허용
+                      // 뒤로가기 허용
                       Navigator.of(context).pop();
                     },
                     child: _buildCollapsedBottomSheet(
@@ -688,8 +708,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
-              );
+                  const SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
+                );
               }
             }
           },
@@ -863,9 +883,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 (MainScreenState as dynamic).selectedIndex = 0;
               }
 
-              viewModel.clearRoutes();
+              // ⚡ clearRoutes() 호출 제거 - 항적이 지워지지 않도록
+              // viewModel.clearRoutes(); // 제거됨
               viewModel.setNavigationHistoryMode(false);
-              if (mounted) Navigator.pop(context);
+              Navigator.of(context).pop();
             },
           ),
         ],
