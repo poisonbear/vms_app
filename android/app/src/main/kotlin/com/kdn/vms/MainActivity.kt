@@ -1,4 +1,4 @@
-package com.example.vms_app
+package com.kdn.vms
 
 import io.flutter.embedding.android.FlutterActivity
 

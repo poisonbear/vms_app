@@ -2,136 +2,95 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/errors/app_exceptions.dart';
 import 'package:vms_app/core/errors/error_handler.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 
-/// 취소 가능한 비동기 작업을 위한 간단한 구현
-class CancelableOperation<T> {
-  final Future<T> _future;
-  bool _isCanceled = false;
-
-  CancelableOperation.fromFuture(this._future);
-
-  Future<T> get value => _future;
-  bool get isCanceled => _isCanceled;
-
-  void cancel() {
-    _isCanceled = true;
-  }
-}
-
-/// 모든 Provider의 기본 클래스 - 메모리 누수 방지 개선
+/// Provider 기본 클래스 - 메모리 안전 및 에러 처리
 abstract class BaseProvider extends ChangeNotifier {
+  // 로딩 상태
   bool _isLoading = false;
-  String _errorMessage = '';
-  bool _isDisposed = false;
-
-  // 진행 중인 비동기 작업 추적
-  final Set<CancelableOperation> _pendingOperations = {};
-
-  // Timer 관리
-  final Set<Timer> _activeTimers = {};
-
-  // StreamSubscription 관리
-  final List<StreamSubscription> _subscriptions = [];
-
   bool get isLoading => _isLoading;
+
+  // 에러 상태
+  String _errorMessage = '';
   String get errorMessage => _errorMessage;
   bool get hasError => _errorMessage.isNotEmpty;
+
+  // Dispose 상태 추적
+  bool _isDisposed = false;
   bool get isDisposed => _isDisposed;
 
-  @protected
-  void setLoading(bool loading) {
-    if (_isDisposed) return;
-    if (_isLoading != loading) {
-      _isLoading = loading;
-      notifyListeners();
-    }
-  }
+  // 활성 타이머 추적
+  final Set<Timer> _activeTimers = {};
 
-  @protected
-  void setError(String message) {
-    if (_isDisposed) return;
-    if (_errorMessage != message) {
-      _errorMessage = message;
-      notifyListeners();
-    }
-  }
+  // Stream subscriptions 추적
+  final List<StreamSubscription> _subscriptions = [];
 
-  @protected
-  void clearError() {
-    if (_isDisposed) return;
-    if (_errorMessage.isNotEmpty) {
-      _errorMessage = '';
-      notifyListeners();
-    }
-  }
-
+  /// 안전한 notifyListeners 호출
   @protected
   void safeNotifyListeners() {
     if (!_isDisposed) {
-      notifyListeners();
+      try {
+        notifyListeners();
+      } catch (e) {
+        AppLogger.e('Error in notifyListeners: $e');
+      }
     }
   }
 
-  /// Timer 추가 및 관리
+  /// 로딩 상태 설정
   @protected
-  Timer addTimer(Duration duration, void Function() callback) {
-    late Timer timer;
-    timer = Timer(duration, () {
-      if (!_isDisposed) {
-        callback();
-        _activeTimers.remove(timer);
+  void setLoading(bool loading) {
+    if (!_isDisposed) {
+      _isLoading = loading;
+      safeNotifyListeners();
+    }
+  }
+
+  /// 에러 메시지 설정
+  @protected
+  void setError(String message) {
+    if (!_isDisposed) {
+      _errorMessage = message;
+      safeNotifyListeners();
+
+      if (message.isNotEmpty) {
+        AppLogger.e('Provider error: $message');
       }
-    });
-    _activeTimers.add(timer);
-    return timer;
+    }
   }
 
-  /// StreamSubscription 추가 및 관리
+  /// 에러 클리어
   @protected
-  void addSubscription(StreamSubscription subscription) {
-    _subscriptions.add(subscription);
+  void clearError() {
+    if (_errorMessage.isNotEmpty && !_isDisposed) {
+      _errorMessage = '';
+      safeNotifyListeners();
+    }
   }
 
-  /// 비동기 작업 실행 래퍼 - 개선된 버전
+  /// 비동기 작업 실행 래퍼
   @protected
   Future<T?> executeAsync<T>(
-    Future<T> Function() operation, {
-    String? errorMessage,
-    bool showLoading = true,
-    Function(AppException)? onError,
-  }) async {
-    if (_isDisposed) return null;
-
-    final cancelable = CancelableOperation.fromFuture(
-      _executeAsyncInternal(
-        operation,
-        errorMessage: errorMessage,
-        showLoading: showLoading,
-        onError: onError,
-      ),
-    );
-
-    _pendingOperations.add(cancelable);
-
-    try {
-      final result = await cancelable.value;
-      return result;
-    } finally {
-      _pendingOperations.remove(cancelable);
+      Future<T> Function() operation, {
+        String? errorMessage,
+        bool showLoading = true,
+        Function(AppException)? onError,
+      }) async {
+    if (_isDisposed) {
+      AppLogger.w('Attempted async operation after disposal');
+      return null;
     }
-  }
 
-  Future<T?> _executeAsyncInternal<T>(
-    Future<T> Function() operation, {
-    String? errorMessage,
-    bool showLoading = true,
-    Function(AppException)? onError,
-  }) async {
     try {
       if (showLoading) setLoading(true);
       clearError();
 
       final result = await operation();
+
+      if (_isDisposed) {
+        AppLogger.w('Operation completed after disposal');
+        return null;
+      }
 
       if (showLoading) setLoading(false);
       return result;
@@ -139,6 +98,7 @@ abstract class BaseProvider extends ChangeNotifier {
       if (_isDisposed) return null;
 
       setLoading(false);
+
       final appException = ErrorHandler.handleError(e);
       setError(errorMessage ?? ErrorHandler.getUserMessage(appException));
 
@@ -150,9 +110,14 @@ abstract class BaseProvider extends ChangeNotifier {
   /// 동기 작업 실행 래퍼
   @protected
   T? executeSafe<T>(
-    T Function() operation, {
-    String? errorMessage,
-  }) {
+      T Function() operation, {
+        String? errorMessage,
+      }) {
+    if (_isDisposed) {
+      AppLogger.w('Attempted sync operation after disposal');
+      return null;
+    }
+
     try {
       return operation();
     } catch (e) {
@@ -162,28 +127,159 @@ abstract class BaseProvider extends ChangeNotifier {
     }
   }
 
-  @override
-  void dispose() {
-    _isDisposed = true;
-
-    // 모든 비동기 작업 취소
-    for (final operation in _pendingOperations) {
-      operation.cancel();
+  /// 반복 타이머 추가 (자동 관리)
+  @protected
+  Timer createTimer(Duration duration, void Function(Timer) callback) {
+    if (_isDisposed) {
+      throw StateError('Cannot create timer after disposal');
     }
-    _pendingOperations.clear();
 
-    // 모든 타이머 취소
+    final timer = Timer.periodic(duration, (t) {
+      if (!_isDisposed) {
+        callback(t);
+      } else {
+        t.cancel();
+        _activeTimers.remove(t);
+      }
+    });
+
+    _activeTimers.add(timer);
+    return timer;
+  }
+
+  /// 단일 실행 타이머 추가
+  @protected
+  Timer createSingleTimer(Duration duration, VoidCallback callback) {
+    if (_isDisposed) {
+      throw StateError('Cannot create timer after disposal');
+    }
+
+    // late 키워드로 선언 후 초기화
+    late Timer timer;
+    timer = Timer(duration, () {
+      if (!_isDisposed) {
+        callback();
+      }
+      // 타이머 실행 후 자동 제거
+      _activeTimers.remove(timer);
+    });
+
+    _activeTimers.add(timer);
+    return timer;
+  }
+
+  /// Stream subscription 추가 (자동 관리)
+  @protected
+  StreamSubscription<T> addSubscription<T>(
+      Stream<T> stream,
+      void Function(T) onData, {
+        Function? onError,
+        VoidCallback? onDone,
+      }) {
+    if (_isDisposed) {
+      throw StateError('Cannot add subscription after disposal');
+    }
+
+    final subscription = stream.listen(
+          (data) {
+        if (!_isDisposed) {
+          onData(data);
+        }
+      },
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: false,
+    );
+
+    _subscriptions.add(subscription);
+    return subscription;
+  }
+
+  /// 특정 타이머 취소
+  @protected
+  void cancelTimer(Timer timer) {
+    timer.cancel();
+    _activeTimers.remove(timer);
+  }
+
+  /// 모든 타이머 취소
+  @protected
+  void cancelAllTimers() {
     for (final timer in _activeTimers) {
       timer.cancel();
     }
     _activeTimers.clear();
+  }
 
-    // 모든 StreamSubscription 취소
+  /// 특정 Stream subscription 취소
+  @protected
+  Future<void> cancelSubscription(StreamSubscription subscription) async {
+    await subscription.cancel();
+    _subscriptions.remove(subscription);
+  }
+
+  /// 모든 Stream subscriptions 취소
+  @protected
+  Future<void> cancelAllSubscriptions() async {
     for (final subscription in _subscriptions) {
-      subscription.cancel();
+      await subscription.cancel();
     }
     _subscriptions.clear();
+  }
+
+  /// 리소스 정리 (dispose 전 호출)
+  @protected
+  Future<void> cleanup() async {
+    if (_isDisposed) return;
+
+    try {
+      // 모든 타이머 취소
+      cancelAllTimers();
+
+      // 모든 StreamSubscription 취소
+      await cancelAllSubscriptions();
+
+      // 상태 초기화
+      _isLoading = false;
+      _errorMessage = '';
+
+      AppLogger.d('$runtimeType cleanup completed');
+    } catch (e) {
+      AppLogger.e('Error during cleanup: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_isDisposed) {
+      AppLogger.w('$runtimeType already disposed');
+      return;
+    }
+
+    _isDisposed = true;
+
+    // 동기적으로 타이머 정리 (즉시 실행)
+    cancelAllTimers();
+
+    // 비동기 정리 작업
+    cleanup().catchError((error) {
+      AppLogger.e('Error during cleanup: $error');
+    });
 
     super.dispose();
+  }
+
+  /// 디버그 정보 출력
+  void printDebugInfo() {
+    AppLogger.d('=== $runtimeType Debug Info ===');
+    AppLogger.d('IsDisposed: $_isDisposed');
+    AppLogger.d('IsLoading: $_isLoading');
+    AppLogger.d('HasError: $hasError');
+    if (hasError) {
+      AppLogger.d('ErrorMessage: $_errorMessage');
+    }
+    AppLogger.d('Active Timers: ${_activeTimers.length}');
+    AppLogger.d('Active Subscriptions: ${_subscriptions.length}');
+    AppLogger.d('================================');
   }
 }

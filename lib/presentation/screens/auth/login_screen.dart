@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
-import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
+import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';  // CmdChoiceView import
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
 
@@ -31,6 +31,7 @@ class _CmdViewState extends State<LoginView> {
   final String apiUrl = dotenv.env['kdn_loginForm_key'] ?? ''; // 로그인  url
   final String apiUrl2 = dotenv.env['kdn_usm_select_role_data_key'] ?? ''; // 사용자 역할 권한  url
   bool auto_login = false; // 자동 로그인
+  bool save_id = false; // ID 저장 체크박스 상태
   late FirebaseMessaging messaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   late String fcmToken; //FCM 토큰 저장 변수 추가
@@ -47,6 +48,7 @@ class _CmdViewState extends State<LoginView> {
     super.initState();
     messaging = FirebaseMessaging.instance;
     initFcmToken(); // FCM 토큰 초기화 함수 호출
+    loadSavedId(); // 저장된 ID 불러오기
   }
 
   // FCM 토큰 초기화 함수
@@ -58,12 +60,53 @@ class _CmdViewState extends State<LoginView> {
     }
   }
 
+  // 저장된 ID 불러오기
+  Future<void> loadSavedId() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final bool? savedIdFlag = prefs.getBool('save_id_flag');
+      final String? savedId = prefs.getString('saved_user_id');
+
+      if (savedIdFlag == true && savedId != null) {
+        setState(() {
+          save_id = true;
+          // @kdn.vms.com 제거하고 ID만 표시
+          idController.text = savedId.replaceAll('@kdn.vms.com', '');
+        });
+        AppLogger.d('저장된 ID 불러오기 성공: ${idController.text}');
+      }
+    } catch (e) {
+      AppLogger.e('저장된 ID 불러오기 실패: $e');
+    }
+  }
+
+  // ID 저장 처리
+  Future<void> saveUserId(String userId) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      if (save_id) {
+        // ID 저장 체크박스가 체크되어 있으면 저장
+        await prefs.setBool('save_id_flag', true);
+        await prefs.setString('saved_user_id', userId);
+        AppLogger.d('ID 저장 완료: $userId');
+      } else {
+        // 체크 해제되어 있으면 삭제
+        await prefs.remove('save_id_flag');
+        await prefs.remove('saved_user_id');
+        AppLogger.d('저장된 ID 삭제 완료');
+      }
+    } catch (e) {
+      AppLogger.e('ID 저장 처리 실패: $e');
+    }
+  }
+
   Future<void> submitForm() async {
     final id = '${idController.text.trim()}@kdn.vms.com'; // 아이디
     final password = passwordController.text.trim(); // 비밀번호
 
     // 유효성 검사
-    if (id.isEmpty || password.isEmpty) {
+    if (idController.text.trim().isEmpty || password.isEmpty) {
       showTopSnackBar(context, '아이디 비밀번호를 입력해주세요.');
       return;
     }
@@ -71,7 +114,7 @@ class _CmdViewState extends State<LoginView> {
     try {
       // 토큰 생성
       UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
+      await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
 
       // ✅ Firebase JWT 토큰 가져오기
       String? firebaseToken = await userCredential.user?.getIdToken();
@@ -121,9 +164,18 @@ class _CmdViewState extends State<LoginView> {
           await prefs.setString('uuid', uuid);
         }
 
+        // ID 저장 처리
+        await saveUserId(id);
+
         //로그인 이후, 자동로그인 값 true로 설정
         auto_login = true;
         await prefs.setBool('auto_login', auto_login); //자동로그인을 디바이스에 저장
+
+        // 자동 로그인용 비밀번호 저장 (자동 로그인 체크 시에만)
+        if (auto_login) {
+          await prefs.setString('saved_id', id);
+          await prefs.setString('saved_pw', password);
+        }
 
         //[1] 역할(role) 요청 API 호출
         Response roleResponse = await Dio().post(
@@ -172,22 +224,22 @@ class _CmdViewState extends State<LoginView> {
         AppLogger.d('✅ autoFocusLocation: true 설정');
         AppLogger.d('========================================');
 
-         if (mounted) {
-           Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainScreen(
-              username: username,
-              autoFocusLocation: true,
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainScreen(
+                username: username,
+                autoFocusLocation: true,
+              ),
             ),
-          ),
-        );
-         }
+          );
+        }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
-        );
+            SnackBar(content: Text('로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
+          );
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -237,159 +289,182 @@ class _CmdViewState extends State<LoginView> {
             ),
           ),
 
-          // 2. 키보드 터치 시 닫기
+          // 2. 로그인 콘텐츠
           GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: Container(
-              color: Colors.transparent,
-              child: Center(
-                child: AnimatedPadding(
-                  duration: AnimationConstants.durationInstant, // 부드러운 애니메이션
-                  padding: EdgeInsets.only(
-                    bottom: keyboardHeight > 0 ? keyboardHeight : 0,
-                  ),
-                  child: SingleChildScrollView(
-                    reverse: false, // 스크롤 방향
-                    physics: const NeverScrollableScrollPhysics(), // 스크롤 비활성화
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // K-VMS 타이틀
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 60),
-                            child: TextWidgetString(
-                                'K-VMS', getTextcenter(), getSize32(), getTextbold(), getColorBlackType1()),
-                          ),
-
-                          // 로그인 박스
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: 10,
-                                sigmaY: 10,
+            onTap: () {
+              FocusScope.of(context).unfocus(); // 키보드 닫기
+            },
+            child: Center(
+              child: SingleChildScrollView(
+                // 키보드가 올라올 때만 스크롤
+                padding: EdgeInsets.only(
+                  bottom: keyboardHeight, // 키보드 높이만큼 패딩
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Opacity(
+                      opacity: 0.25,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // 흐림 효과
+                          child: Container(
+                            width: getSize330().toDouble(),
+                            height: getSize520().toDouble(),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.5),
+                                  Colors.white.withValues(alpha: 0.2),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              child: Container(
-                                width: 400,
-                                padding: const EdgeInsets.all(32),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.white, width: 1),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    TextWidgetString(
-                                        '시스템 로그인', getTextcenter(), getSize24(), getTextbold(), getColorBlackType1()),
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 20),
-                                      child: TextWidgetString('시스템 사용을 위해 로그인을 해주시기 바랍니다.', getTextcenter(),
-                                          getSize12(), getTextbold(), getColorGrayType1()),
-                                    ),
-                                    // 아이디 입력
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                                        ),
-                                        child: inputWidget(
-                                            getSize266(), getSize48(), idController, '아이디 입력', getColorGrayType7()),
-                                      ),
-                                    ),
-                                    // 비밀번호 입력
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 20),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(DesignConstants.radiusS),
-                                        ),
-                                        child: inputWidget(getSize266(), getSize48(), passwordController, '비밀번호 입력',
-                                            getColorGrayType7(),
-                                            obscureText: true),
-                                      ),
-                                    ),
-                                    // 로그인 버튼
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 20),
-                                      child: SizedBox(
-                                        width: getSize266().toDouble(),
-                                        height: getSize48().toDouble(),
-                                        child: ElevatedButton(
-                                          onPressed: submitForm,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: getColorSkyType2(),
-                                            shape: getTextradius6(),
-                                            elevation: 0,
-                                          ),
-                                          child: TextWidgetString('로그인 하기', getTextcenter(), getSize16(), getTextbold(),
-                                              getColorWhiteType1()),
-                                        ),
-                                      ),
-                                    ),
-                                    // 회원가입 버튼
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () {
-                                          if (mounted) {
-                                            Navigator.push(
-                                            context,
-                                            PageRouteBuilder(
-                                              pageBuilder: (context, animation, secondaryAnimation) =>
-                                                  const CmdChoiceView(),
-                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                                const begin = Offset(1.0, 0.0);
-                                                const end = Offset.zero;
-                                                const curve = Curves.ease;
-                                                var tween =
-                                                    Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                                var offsetAnimation = animation.drive(tween);
-                                                return SlideTransition(position: offsetAnimation, child: child);
-                                              },
-                                            ),
-                                          );
-                                          }
-                                        },
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets.zero,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            TextWidgetString('회원가입하기', getTextcenter(), getSize12(), getTextbold(),
-                                                getColorBlackType1()),
-                                            const SizedBox(width: DesignConstants.spacing4),
-                                            SvgPicture.asset(
-                                              'assets/kdn/usm/img/chevron-right.svg',
-                                              height: 16,
-                                              width: 16,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.6),
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    Column(
+                      children: [
+                        // SVG 로고 제거하고 텍스트만 표시
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 40),
+                          child: TextWidgetString('K-VMS', getTextcenter(),
+                              getSize50(), getTextbold(), getColorBlackType1()),
+                        ),
+                        // 아이디 입력
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                            ),
+                            child: inputWidget(
+                                getSize266(), getSize48(), idController, '아이디 입력', getColorGrayType7()),
+                          ),
+                        ),
+                        // 비밀번호 입력
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                            ),
+                            child: inputWidget(getSize266(), getSize48(), passwordController, '비밀번호 입력',
+                                getColorGrayType7(),
+                                obscureText: true),
+                          ),
+                        ),
+
+                        // ID 저장 체크박스 추가
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: SizedBox(
+                            width: getSize266().toDouble(),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: save_id,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        save_id = value ?? false;
+                                      });
+                                    },
+                                    activeColor: getColorSkyType2(),
+                                    checkColor: Colors.white,
+                                    side: BorderSide(
+                                      color: save_id ? getColorSkyType2() : getColorGrayType2(),
+                                      width: 1.5,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      save_id = !save_id;
+                                    });
+                                  },
+                                  child: TextWidgetString(
+                                    '아이디 저장',
+                                    getTextleft(),
+                                    getSize14(),
+                                    getText400(),
+                                    getColorGrayType1(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // 로그인 버튼
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: GestureDetector(
+                            onTap: () async {
+                              await submitForm();
+                            },
+                            child: Container(
+                              width: getSize266().toDouble(),
+                              height: getSize48().toDouble(),
+                              decoration: BoxDecoration(
+                                color: getColorMainType1(),
+                                borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                              ),
+                              child: Center(
+                                child: TextWidgetString('로그인', getTextcenter(), getSize16(), getText700(),
+                                    getColorWhiteType1()),
+                              ),
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (BuildContext context) {
+                                  return const CmdChoiceView();  // 수정: CmdChoiceView 사용
+                                },
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: getSize266().toDouble(),
+                            height: getSize48().toDouble(),
+                            decoration: BoxDecoration(
+                              color: getColorGrayType2(),
+                              borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                            ),
+                            child: Center(
+                              child: TextWidgetString('회원가입', getTextcenter(), getSize16(), getText700(),
+                                  getColorWhiteType1()),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-
-          // 하단 로고 (고정 위치)
+          // 하단 로고 (고정 위치) - 원본 코드 복구
           Positioned(
             bottom: 20,
             left: 0,

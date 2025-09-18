@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace 'kdn.vms.app'
+    namespace 'com.kdn.vms'
     compileSdk 35  // 35 → 34로 변경 (안정성)
 
     compileOptions {
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "kdn.vms.app"
+        applicationId "com.kdn.vms"
         minSdkVersion 23
         targetSdkVersion 35  // 35 → 34
         versionCode flutterVersionCode.toInteger()

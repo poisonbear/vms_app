@@ -107,6 +107,11 @@ Color getColorSkyType3() {
   return const Color(0xFF2196F3);
 }
 
+// 메인 컬러 추가
+Color getColorMainType1() {
+  return const Color(0xFF5CA1F6); // getColorSkyType2와 동일한 색상 사용
+}
+
 // 초록색
 Color getColorGreenType1() {
   return const Color(0xFF80BE35);

@@ -219,8 +219,20 @@ int getSize312() {
   return 312;
 }
 
+int getSize330() {
+  return 330;
+}
+
 int getSize400() {
   return 400;
+}
+
+int getSize520() {
+  return 520;
+}
+
+int getSize580() {
+  return 580;
 }
 
 // 사이즈 조절 double
