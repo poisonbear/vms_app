@@ -43,9 +43,9 @@ class MainBottomNavigation extends StatelessWidget {
         onTap: (index) => onItemTapped(index, context),
         items: <BottomNavigationBarItem>[
           _buildNavItem(
-            iconOn: 'assets/kdn/ros/img/Home_on.svg',
-            iconOff: 'assets/kdn/ros/img/Home_off.svg',
-            label: '홈',
+            iconOn: 'assets/kdn/home/img/ico_emergency_on.svg',
+            iconOff: 'assets/kdn/home/img/ico_emergency_off.svg',
+            label: '긴급신고',
             isSelected: selectedIndex == 0,
           ),
           _buildNavItem(

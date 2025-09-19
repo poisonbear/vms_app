@@ -13,11 +13,12 @@ import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/main/tabs/navigation_tab.dart';
 import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
+import 'package:vms_app/presentation/screens/main/tabs/emergency_tab.dart';  // ✅ 긴급신고 탭 import
 import 'package:vms_app/presentation/screens/profile/profile_screen.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
-import 'package:vms_app/core/utils/app_logger.dart';  // ✅ 추가
+import 'package:vms_app/core/utils/app_logger.dart';
 
-// ✅ AutoLocationHelper import 추가
+// AutoLocationHelper import
 import 'helpers/auto_location_helper.dart';
 
 import 'controllers/main_screen_controller.dart';
@@ -62,7 +63,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late AnimationController _flashController;
   PersistentBottomSheetController? _bottomSheetController;
 
-  // ⭐ MapControllerProvider 인스턴스
+  // MapControllerProvider 인스턴스
   late MapControllerProvider _mapControllerProvider;
 
   // Local UI State
@@ -83,7 +84,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _locationManager = LocationServiceManager();
     _vesselDataManager = VesselDataManager();
 
-    // ⭐ MapControllerProvider 인스턴스 생성 (한 번만)
+    // MapControllerProvider 인스턴스 생성
     _mapControllerProvider = MapControllerProvider();
 
     // FCM 서비스 초기화
@@ -102,9 +103,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       },
     );
 
-    // 초기 인덱스 설정
-    selectedIndex = widget.initTabIndex;
-    _controller.setSelectedIndex(widget.initTabIndex);
+    // 초기 인덱스 설정 (기본적으로 지도 표시를 위해 -1로 설정)
+    selectedIndex = -1;  // 지도만 표시 (바텀시트 없음)
+    _controller.setSelectedIndex(-1);
 
     // 애니메이션 컨트롤러 초기화
     _flashController = AnimationController(
@@ -152,9 +153,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         _requestPermissionsSequentially();
       });
 
-      // ✅ 자동 위치 포커스 (수정된 부분)
+      // 자동 위치 포커스
       if (widget.autoFocusLocation) {
-        // 디버깅 로그 추가
         AppLogger.d('========================================');
         AppLogger.d('🚀 자동 포커스 활성화: ${widget.autoFocusLocation}');
         AppLogger.d('👤 사용자: ${widget.username}');
@@ -215,7 +215,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
-  /// ✅ 자동 위치 포커스 (AutoLocationHelper 사용)
+  /// 자동 위치 포커스 (AutoLocationHelper 사용)
   Future<void> _performAutoFocus() async {
     if (!mounted) return;
 
@@ -233,8 +233,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       AppLogger.e('내 위치찾기 자동 실행 실패: $e');
     }
   }
-
-  /// 기존 메서드는 사용하지 않음 (deprecated)
 
   /// 선박 정보 팝업
   Future<void> routePop(BuildContext context, VesselSearchModel vessel) {
@@ -326,11 +324,22 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   /// 네비게이션 아이템 탭 처리
   void _onItemTapped(int index, BuildContext context) {
+    // 이미 선택된 탭을 다시 누르면 바텀시트 닫기
+    if (selectedIndex == index && _bottomSheetController != null) {
+      _bottomSheetController!.close();
+      setState(() {
+        selectedIndex = -1;  // 지도 화면으로
+      });
+      _controller.setSelectedIndex(-1);
+      return;
+    }
+
     setState(() {
       selectedIndex = index;
     });
     _controller.setSelectedIndex(index);
 
+    // 기존 바텀시트 닫기
     if (_bottomSheetController != null) {
       _bottomSheetController!.close();
       _bottomSheetController = null;
@@ -339,106 +348,128 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _controller.stopTracking();
     _controller.routeSearchViewModel.setNavigationHistoryMode(true);
 
-    if (index != 0) {
-      if (index == 1) {
-        // 날씨 정보
-        _bottomSheetController = Scaffold.of(context).showBottomSheet(
-              (context) => PopScope(
-            canPop: false,
-            onPopInvoked: (bool didPop) {
-              if (didPop) return;
-              setState(() {
-                selectedIndex = 0;
-              });
-              _controller.setSelectedIndex(0);
-              Navigator.of(context).pop();
-            },
-            child: MainScreenWindy(context, onClose: () {
-              setState(() {
-                selectedIndex = 0;
-              });
-              _controller.setSelectedIndex(0);
-            }),
+    if (index == 0) {
+      // ✅ 긴급신고 탭
+      _bottomSheetController = Scaffold.of(context).showBottomSheet(
+            (context) => PopScope(
+          canPop: false,
+          onPopInvoked: (bool didPop) {
+            if (didPop) return;
+            setState(() {
+              selectedIndex = -1;
+            });
+            _controller.setSelectedIndex(-1);
+            Navigator.of(context).pop();
+          },
+          child: MainViewEmergencySheet(context, onClose: () {
+            setState(() {
+              selectedIndex = -1;
+            });
+            _controller.setSelectedIndex(-1);
+          }),
+        ),
+        backgroundColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(DesignConstants.radiusXL),
           ),
-          backgroundColor: getColorBlackType3(),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
-          ),
-        );
-      } else if (index == 2) {
-        // 🔍 디버깅 추가
-        NavigationDebugHelper.debugPrint('항행이력 탭 클릭', location: 'main_screen');
-        NavigationDebugHelper.checkProviderAccess(context, 'main_screen.before');
+        ),
+      );
+    } else if (index == 1) {
+      // 날씨 정보
+      _bottomSheetController = Scaffold.of(context).showBottomSheet(
+            (context) => PopScope(
+          canPop: false,
+          onPopInvoked: (bool didPop) {
+            if (didPop) return;
+            setState(() {
+              selectedIndex = -1;
+            });
+            _controller.setSelectedIndex(-1);
+            Navigator.of(context).pop();
+          },
+          child: MainScreenWindy(context, onClose: () {
+            setState(() {
+              selectedIndex = -1;
+            });
+            _controller.setSelectedIndex(-1);
+          }),
+        ),
+        backgroundColor: getColorBlackType3(),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+        ),
+      );
+    } else if (index == 2) {
+      // 항행 이력
+      NavigationDebugHelper.debugPrint('항행이력 탭 클릭', location: 'main_screen');
+      NavigationDebugHelper.checkProviderAccess(context, 'main_screen.before');
 
-        // 항행 이력 - ⭐ 수정된 부분
-        _bottomSheetController = Scaffold.of(context).showBottomSheet(
-              (bottomSheetContext) => MultiProvider(
-              providers: [
-                ChangeNotifierProvider<RouteSearchProvider>.value(
-                  value: _controller.routeSearchViewModel,
-                ),
-                // ⭐ 기존 인스턴스 사용 (새로 생성하지 않음)
-                ChangeNotifierProvider<MapControllerProvider>.value(
-                  value: _mapControllerProvider,
-                ),
-              ],
-              child: Builder(  // ⭐ Builder 추가
-                builder: (providerContext) {
-                  // 🔍 디버깅 추가
-                  NavigationDebugHelper.debugPrint('Provider 설정 완료', location: 'main_screen');
-                  NavigationDebugHelper.checkProviderAccess(providerContext, 'main_screen.after');
+      _bottomSheetController = Scaffold.of(context).showBottomSheet(
+            (bottomSheetContext) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider<RouteSearchProvider>.value(
+                value: _controller.routeSearchViewModel,
+              ),
+              ChangeNotifierProvider<MapControllerProvider>.value(
+                value: _mapControllerProvider,
+              ),
+            ],
+            child: Builder(
+              builder: (providerContext) {
+                NavigationDebugHelper.debugPrint('Provider 설정 완료', location: 'main_screen');
+                NavigationDebugHelper.checkProviderAccess(providerContext, 'main_screen.after');
 
-                  return PopScope(
-                    canPop: false,
-            onPopInvoked: (bool didPop) {
-              if (didPop) return;
+                return PopScope(
+                  canPop: false,
+                  onPopInvoked: (bool didPop) {
+                    if (didPop) return;
+                    _controller.resetNavigationHistory();
+                    setState(() {
+                      selectedIndex = -1;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: MainViewNavigationSheet(
+                    onClose: () {
                       _controller.resetNavigationHistory();
                       setState(() {
-                        selectedIndex = 0;
+                        selectedIndex = -1;
                       });
-                      Navigator.of(context).pop();
                     },
-                    child: MainViewNavigationSheet(
-                      onClose: () {
-                        _controller.resetNavigationHistory();
-                        setState(() {
-                          selectedIndex = 0;
-                        });
-                      },
-                      resetDate: true,
-                      resetSearch: true,
-                    ),
-                  );
-                },
-              )
-          ),
-          backgroundColor: getColorBlackType3(),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
-          ),
-        );
+                    resetDate: true,
+                    resetSearch: true,
+                  ),
+                );
+              },
+            )
+        ),
+        backgroundColor: getColorBlackType3(),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
+        ),
+      );
 
-        _bottomSheetController?.closed.then((_) {
-          _controller.resetNavigationHistory();
-          setState(() {
-            selectedIndex = 0;
-          });
+      _bottomSheetController?.closed.then((_) {
+        _controller.resetNavigationHistory();
+        setState(() {
+          selectedIndex = -1;
         });
-      } else if (index == 3) {
-        // 마이페이지
-        if (mounted) {
-          Navigator.push(
+      });
+    } else if (index == 3) {
+      // 마이페이지
+      if (mounted) {
+        Navigator.push(
           context,
           createSlideTransition(
             MemberInformationView(username: widget.username),
           ),
         ).then((_) {
           setState(() {
-            selectedIndex = 0;
+            selectedIndex = -1;
           });
-          _controller.setSelectedIndex(0);
+          _controller.setSelectedIndex(-1);
         });
-        }
       }
     }
   }
@@ -449,11 +480,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _flashController.stop();
     _flashController.dispose();
 
-    // Bottom Sheet 정리  
+    // Bottom Sheet 정리
     _bottomSheetController?.close();
     _bottomSheetController = null;
 
-    // 컨트롤러 정리 (timerService는 controller 내부에서 처리)
+    // 컨트롤러 정리
     _controller.dispose();
 
     super.dispose();
@@ -478,7 +509,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<MainScreenController>.value(value: _controller),
-        // ⭐ 기존 인스턴스 사용 (새로 생성하지 않음)
         ChangeNotifierProvider<MapControllerProvider>.value(
           value: _mapControllerProvider,
         ),
@@ -535,11 +565,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             controller.stopTracking();
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('항적 데이터가 초기화되었습니다.'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
+                                const SnackBar(
+                                  content: Text('항적 데이터가 초기화되었습니다.'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
                             }
                           },
                         );
@@ -606,8 +636,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
               ],
             ),
+            // ✅ 하단 네비게이션 바 (경광등 아이콘 적용)
             bottomNavigationBar: MainBottomNavigation(
-              selectedIndex: selectedIndex,
+              selectedIndex: selectedIndex == -1 ? 0 : selectedIndex,  // -1일 때도 첫 번째 탭으로 표시
               onItemTapped: _onItemTapped,
             ),
           );
