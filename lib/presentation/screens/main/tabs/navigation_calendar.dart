@@ -15,9 +15,8 @@ class MainViewNavigationDate extends StatefulWidget {
 }
 
 class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
-  String _selectedDay =
-      "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
-  PersistentBottomSheetController? _bottomSheetController; // ⚡ 변수 선언 유지 (호환성)
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
 
   final Set<DateTime> holidays = {
     DateTime(2025, 1, 1),
@@ -53,134 +52,115 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
   @override
   void initState() {
     super.initState();
+    // 초기값 설정
     if (widget.title == '시작일자 선택') {
-      _selectedDay = selectedStartDate;
-    } else if (widget.title == '종료일자 선택') {
-      _selectedDay = selectedEndDate;
-    }
-  }
-
-  // ⚡ Navigator 잠금 문제 해결을 위한 안전한 네비게이션
-  void safelyNavigateBack() {
-    if (mounted) {
-      if (widget.title == '시작일자 선택') {
-        selectedStartDate = _selectedDay;
-      } else if (widget.title == '종료일자 선택') {
-        selectedEndDate = _selectedDay;
+      final parts = selectedStartDate.split('-');
+      if (parts.length == 3) {
+        _selectedDay = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
       }
-
-      // ⚡ Navigator 잠금 상태를 확인하고 안전하게 처리
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.pop(context);
-
-          // ⚡ 충분한 지연 시간 확보 (300ms)
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) {
-              try {
-                _bottomSheetController = Scaffold.of(context).showBottomSheet(
-                      (context) {
-                    return MainViewNavigationSheet(
-                      onClose: () {},
-                      resetDate: false,
-                      resetSearch: false,
-                    );
-                  },
-                  backgroundColor: getColorBlackType3(),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
-                  ),
-                );
-              } catch (e) {
-                debugPrint('BottomSheet 열기 실패: $e');
-              }
-            }
-          });
-        }
-      });
+    } else if (widget.title == '종료일자 선택') {
+      final parts = selectedEndDate.split('-');
+      if (parts.length == 3) {
+        _selectedDay = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+      }
     }
+    _focusedDay = _selectedDay;
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  void _selectDate(DateTime selectedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = selectedDay;
+    });
+
+    String formattedDate =
+        "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
+
+    // 날짜 선택시 global 변수 업데이트
+    if (widget.title == '시작일자 선택') {
+      selectedStartDate = formattedDate;
+      // 콜백 호출
+      if (widget.onClose != null) {
+        widget.onClose!(formattedDate, selectedEndDate);
+      }
+    } else if (widget.title == '종료일자 선택') {
+      selectedEndDate = formattedDate;
+      // 콜백 호출
+      if (widget.onClose != null) {
+        widget.onClose!(selectedStartDate, formattedDate);
+      }
+    }
+
+    // 달력 닫기
+    Navigator.pop(context, formattedDate);
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvoked: (bool didPop) {
-        if (didPop) return;
-        // 뒤로가기 버튼이 눌리면 BottomSheet를 다시 연다
-        safelyNavigateBack();
-        // void 함수이므로 return 값 없음
-      },
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          height: 550,
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-              vertical: DesignConstants.spacing20,
-              horizontal: DesignConstants.spacing12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: 550,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+            vertical: DesignConstants.spacing20,
+            horizontal: DesignConstants.spacing16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
               topLeft: Radius.circular(DesignConstants.radiusXL),
-              topRight: Radius.circular(DesignConstants.radiusXL),
-            ),
-          ),
-          child: Column(
-            children: [
-              // 제목 영역 - 원본 그대로
-              Row(
-                children: [
-                  TextWidgetString(widget.title, getTextleft(), getSize20(),
-                      getText700(), getColorBlackType2()),
-                  const Spacer(),
-                  Container(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(Icons.close, color: getColorBlackType2()),
-                        onPressed: () {
-                          safelyNavigateBack();
-                        },
-                      ),
-                    ),
+              topRight: Radius.circular(DesignConstants.radiusXL)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 헤더
+            Row(
+              children: [
+                TextWidgetString(
+                  widget.title,
+                  getTextleft(),
+                  getSize20(),
+                  getText700(),
+                  getColorBlackType2(),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.close, color: Colors.black),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
-                ],
-              ),
-              const SizedBox(height: DesignConstants.spacing20),
-              // 캘린더 - 원본 그대로
-              Expanded(
+                ),
+              ],
+            ),
+            SizedBox(height: getSize20().toDouble()),
+
+            // 달력
+            Expanded(
+              child: SingleChildScrollView(
                 child: TableCalendar(
                   firstDay: DateTime.utc(2020, 1, 1),
                   lastDay: DateTime.utc(2030, 12, 31),
-                  focusedDay: DateTime.parse(_selectedDay),
-                  selectedDayPredicate: (day) =>
-                      isSameDay(DateTime.parse(_selectedDay), day),
+                  focusedDay: _focusedDay,
+                  selectedDayPredicate: (day) {
+                    return isSameDay(_selectedDay, day);
+                  },
                   onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay =
-                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
-                    });
-
-                    // 날짜 선택시 저장 (시작일자 또는 종료일자)
-                    if (widget.title == '시작일자 선택') {
-                      selectedStartDate =
-                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
-                    } else if (widget.title == '종료일자 선택') {
-                      selectedEndDate =
-                      "${selectedDay.year}-${selectedDay.month.toString().padLeft(2, '0')}-${selectedDay.day.toString().padLeft(2, '0')}";
-                    }
-
-                    // ⚡ 날짜 선택시 충분한 지연 처리 (100ms)
-                    safelyNavigateBack();
+                    _selectDate(selectedDay);
                   },
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
@@ -194,68 +174,95 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       shape: BoxShape.circle,
                       color: getColorGreenType1(),
                     ),
-                    todayDecoration: const BoxDecoration(),
+                    todayDecoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: getColorSkyType2().withOpacity(0.5),
+                    ),
                     todayTextStyle: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Colors.white,
+                    ),
+                    weekendTextStyle: const TextStyle(color: Colors.red),
+                    holidayTextStyle: const TextStyle(color: Colors.red),
+                    selectedTextStyle: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   calendarBuilders: CalendarBuilders(
-                    todayBuilder: (context, date, _) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${date.day}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: DesignConstants.fontSizeM,
-                            ),
-                          ),
-                          TextWidgetString('오늘', getTextleft(), getSize14(),
-                              getText700(), getColorGreenType1()),
-                        ],
-                      );
-                    },
                     holidayBuilder: (context, date, _) {
-                      String holidayName = getHolidayName(date);
-                      return Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red.withOpacity(0.1),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${date.day}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                  fontSize: DesignConstants.fontSizeM,
-                                ),
+                      final normalizedDate = DateTime(date.year, date.month, date.day);
+                      final holidayName = getHolidayName(normalizedDate);
+                      final isHoliday = holidays.contains(normalizedDate);
+                      final isSelected = isSameDay(_selectedDay, date);
+
+                      if (isHoliday) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isSelected ? getColorGreenType1() : Colors.transparent,
                               ),
-                              if (holidayName.isNotEmpty)
-                                Text(
-                                  holidayName,
-                                  style: const TextStyle(
-                                    fontSize: 8,
-                                    color: Colors.red,
+                              child: Center(
+                                child: Text(
+                                  '${date.day}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : Colors.red,
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
-                      );
+                              ),
+                            ),
+                            if (holidayName.isNotEmpty)
+                              Text(
+                                holidayName,
+                                style: const TextStyle(
+                                  fontSize: 8,
+                                  color: Colors.red,
+                                ),
+                              ),
+                          ],
+                        );
+                      }
+                      return null;
                     },
                   ),
-                  holidayPredicate: (day) => holidays.contains(day),
+                  holidayPredicate: (day) {
+                    return holidays.contains(DateTime(day.year, day.month, day.day));
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // 확인 버튼
+            SizedBox(height: getSize16().toDouble()),
+            SizedBox(
+              width: double.infinity,
+              height: getSize45().toDouble(),
+              child: ElevatedButton(
+                onPressed: () {
+                  _selectDate(_selectedDay);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: getColorSkyType2(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                  ),
+                ),
+                child: TextWidgetString(
+                  '선택',
+                  getTextcenter(),
+                  getSize16(),
+                  getText700(),
+                  getColorWhiteType1(),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

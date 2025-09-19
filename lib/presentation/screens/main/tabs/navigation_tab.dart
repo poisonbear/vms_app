@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
+import 'package:vms_app/data/models/navigation/navigation_model.dart';
+import 'package:vms_app/core/utils/app_logger.dart';
 import '../controllers/main_screen_controller.dart';
 import '../utils/navigation_debug.dart';
 
@@ -19,8 +21,8 @@ String selectedEndDate =
 
 class MainViewNavigationSheet extends StatefulWidget {
   final Function? onClose;
-  final bool resetDate; // 날짜 초기화 여부를 결정하는 플래그 추가
-  final bool resetSearch; // MMSI, 선박명 초기화 여부를 결정하는 플래그
+  final bool resetDate;
+  final bool resetSearch;
 
   const MainViewNavigationSheet({
     super.key,
@@ -35,31 +37,26 @@ class MainViewNavigationSheet extends StatefulWidget {
 }
 
 class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
-
-  // TextEditingController 인스턴스 변수로 변경
   late TextEditingController mmsiController;
   late TextEditingController shipNameController;
   late NavigationProvider navigationViewModel;
-  PersistentBottomSheetController? _bottomSheetController; // ⚡ 변수 선언 유지 (호환성)
-  bool _isClosing = false; // ⚡ 닫기 처리를 위한 플래그
+  PersistentBottomSheetController? _bottomSheetController;
+  bool _isClosing = false;
 
   @override
   void initState() {
     super.initState();
 
-    // TextEditingController 초기화
     mmsiController = TextEditingController();
     shipNameController = TextEditingController();
 
     NavigationDebugHelper.debugPrint('NavigationSheet initState', location: 'nav_tab');
 
-    // MMSI 및 선박명은 resetSearch 플래그가 true일 때만 초기화
     if (widget.resetSearch) {
       mmsiController.clear();
       shipNameController.clear();
     }
 
-    // 날짜는 resetDate 플래그가 true일 때만 초기화
     if (widget.resetDate) {
       final today = DateTime.now();
       selectedStartDate =
@@ -68,13 +65,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
     }
 
-    // ViewModel 생성
     navigationViewModel = NavigationProvider();
 
-    final mmsi = context.read<UserState>().mmsi; //로그인한 계정의 mmsi
-    final role = context.read<UserState>().role; //로그인한 계정의 권한
+    final mmsi = context.read<UserState>().mmsi;
+    final role = context.read<UserState>().role;
 
-    // 탭 열릴 때마다 한 번만 자동 조회
     navigationViewModel.getRosList(
         startDate: selectedStartDate,
         endDate: selectedEndDate,
@@ -85,7 +80,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             : int.tryParse(mmsiController.text)),
         shipName: shipNameController.text.isEmpty
             ? null
-            : shipNameController.text.toUpperCase() // 대문자로 변환
+            : shipNameController.text.toUpperCase()
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,43 +88,37 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     });
   }
 
-  // ⚡ 날짜 업데이트를 위한 메서드 추가
   void refreshDates() {
     if (mounted) {
-      setState(() {
-        // 날짜가 변경되었음을 UI에 반영
-      });
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🔍 디버깅 추가
     NavigationDebugHelper.debugPrint('NavigationSheet build', location: 'nav_tab.build');
     NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.build');
 
-    final routeSearchViewModel = Provider.of<RouteSearchProvider>(context,
-        listen: false); // RouteSearchProvider 가져오기
-    return PopScope(
-      // 추가: PopScope로 감싸서 뒤로가기 처리
-        canPop: _isClosing, // ⚡ 닫기 플래그 확인
-        onPopInvokedWithResult: (bool didPop, dynamic result) {
-          if (didPop || _isClosing) return; // ⚡ 닫기 중이면 처리하지 않음
-          // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
-          final MainScreenState =
-          context.findAncestorStateOfType<State<MainScreen>>();
-          MainScreenState?.setState(() {
-            (MainScreenState as dynamic).selectedIndex = 0;
-          });
+    final routeSearchViewModel = Provider.of<RouteSearchProvider>(context, listen: false);
 
-          routeSearchViewModel.clearRoutes(); // 중요: 뒤로가기 시 클리어 처리
-          routeSearchViewModel
-              .setNavigationHistoryMode(false); //항행이력에서 벗어났다는 플래그값
-          // 뒤로가기 허용
+    return PopScope(
+        canPop: _isClosing,
+        onPopInvokedWithResult: (bool didPop, dynamic result) {
+          if (didPop || _isClosing) return;
+
+          final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+          if (mainScreenState != null) {
+            try {
+              (mainScreenState as dynamic).selectedIndex = 0;
+            } catch (e) {}
+          }
+
+          routeSearchViewModel.clearRoutes();
+          routeSearchViewModel.setNavigationHistoryMode(false);
           Navigator.of(context).pop();
         },
         child: ChangeNotifierProvider.value(
-          value: navigationViewModel, // 여기서 미리 생성한 ViewModel 인스턴스를 사용
+          value: navigationViewModel,
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -151,52 +140,45 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 닫기 버튼 영역 - 원본 그대로
+                      // 헤더 영역 - 제목과 닫기 버튼
                       Row(
                         children: [
                           TextWidgetString('항행 이력 내역 조회', getTextleft(),
                               getSize20(), getText700(), getColorBlackType2()),
                           const Spacer(),
-                          Container(
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: const Icon(Icons.close,
-                                    color: Colors.black),
-                                onPressed: () {
-                                  if (widget.onClose != null) {
-                                    widget.onClose!();
-                                  }
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              icon: const Icon(Icons.close, color: Colors.black),
+                              onPressed: () {
+                                if (widget.onClose != null) {
+                                  widget.onClose!();
+                                }
 
-                                  // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
-                                  final MainScreenState =
-                                  context.findAncestorStateOfType<
-                                      State<MainScreen>>();
-                                  MainScreenState?.setState(() {
-                                    (MainScreenState as dynamic).selectedIndex =
-                                    0;
-                                  });
+                                final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+                                if (mainScreenState != null) {
+                                  try {
+                                    (mainScreenState as dynamic).selectedIndex = 0;
+                                  } catch (e) {}
+                                }
 
-                                  routeSearchViewModel.clearRoutes();
-                                  routeSearchViewModel
-                                      .setNavigationHistoryMode(false);
+                                routeSearchViewModel.clearRoutes();
+                                routeSearchViewModel.setNavigationHistoryMode(false);
 
-                                  // ⚡ 닫기 플래그 설정 후 닫기
-                                  setState(() {
-                                    _isClosing = true;
-                                  });
-                                  Navigator.of(context).pop();
-                                },
-                              ),
+                                setState(() {
+                                  _isClosing = true;
+                                });
+                                Navigator.of(context).pop();
+                              },
                             ),
                           ),
                         ],
                       ),
                       SizedBox(height: getSize20().toDouble()),
-                      // 일자 선택 영역 - 원본 그대로
+                      // 날짜 선택 영역
                       Row(
                         children: [
                           Expanded(
@@ -204,95 +186,89 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  // ⚡ showModalBottomSheet로 달력 열기 (현재 bottomSheet 위에 modal로 열림)
-                                  await showModalBottomSheet(
+                                  final result = await showModalBottomSheet<String>(
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     isScrollControlled: true,
-                                    builder: (context) => const MainViewNavigationDate(
+                                    builder: (context) => MainViewNavigationDate(
                                       title: '시작일자 선택',
+                                      onClose: (startDate, endDate) {
+                                        setState(() {
+                                          selectedStartDate = startDate;
+                                        });
+                                      },
                                     ),
                                   );
-                                  // 날짜 선택 후 UI 업데이트
                                   refreshDates();
                                 },
                                 style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  padding: EdgeInsets.zero,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    side: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
-                                  elevation: 0,
-                                  backgroundColor: getColorWhiteType1(),
-                                  side: BorderSide(
-                                      color: getColorGrayType7(), width: 1),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    TextWidgetString(
-                                        selectedStartDate,
-                                        getTextleft(),
-                                        getSize14(),
-                                        getText600(),
-                                        getColorGrayType8()),
-                                    Icon(Icons.calendar_today,
-                                        size: 20, color: getColorGrayType8()),
-                                  ],
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    selectedStartDate,
+                                    style: TextStyle(
+                                      fontSize: getSize14().toDouble(),
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xff5D647A),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(width: getSize12().toDouble()),
+                          SizedBox(width: getSize16().toDouble()),
                           Expanded(
                             child: SizedBox(
                               height: getSize40().toDouble(),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  // ⚡ showModalBottomSheet로 달력 열기
-                                  await showModalBottomSheet(
+                                  final result = await showModalBottomSheet<String>(
                                     context: context,
                                     backgroundColor: Colors.transparent,
                                     isScrollControlled: true,
-                                    builder: (context) => const MainViewNavigationDate(
+                                    builder: (context) => MainViewNavigationDate(
                                       title: '종료일자 선택',
+                                      onClose: (startDate, endDate) {
+                                        setState(() {
+                                          selectedEndDate = endDate;
+                                        });
+                                      },
                                     ),
                                   );
-                                  // 날짜 선택 후 UI 업데이트
                                   refreshDates();
                                 },
                                 style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  padding: EdgeInsets.zero,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    side: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
-                                  elevation: 0,
-                                  backgroundColor: getColorWhiteType1(),
-                                  side: BorderSide(
-                                      color: getColorGrayType7(), width: 1),
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    TextWidgetString(
-                                        selectedEndDate,
-                                        getTextleft(),
-                                        getSize14(),
-                                        getText600(),
-                                        getColorGrayType8()),
-                                    Icon(Icons.calendar_today,
-                                        size: 20, color: getColorGrayType8()),
-                                  ],
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    selectedEndDate,
+                                    style: TextStyle(
+                                      fontSize: getSize14().toDouble(),
+                                      fontWeight: FontWeight.w400,
+                                      color: const Color(0xff5D647A),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ],
                       ),
-
-                      SizedBox(height: getSize12().toDouble()),
-                      // MMSI 및 선박명 입력 영역 - 원본 그대로
+                      SizedBox(height: getSize16().toDouble()),
                       Row(
                         children: [
                           Expanded(
@@ -300,39 +276,33 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: TextFormField(
                                 controller: mmsiController,
-                                onTap: () {
-                                  // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
-                                  // ⚡ Navigator.of(context).pop(); 제거
-                                },
+                                onTap: () {},
                                 onChanged: (value) {
-                                  //입력값이 변경될 때 전역 변수와 동기화
                                   mmsiController.text = value;
-                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'MMSI 입력',
                                   hintStyle: TextStyle(
                                       color: getColorGrayType8(),
                                       fontSize: getSize14().toDouble(),
-                                      fontWeight: getText600()),
+                                      fontWeight: FontWeight.w400),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorGrayType7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorGrayType7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
                                       vertical: getSize12().toDouble()),
                                   isDense: true,
                                   fillColor: Colors.white,
-                                  // 배경색을 하얀색으로 설정
                                   filled: true,
                                 ),
                                 keyboardType: TextInputType.number,
@@ -345,120 +315,80 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               height: getSize40().toDouble(),
                               child: TextFormField(
                                 controller: shipNameController,
-                                onTap: () {
-                                  // 텍스트 필드 클릭 시 데이터 로드를 방지하기 위한 빈 콜백
-                                  // ⚡ Navigator.of(context).pop(); 제거
-                                },
+                                onTap: () {},
                                 onChanged: (value) {
-                                  //입력값이 변경될 때 전역 변수와 동기화
                                   shipNameController.text = value;
-                                  // ⚡ Navigator.of(context).pop(); 제거
                                 },
                                 decoration: InputDecoration(
                                   hintText: '선박명 입력',
                                   hintStyle: TextStyle(
                                       color: getColorGrayType8(),
                                       fontSize: getSize14().toDouble(),
-                                      fontWeight: getText600()),
+                                      fontWeight: FontWeight.w400),
                                   border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorGrayType7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        getSize4().toDouble()),
-                                    borderSide: BorderSide(
-                                        color: getColorGrayType7(), width: 1),
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
                                       vertical: getSize12().toDouble()),
                                   isDense: true,
                                   fillColor: Colors.white,
-                                  // 배경색을 하얀색으로 설정
                                   filled: true,
                                 ),
-                                keyboardType: TextInputType.text,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: getSize12().toDouble()),
+                          SizedBox(
+                            height: getSize40().toDouble(),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                final mmsi = context.read<UserState>().mmsi;
+                                final role = context.read<UserState>().role;
+
+                                navigationViewModel.getRosList(
+                                  startDate: selectedStartDate,
+                                  endDate: selectedEndDate,
+                                  mmsi: role == 'ROLE_USER'
+                                      ? mmsi
+                                      : (mmsiController.text.isEmpty
+                                      ? null
+                                      : int.tryParse(mmsiController.text)),
+                                  shipName: shipNameController.text.isEmpty
+                                      ? null
+                                      : shipNameController.text.toUpperCase(),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                ),
+                                fixedSize: Size(getSize65().toDouble(), getSize40().toDouble()),
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: Text(
+                                '조회',
+                                style: TextStyle(
+                                  fontSize: getSize14().toDouble(),
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-
-                      SizedBox(height: getSize12().toDouble()),
-
-                      // 검색 버튼 - 원본 그대로
-                      SizedBox(
-                        width: double.infinity,
-                        height: getSize45().toDouble(),
-                        child: Consumer<NavigationProvider>(
-                          builder: (context, provider, child) {
-                            return ElevatedButton(
-                              onPressed: provider.isLoading
-                                  ? null // 로딩 중에는 버튼 비활성화
-                                  : () {
-                                // 검색 실행
-                                provider.getRosList(
-                                    startDate: selectedStartDate, // 시작일자
-                                    endDate: selectedEndDate, // 종료일자
-                                    mmsi: mmsiController
-                                        .text.isEmpty
-                                        ? null
-                                        : int.tryParse(
-                                        mmsiController.text),
-                                    shipName: shipNameController
-                                        .text.isEmpty
-                                        ? null
-                                        : shipNameController.text
-                                        .toUpperCase() // 대문자로 변환
-                                );
-                                // ⚡ Navigator.of(context).pop(); 제거
-                              },
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      getSize4().toDouble()),
-                                ),
-                                elevation: 0,
-                                backgroundColor: getColorSkyType2(),
-                                side: BorderSide(
-                                    color: getColorGrayType7(), width: 1),
-                              ),
-                              child: provider.isLoading
-                                  ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor:
-                                  AlwaysStoppedAnimation<Color>(
-                                      getColorGrayType8()),
-                                ),
-                              )
-                                  : Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.search,
-                                      color: getColorSkyType1(),
-                                      size: 20),
-                                  SizedBox(width: getSize8().toDouble()),
-                                  TextWidgetString(
-                                      '항행 이력 내역 조회하기',
-                                      getTextcenter(),
-                                      getSize14(),
-                                      getText600(),
-                                      getColorSkyType1()),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                       SizedBox(height: getSize20().toDouble()),
-                      // 검색 결과 영역 - 원본 그대로
                       Expanded(
                         child: Consumer<NavigationProvider>(
                           builder: (context, provider, child) {
@@ -470,17 +400,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 padding: EdgeInsets.all(getSize20().toDouble()),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(
-                                      getSize8().toDouble()),
-                                  border: Border.all(
-                                      color: getColorGrayType6(), width: 1),
+                                  borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                                  border: Border.all(color: getColorGrayType6(), width: 1),
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.info_outline,
-                                        size: 48, color: getColorGrayType8()),
+                                    Icon(Icons.info_outline, size: 48, color: getColorGrayType8()),
                                     SizedBox(height: getSize16().toDouble()),
                                     TextWidgetString(
                                       '검색 결과가 없습니다.',
@@ -521,14 +448,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   @override
   void dispose() {
-    // ⚡ dispose 개선 - 컨트롤러만 정리
     mmsiController.dispose();
     shipNameController.dispose();
-    // navigationViewModel은 ChangeNotifierProvider가 관리하므로 dispose 불필요
     super.dispose();
   }
 
-  // 항행 이력 아이템 위젯 - 원본 그대로
+  // 항행 이력 아이템 위젯 메서드 - 클래스 내부에 정의
   Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
       String startTime, RouteSearchProvider viewModel) {
     String formattedTime;
@@ -538,17 +463,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       formattedTime =
       "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}";
     } else {
-      // 변환할 수 없는 경우 원본 문자열 사용
       formattedTime = startTime;
     }
-    //항행 이력 아이템 클릭시, 이력 조회 서비스 시작(GIS)
+
     return Builder(builder: (innerContext) {
       return InkWell(
           onTap: () async {
-            // 현재 컨텍스트를 미리 저장
             final navigationContext = Navigator.of(context);
 
-            // 로딩 다이얼로그 표시 (현재 컨텍스트 사용)
             if (mounted) {
               showDialog(
                 context: context,
@@ -571,36 +493,29 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               );
             }
 
-            // 로딩 다이얼로그 표시 전에 추가
             NavigationDebugHelper.debugPrint('항행이력 조회 시작 - mmsi: $mmsi', location: 'nav_tab.onTap');
 
             try {
-              viewModel.setNavigationHistoryMode(true); // 항행 이력 조회 모드 설정
+              viewModel.setNavigationHistoryMode(true);
 
-              // 🔍 디버깅: API 호출 전
               NavigationDebugHelper.debugPrint('API 호출 전', location: 'nav_tab.beforeAPI');
 
-              // 항행 이력 데이터 로드
               await viewModel.getVesselRoute(
                   regDt: dateTime != null
                       ? "${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}"
                       : null,
                   mmsi: int.tryParse(mmsi));
 
-              // 🔍 디버깅: API 호출 후
               NavigationDebugHelper.debugPrint(
                   'API 호출 후 - past: ${viewModel.pastRoutes.length}, pred: ${viewModel.predRoutes.length}',
                   location: 'nav_tab.afterAPI'
               );
 
-              // 첫 번째 과거 항적 포인트로 지도 이동
               if (viewModel.pastRoutes.isNotEmpty) {
                 LatLng firstPoint = LatLng(
                     viewModel.pastRoutes.last.lttd ?? 35.3790988,
                     viewModel.pastRoutes.last.lntd ?? 126.167763);
 
-                // 상위 위젯의 MapController에 접근해서 지도 중심 이동
-                // Provider를 사용하여 MapController 접근 (수정됨)
                 try {
                   final mainController = Provider.of<MainScreenController>(context, listen: false);
                   mainController.mapController.move(firstPoint, 12.0);
@@ -609,44 +524,42 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 }
               }
 
-              navigationContext.pop(); // LoadingDialog 닫기
+              navigationContext.pop();
 
               Scaffold.of(context).showBottomSheet(
                     (context) => GestureDetector(
                   onVerticalDragEnd: (details) {
-                    // 아래로 드래그한 경우 (속도가 양수)
                     if (details.primaryVelocity != null &&
                         details.primaryVelocity! > 0) {
-                      // 항적 지우기
                       viewModel.clearRoutes();
                       viewModel.setNavigationHistoryMode(false);
 
-                      // MainScreen의 selectedIndex를 0으로 초기화
                       final MainScreenState =
                       context.findAncestorStateOfType<State<MainScreen>>();
                       if (MainScreenState != null) {
-                        (MainScreenState as dynamic).selectedIndex = 0;
+                        try {
+                          (MainScreenState as dynamic).selectedIndex = 0;
+                        } catch (e) {}
                       }
 
-                      // 바텀시트 닫기
                       if (mounted) Navigator.pop(context);
                     }
-                    // ⚡ Navigator.of(context).pop(); 제거
                   },
                   child: PopScope(
                     canPop: false,
                     onPopInvokedWithResult: (bool didPop, dynamic result) {
                       if (didPop) return;
-                      // 뒤로가기 누를 때도 MainScreen의 selectedIndex를 0으로 초기화 추가
+
                       final MainScreenState =
                       context.findAncestorStateOfType<State<MainScreen>>();
                       if (MainScreenState != null) {
-                        (MainScreenState as dynamic).selectedIndex = 0;
+                        try {
+                          (MainScreenState as dynamic).selectedIndex = 0;
+                        } catch (e) {}
                       }
 
                       viewModel.clearRoutes();
                       viewModel.setNavigationHistoryMode(false);
-                      // 뒤로가기 허용
                       Navigator.of(context).pop();
                     },
                     child: _buildCollapsedBottomSheet(
@@ -660,11 +573,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 ),
               );
             } catch (e) {
-              // 🔍 디버깅: 에러
               NavigationDebugHelper.debugPrint('에러 발생: $e', location: 'nav_tab.error');
 
-              // 에러 처리
-              Navigator.of(context).pop(); // 로딩 다이얼로그 닫기
+              Navigator.of(context).pop();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
@@ -672,7 +583,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               }
             }
           },
-          //UI 꾸미기 - 원본 그대로
           child: Container(
             margin: EdgeInsets.only(bottom: getSize12().toDouble()),
             decoration: BoxDecoration(
@@ -690,14 +600,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 선박명 (큰 글씨)
                         TextWidgetString(shipNm, getTextleft(), getSize16(),
                             getText700(), getColorBlackType2()),
                         SizedBox(height: getSize4().toDouble()),
-                        // MMSI와 날짜 정보
                         Row(
                           children: [
-                            // MMSI 라벨과 값
                             TextWidgetString(
                                 'MMSI ',
                                 getTextleft(),
@@ -707,7 +614,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                             TextWidgetString(mmsi, getTextleft(), getSize12(),
                                 getText600(), getColorGrayType3()),
                             SizedBox(width: getSize12().toDouble()),
-                            // DATE 라벨과 값
                             TextWidgetString(
                                 'DATE ',
                                 getTextleft(),
@@ -733,65 +639,85 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
           ));
     });
   }
+}
 
-  // 축소된 바텀시트 - 원본 그대로
-  Widget _buildCollapsedBottomSheet(BuildContext context, String shipName,
-      String mmsi, String formattedTime, RouteSearchProvider viewModel) {
-    // viewModel에서 첫 번째와 마지막 항적의 시간을 가져옵니다
-    String timeRange = '00:00:00~00:00:00'; // 기본값
+// 항행 이력 상세보기 바텀시트 (클래스 외부 함수)
+Widget _buildCollapsedBottomSheet(
+    BuildContext context,
+    String shipNm,
+    String mmsi,
+    String formattedTime,
+    RouteSearchProvider viewModel,
+    ) {
+  String startTime = formattedTime;
+  String endTime = formattedTime;
+  String timeRange =
+      '${startTime.split('.').last}:00:00 ~ ${endTime.split('.').last}:23:59:59';
 
-    if (viewModel.pastRoutes.isNotEmpty) {
-      // 첫 번째 항적의 시간
-      var firstRoute = viewModel.pastRoutes.first;
-      DateTime? firstTime;
-      if (firstRoute.regDt != null) {
-        firstTime = DateTime.fromMillisecondsSinceEpoch(firstRoute.regDt!);
-      }
-
-      // 마지막 항적의 시간
-      var lastRoute = viewModel.pastRoutes.last;
-      DateTime? lastTime;
-      if (lastRoute.regDt != null) {
-        lastTime = DateTime.fromMillisecondsSinceEpoch(lastRoute.regDt!);
-      }
-
-      // 시간 범위 포맷팅
-      if (firstTime != null && lastTime != null) {
-        timeRange =
-        "${firstTime.hour.toString().padLeft(2, '0')}:${firstTime.minute.toString().padLeft(2, '0')}:${firstTime.second.toString().padLeft(2, '0')}"
-            "~${lastTime.hour.toString().padLeft(2, '0')}:${lastTime.minute.toString().padLeft(2, '0')}:${lastTime.second.toString().padLeft(2, '0')}";
-      }
-    }
-
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.all(16),
+  return Container(
+    height: 120,
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFFFFF),
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(DesignConstants.radiusXL),
+        topRight: Radius.circular(DesignConstants.radiusXL),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 10,
+          offset: const Offset(0, -2),
+        ),
+      ],
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignConstants.spacing16,
+        vertical: DesignConstants.spacing12,
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 상단 영역: 선박 정보와 버튼들
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  TextWidgetString(shipName, getTextleft(), getSize16(),
-                      getText700(), getColorBlackType2()),
-                  SizedBox(width: getSize8().toDouble()),
-                  TextWidgetString('($mmsi)', getTextleft(), getSize14(),
-                      getText400(), getColorGrayType3()),
-                ],
+              // 선박 정보 (왼쪽)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidgetString(
+                      '$mmsi / $shipNm',
+                      getTextleft(),
+                      getSize18(),
+                      getText600(),
+                      getColorBlackType2(),
+                    ),
+                    SizedBox(height: getSize4().toDouble()),
+                    TextWidgetString(formattedTime, getTextleft(), getSize14(),
+                        getText400(), getColorGrayType3()),
+                  ],
+                ),
               ),
+              // 버튼들 (오른쪽)
               Row(
                 children: [
+                  // 항행이력 다시 열기 버튼 (아래 방향 화살표)
                   IconButton(
-                    icon: SvgPicture.asset('assets/kdn/home/img/refresh.svg'),
+                    icon: SvgPicture.asset('assets/kdn/usm/img/down_select_img.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                            Colors.black, BlendMode.srcIn)),
                     onPressed: () {
+                      // 현재 바텀시트 닫기
                       Navigator.of(context).pop();
+                      // 항행이력 바텀시트 다시 열기
                       Scaffold.of(context).showBottomSheet(
                             (context) => MainViewNavigationSheet(
                           onClose: () {},
-                          resetDate: false, // 여기서는 날짜를 초기화하지 않음
-                          resetSearch: false, // MMSI, 선박명 초기화하지 않음
+                          resetDate: false,   // 날짜 유지
+                          resetSearch: false, // 검색 조건 유지
                         ),
                         backgroundColor: Colors.transparent,
                         shape: const RoundedRectangleBorder(
@@ -801,19 +727,26 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       );
                     },
                   ),
+                  // 닫기 버튼
                   IconButton(
-                    icon: Icon(Icons.close, color: getColorGrayType8()),
+                    icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                            Colors.black, BlendMode.srcIn)),
                     onPressed: () {
-                      // 👉 MainScreen의 selectedIndex를 0으로 초기화 추가
+                      // MainScreen의 selectedIndex를 0으로 초기화
                       final MainScreenState =
                       context.findAncestorStateOfType<State<MainScreen>>();
                       if (MainScreenState != null) {
-                        (MainScreenState as dynamic).selectedIndex = 0;
+                        try {
+                          (MainScreenState as dynamic).selectedIndex = 0;
+                        } catch (e) {}
                       }
 
-                      // ⚡ clearRoutes() 호출 제거 - 항적이 지워지지 않도록
-                      // viewModel.clearRoutes(); // 제거됨
+                      // 항행 히스토리 모드 해제
                       viewModel.setNavigationHistoryMode(false);
+                      // 바텀시트 닫기
                       Navigator.of(context).pop();
                     },
                   ),
@@ -821,17 +754,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               ),
             ],
           ),
-          Row(
-            children: [
-              TextWidgetString(formattedTime, getTextleft(), getSize14(),
-                  getText400(), getColorGrayType3()),
-              SizedBox(width: getSize16().toDouble()),
-              TextWidgetString(timeRange, getTextleft(), getSize14(),
-                  getText400(), getColorGrayType3()),
-            ],
-          ),
+          SizedBox(height: getSize8().toDouble()),
+          // 시간 범위 정보
+          TextWidgetString(timeRange, getTextleft(), getSize14(),
+              getText400(), getColorGrayType3()),
         ],
       ),
-    );
-  }
+    ),
+  );
 }

@@ -135,13 +135,18 @@ FontWeight getText400() {
   return FontWeight.w400;
 }
 
-FontWeight getText700() {
-  return FontWeight.w700;
+FontWeight getText500() {
+  return FontWeight.w500;
 }
 
 FontWeight getText600() {
   return FontWeight.w600;
 }
+
+FontWeight getText700() {
+  return FontWeight.w700;
+}
+
 
 FontWeight getTextnormal() {
   return FontWeight.normal;
