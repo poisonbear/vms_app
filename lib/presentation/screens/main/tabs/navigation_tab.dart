@@ -9,8 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/widgets/common/common_widgets.dart';
-import 'package:vms_app/data/models/navigation/navigation_model.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
 import '../controllers/main_screen_controller.dart';
 import '../utils/navigation_debug.dart';
 
@@ -23,12 +21,14 @@ class MainViewNavigationSheet extends StatefulWidget {
   final Function? onClose;
   final bool resetDate;
   final bool resetSearch;
+  final bool initialSearch; // 초기 검색 실행 여부 추가
 
   const MainViewNavigationSheet({
     super.key,
     this.onClose,
     this.resetDate = true,
     this.resetSearch = true,
+    this.initialSearch = true, // 기본값은 true로 설정
   });
 
   @override
@@ -43,6 +43,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   PersistentBottomSheetController? _bottomSheetController;
   bool _isClosing = false;
 
+  // NavigationProvider를 정적으로 관리 (이전 검색 결과 유지)
+  static NavigationProvider? _sharedNavigationProvider;
+  static String? _savedMmsi;
+  static String? _savedShipName;
+
+  // Pull-to-refresh를 위한 RefreshController
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+
   @override
   void initState() {
     super.initState();
@@ -53,9 +61,28 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     NavigationDebugHelper.debugPrint('NavigationSheet initState', location: 'nav_tab');
 
     if (widget.resetSearch) {
+      // 검색 조건 초기화
       mmsiController.clear();
       shipNameController.clear();
+      _savedMmsi = null;
+      _savedShipName = null;
+    } else {
+      // 이전 검색 조건 복원
+      if (_savedMmsi != null) {
+        mmsiController.text = _savedMmsi!;
+      }
+      if (_savedShipName != null) {
+        shipNameController.text = _savedShipName!;
+      }
     }
+
+    // 검색 조건 변경 시 저장
+    mmsiController.addListener(() {
+      _savedMmsi = mmsiController.text;
+    });
+    shipNameController.addListener(() {
+      _savedShipName = shipNameController.text;
+    });
 
     if (widget.resetDate) {
       final today = DateTime.now();
@@ -65,23 +92,35 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
     }
 
-    navigationViewModel = NavigationProvider();
+    // NavigationProvider 재사용 또는 새로 생성
+    if (widget.resetSearch || widget.resetDate) {
+      // 초기화가 필요한 경우 새로 생성
+      navigationViewModel = NavigationProvider();
+      _sharedNavigationProvider = navigationViewModel;
+    } else {
+      // 이전 Provider 재사용 (검색 결과 유지)
+      navigationViewModel = _sharedNavigationProvider ?? NavigationProvider();
+      _sharedNavigationProvider ??= navigationViewModel;
+    }
 
-    final mmsi = context.read<UserState>().mmsi;
-    final role = context.read<UserState>().role;
+    // initialSearch가 true일 때만 자동 검색 실행
+    if (widget.initialSearch) {
+      final mmsi = context.read<UserState>().mmsi;
+      final role = context.read<UserState>().role;
 
-    navigationViewModel.getRosList(
-        startDate: selectedStartDate,
-        endDate: selectedEndDate,
-        mmsi: role == 'ROLE_USER'
-            ? mmsi
-            : (mmsiController.text.isEmpty
-            ? null
-            : int.tryParse(mmsiController.text)),
-        shipName: shipNameController.text.isEmpty
-            ? null
-            : shipNameController.text.toUpperCase()
-    );
+      navigationViewModel.getRosList(
+          startDate: selectedStartDate,
+          endDate: selectedEndDate,
+          mmsi: role == 'ROLE_USER'
+              ? mmsi
+              : (mmsiController.text.isEmpty
+              ? null
+              : int.tryParse(mmsiController.text)),
+          shipName: shipNameController.text.isEmpty
+              ? null
+              : shipNameController.text.toUpperCase()
+      );
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.postFrame');
@@ -92,6 +131,45 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  // 날짜 빠른 선택 함수
+  void _quickSelectDate(int days) {
+    final today = DateTime.now();
+    final startDate = today.subtract(Duration(days: days));
+
+    setState(() {
+      selectedStartDate = "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
+      selectedEndDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    });
+
+    // 자동으로 검색 실행
+    _performSearch();
+  }
+
+  // 검색 실행 함수
+  void _performSearch() {
+    final mmsi = context.read<UserState>().mmsi;
+    final role = context.read<UserState>().role;
+
+    navigationViewModel.getRosList(
+      startDate: selectedStartDate,
+      endDate: selectedEndDate,
+      mmsi: role == 'ROLE_USER'
+          ? mmsi
+          : (mmsiController.text.isEmpty
+          ? null
+          : int.tryParse(mmsiController.text)),
+      shipName: shipNameController.text.isEmpty
+          ? null
+          : shipNameController.text.toUpperCase(),
+    );
+  }
+
+  // Pull-to-refresh 함수
+  Future<void> _onRefresh() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    _performSearch();
   }
 
   @override
@@ -177,115 +255,148 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                           ),
                         ],
                       ),
-                      SizedBox(height: getSize20().toDouble()),
-                      // 날짜 선택 영역
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: getSize40().toDouble(),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  final result = await showModalBottomSheet<String>(
-                                    context: context,
-                                    backgroundColor: Colors.transparent,
-                                    isScrollControlled: true,
-                                    builder: (context) => MainViewNavigationDate(
-                                      title: '시작일자 선택',
-                                      onClose: (startDate, endDate) {
-                                        setState(() {
-                                          selectedStartDate = startDate;
-                                        });
-                                      },
-                                    ),
-                                  );
-                                  refreshDates();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  padding: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
-                                    side: BorderSide(color: getColorGrayType7(), width: 1),
-                                  ),
+                      SizedBox(height: getSize10().toDouble()),
+
+                      // 날짜 빠른 선택 버튼들
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildQuickDateButton('오늘', () => _quickSelectDate(0)),
+                            SizedBox(width: getSize8().toDouble()),
+                            _buildQuickDateButton('어제', () => _quickSelectDate(1)),
+                            SizedBox(width: getSize8().toDouble()),
+                            _buildQuickDateButton('최근 7일', () => _quickSelectDate(7)),
+                            SizedBox(width: getSize8().toDouble()),
+                            _buildQuickDateButton('최근 30일', () => _quickSelectDate(30)),
+                            SizedBox(width: getSize8().toDouble()),
+                            // 새로고침 버튼 - 조회 버튼과 동일한 스타일
+                            ElevatedButton(
+                              onPressed: () {
+                                // 모든 조건 초기화
+                                setState(() {
+                                  // 날짜 초기화
+                                  final today = DateTime.now();
+                                  selectedStartDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                                  selectedEndDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+
+                                  // 검색 조건 초기화
+                                  mmsiController.clear();
+                                  shipNameController.clear();
+                                  _savedMmsi = null;
+                                  _savedShipName = null;
+
+                                  // NavigationProvider 새로 생성 (검색 결과 초기화)
+                                  navigationViewModel = NavigationProvider();
+                                  _sharedNavigationProvider = navigationViewModel;
+                                });
+
+                                // 초기화 후 자동 검색 실행
+                                _performSearch();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: getColorSkyType2(),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: getSize12().toDouble(),
+                                  vertical: getSize8().toDouble(),
                                 ),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    selectedStartDate,
-                                    style: TextStyle(
-                                      fontSize: getSize14().toDouble(),
-                                      fontWeight: FontWeight.w400,
-                                      color: const Color(0xff5D647A),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: getSize16().toDouble()),
-                          Expanded(
-                            child: SizedBox(
-                              height: getSize40().toDouble(),
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  final result = await showModalBottomSheet<String>(
-                                    context: context,
-                                    backgroundColor: Colors.transparent,
-                                    isScrollControlled: true,
-                                    builder: (context) => MainViewNavigationDate(
-                                      title: '종료일자 선택',
-                                      onClose: (startDate, endDate) {
-                                        setState(() {
-                                          selectedEndDate = endDate;
-                                        });
-                                      },
-                                    ),
-                                  );
-                                  refreshDates();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  padding: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(getSize4().toDouble()),
-                                    side: BorderSide(color: getColorGrayType7(), width: 1),
-                                  ),
-                                ),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    selectedEndDate,
-                                    style: TextStyle(
-                                      fontSize: getSize14().toDouble(),
-                                      fontWeight: FontWeight.w400,
-                                      color: const Color(0xff5D647A),
-                                    ),
-                                  ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                 ),
                               ),
+                              child: Icon(Icons.refresh, size: 20, color: getColorWhiteType1()),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      SizedBox(height: getSize16().toDouble()),
+                      SizedBox(height: getSize10().toDouble()),
+
+                      // 선택된 날짜 표시 (클릭 가능)
+                      InkWell(
+                        onTap: () async {
+                          // 모달 바텀시트로 날짜 선택 화면 열기
+                          await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.55, // 화면 높이의 55%로 더 축소
+                              child: Material(
+                                color: Colors.transparent,
+                                child: MainViewNavigationDate(
+                                  title: '날짜 선택',
+                                  onClose: (startDate, endDate) {
+                                    setState(() {
+                                      selectedStartDate = startDate;
+                                      selectedEndDate = endDate;
+                                    });
+                                    _performSearch();
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: getSize12().toDouble(),
+                              vertical: getSize8().toDouble()
+                          ),
+                          decoration: BoxDecoration(
+                            color: getColorWhiteType1(),
+                            borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                            border: Border.all(color: getColorGrayType7(), width: 1),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.calendar_today, size: 16, color: getColorGrayType3()),
+                              SizedBox(width: getSize8().toDouble()),
+                              TextWidgetString(
+                                  '$selectedStartDate ~ $selectedEndDate',
+                                  getTextcenter(),
+                                  getSize14(),
+                                  getText500(),
+                                  getColorBlackType2()
+                              ),
+                              SizedBox(width: getSize8().toDouble()),
+                              Icon(Icons.arrow_drop_down, size: 20, color: getColorGrayType3()),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: getSize10().toDouble()),
+
+                      // 검색 입력 필드들
                       Row(
                         children: [
+                          // MMSI 입력 필드 (초기화 버튼 포함)
                           Expanded(
                             child: SizedBox(
                               height: getSize40().toDouble(),
                               child: TextFormField(
                                 controller: mmsiController,
-                                onTap: () {},
-                                onChanged: (value) {
-                                  mmsiController.text = value;
-                                },
+                                style: TextStyle(
+                                  fontSize: getSize12().toDouble(),
+                                  color: getColorBlackType2(),
+                                ),
                                 decoration: InputDecoration(
                                   hintText: 'MMSI 입력',
                                   hintStyle: TextStyle(
                                       color: getColorGrayType8(),
-                                      fontSize: getSize14().toDouble(),
+                                      fontSize: getSize12().toDouble(),
                                       fontWeight: FontWeight.w400),
+                                  suffixIcon: mmsiController.text.isNotEmpty
+                                      ? IconButton(
+                                    icon: Icon(Icons.clear, size: 18, color: getColorGrayType3()),
+                                    onPressed: () {
+                                      setState(() {
+                                        mmsiController.clear();
+                                      });
+                                    },
+                                  )
+                                      : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                     borderSide: BorderSide(color: getColorGrayType7(), width: 1),
@@ -296,35 +407,50 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(getSize4().toDouble()),
-                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
+                                    borderSide: BorderSide(color: getColorSkyType2(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
                                       vertical: getSize12().toDouble()),
                                   isDense: true,
-                                  fillColor: Colors.white,
+                                  fillColor: getColorWhiteType1(),
                                   filled: true,
                                 ),
                                 keyboardType: TextInputType.number,
+                                onChanged: (value) {
+                                  setState(() {});
+                                },
                               ),
                             ),
                           ),
                           SizedBox(width: getSize12().toDouble()),
+
+                          // 선박명 입력 필드 (초기화 버튼 포함)
                           Expanded(
                             child: SizedBox(
                               height: getSize40().toDouble(),
                               child: TextFormField(
                                 controller: shipNameController,
-                                onTap: () {},
-                                onChanged: (value) {
-                                  shipNameController.text = value;
-                                },
+                                style: TextStyle(
+                                  fontSize: getSize12().toDouble(),
+                                  color: getColorBlackType2(),
+                                ),
                                 decoration: InputDecoration(
                                   hintText: '선박명 입력',
                                   hintStyle: TextStyle(
                                       color: getColorGrayType8(),
-                                      fontSize: getSize14().toDouble(),
+                                      fontSize: getSize12().toDouble(),
                                       fontWeight: FontWeight.w400),
+                                  suffixIcon: shipNameController.text.isNotEmpty
+                                      ? IconButton(
+                                    icon: Icon(Icons.clear, size: 18, color: getColorGrayType3()),
+                                    onPressed: () {
+                                      setState(() {
+                                        shipNameController.clear();
+                                      });
+                                    },
+                                  )
+                                      : null,
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(getSize4().toDouble()),
                                     borderSide: BorderSide(color: getColorGrayType7(), width: 1),
@@ -335,103 +461,148 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(getSize4().toDouble()),
-                                    borderSide: BorderSide(color: getColorGrayType7(), width: 1),
+                                    borderSide: BorderSide(color: getColorSkyType2(), width: 1),
                                   ),
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: getSize12().toDouble(),
                                       vertical: getSize12().toDouble()),
                                   isDense: true,
-                                  fillColor: Colors.white,
+                                  fillColor: getColorWhiteType1(),
                                   filled: true,
                                 ),
+                                onChanged: (value) {
+                                  setState(() {});
+                                },
                               ),
                             ),
                           ),
                           SizedBox(width: getSize12().toDouble()),
+
+                          // 조회 버튼
                           SizedBox(
                             height: getSize40().toDouble(),
-                            child: ElevatedButton(
-                              onPressed: () {
-                                final mmsi = context.read<UserState>().mmsi;
-                                final role = context.read<UserState>().role;
-
-                                navigationViewModel.getRosList(
-                                  startDate: selectedStartDate,
-                                  endDate: selectedEndDate,
-                                  mmsi: role == 'ROLE_USER'
-                                      ? mmsi
-                                      : (mmsiController.text.isEmpty
-                                      ? null
-                                      : int.tryParse(mmsiController.text)),
-                                  shipName: shipNameController.text.isEmpty
-                                      ? null
-                                      : shipNameController.text.toUpperCase(),
+                            child: Consumer<NavigationProvider>(
+                              builder: (context, provider, child) {
+                                return ElevatedButton(
+                                  onPressed: provider.isLoading ? null : _performSearch,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: getColorSkyType2(),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                                    ),
+                                    fixedSize: Size(getSize65().toDouble(), getSize40().toDouble()),
+                                    padding: EdgeInsets.zero,
+                                  ),
+                                  child: provider.isLoading
+                                      ? SizedBox(
+                                    width: getSize16().toDouble(),
+                                    height: getSize16().toDouble(),
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(getColorWhiteType1()),
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                      : Text(
+                                    '조회',
+                                    style: TextStyle(
+                                      fontSize: getSize14().toDouble(),
+                                      fontWeight: FontWeight.w600,
+                                      color: getColorWhiteType1(),
+                                    ),
+                                  ),
                                 );
                               },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueAccent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(getSize4().toDouble()),
-                                ),
-                                fixedSize: Size(getSize65().toDouble(), getSize40().toDouble()),
-                                padding: EdgeInsets.zero,
-                              ),
-                              child: Text(
-                                '조회',
-                                style: TextStyle(
-                                  fontSize: getSize14().toDouble(),
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
-                              ),
                             ),
                           ),
                         ],
                       ),
                       SizedBox(height: getSize20().toDouble()),
+
+                      // 리스트 영역 (Pull-to-refresh 추가)
                       Expanded(
                         child: Consumer<NavigationProvider>(
                           builder: (context, provider, child) {
                             List<dynamic> rosList = provider.rosList;
 
+                            // 로딩 스켈레톤 표시
+                            if (provider.isLoading && rosList.isEmpty) {
+                              return _buildLoadingSkeleton();
+                            }
+
                             if (rosList.isEmpty) {
-                              return Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(getSize20().toDouble()),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(getSize8().toDouble()),
-                                  border: Border.all(color: getColorGrayType6(), width: 1),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.info_outline, size: 48, color: getColorGrayType8()),
-                                    SizedBox(height: getSize16().toDouble()),
-                                    TextWidgetString(
-                                      '검색 결과가 없습니다.',
-                                      getTextcenter(),
-                                      getSize16(),
-                                      getText600(),
-                                      getColorGrayType2(),
+                              return RefreshIndicator(
+                                key: _refreshIndicatorKey,
+                                onRefresh: _onRefresh,
+                                child: SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  child: Container(
+                                    height: MediaQuery.of(context).size.height * 0.4,
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(getSize20().toDouble()),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.info_outline, size: 48, color: getColorGrayType8()),
+                                        SizedBox(height: getSize16().toDouble()),
+                                        TextWidgetString(
+                                          '검색 결과가 없습니다.',
+                                          getTextcenter(),
+                                          getSize16(),
+                                          getText600(),
+                                          getColorGrayType2(),
+                                        ),
+                                        SizedBox(height: getSize8().toDouble()),
+                                        TextWidgetString(
+                                          '아래로 당겨서 새로고침',
+                                          getTextcenter(),
+                                          getSize12(),
+                                          getText400(),
+                                          getColorGrayType3(),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               );
                             }
-                            return SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  for (int i = 0; i < rosList.length; i++) ...[
-                                    _buildNavigationItem(
-                                        context,
-                                        '${rosList[i].mmsi}',
-                                        '${rosList[i].shipName}',
-                                        '${rosList[i].odb_reg_date ?? rosList[i].reg_dt ?? ''}',
-                                        routeSearchViewModel),
+
+                            // 데이터가 있을 때
+                            return RefreshIndicator(
+                              key: _refreshIndicatorKey,
+                              onRefresh: _onRefresh,
+                              child: SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: Column(
+                                  children: [
+                                    // 검색 결과 개수 표시
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: getSize12().toDouble(),
+                                        vertical: getSize8().toDouble(),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          TextWidgetString(
+                                            '검색 결과: ${rosList.length}건',
+                                            getTextleft(),
+                                            getSize12(),
+                                            getText500(),
+                                            getColorGrayType3(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // 리스트 아이템들
+                                    for (int i = 0; i < rosList.length; i++) ...[
+                                      _buildNavigationItem(
+                                          context,
+                                          '${rosList[i].mmsi}',
+                                          '${rosList[i].shipName}',
+                                          '${rosList[i].odb_reg_date ?? rosList[i].reg_dt ?? ''}',
+                                          routeSearchViewModel),
+                                    ],
                                   ],
-                                ],
+                                ),
                               ),
                             );
                           },
@@ -444,6 +615,108 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             ),
           ),
         ));
+  }
+
+  // 날짜 빠른 선택 버튼 위젯
+  Widget _buildQuickDateButton(String label, VoidCallback onPressed) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+            horizontal: getSize12().toDouble(),
+            vertical: getSize8().toDouble()
+        ),
+        side: BorderSide(color: getColorGrayType7()),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(getSize4().toDouble()),
+        ),
+      ),
+      child: TextWidgetString(
+        label,
+        getTextcenter(),
+        getSize12(),
+        getText500(),
+        getColorGrayType3(),
+      ),
+    );
+  }
+
+  // 로딩 스켈레톤 위젯
+  Widget _buildLoadingSkeleton() {
+    return SingleChildScrollView(
+      child: Column(
+        children: List.generate(5, (index) => _buildSkeletonItem()),
+      ),
+    );
+  }
+
+  // 스켈레톤 아이템 위젯
+  Widget _buildSkeletonItem() {
+    return Container(
+      margin: EdgeInsets.only(bottom: getSize12().toDouble()),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(getSize4().toDouble()),
+        border: Border.all(color: getColorGrayType7(), width: 1),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            vertical: getSize16().toDouble(),
+            horizontal: getSize12().toDouble()),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 선박명 스켈레톤
+                  Container(
+                    height: getSize16().toDouble(),
+                    width: getSize100().toDouble(),
+                    decoration: BoxDecoration(
+                      color: getColorGrayType7(),
+                      borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                    ),
+                  ),
+                  SizedBox(height: getSize8().toDouble()),
+                  // MMSI/DATE 스켈레톤
+                  Row(
+                    children: [
+                      Container(
+                        height: getSize12().toDouble(),
+                        width: getSize60().toDouble(),
+                        decoration: BoxDecoration(
+                          color: getColorGrayType7(),
+                          borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                        ),
+                      ),
+                      SizedBox(width: getSize12().toDouble()),
+                      Container(
+                        height: getSize12().toDouble(),
+                        width: getSize80().toDouble(),
+                        decoration: BoxDecoration(
+                          color: getColorGrayType7(),
+                          borderRadius: BorderRadius.circular(getSize4().toDouble()),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // 스켈레톤 애니메이션 효과를 위한 컨테이너
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: getColorGrayType7(),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -649,117 +922,412 @@ Widget _buildCollapsedBottomSheet(
     String formattedTime,
     RouteSearchProvider viewModel,
     ) {
-  String startTime = formattedTime;
-  String endTime = formattedTime;
-  String timeRange =
-      '${startTime.split('.').last}:00:00 ~ ${endTime.split('.').last}:23:59:59';
+  // 실제 항행시간 계산
+  String timeRange = '';
+  if (viewModel.pastRoutes.isNotEmpty) {
+    // 실제 항행 데이터가 있을 경우
+    try {
+      // 첫 번째 항행 기록 (가장 오래된)
+      final firstRoute = viewModel.pastRoutes.first;
+      final lastRoute = viewModel.pastRoutes.last;
+
+      // regDt가 있는 경우 파싱 (yyyyMMddHHmmss 형식)
+      if (firstRoute.regDt != null && lastRoute.regDt != null) {
+        // int를 String으로 변환
+        final startTime = firstRoute.regDt.toString();
+        final endTime = lastRoute.regDt.toString();
+
+        // 시간 포맷팅
+        if (startTime.length >= 14 && endTime.length >= 14) {
+          final startFormatted = '${startTime.substring(8, 10)}:${startTime.substring(10, 12)}:${startTime.substring(12, 14)}';
+          final endFormatted = '${endTime.substring(8, 10)}:${endTime.substring(10, 12)}:${endTime.substring(12, 14)}';
+          timeRange = '$formattedTime $startFormatted ~ $endFormatted';
+        } else {
+          timeRange = '$formattedTime 00:00:00 ~ 23:59:59';
+        }
+      } else {
+        timeRange = '$formattedTime 00:00:00 ~ 23:59:59';
+      }
+    } catch (e) {
+      timeRange = '$formattedTime 00:00:00 ~ 23:59:59';
+    }
+  } else {
+    // 항행 데이터가 없을 경우 기본값
+    timeRange = '$formattedTime 00:00:00 ~ 23:59:59';
+  }
 
   return Container(
-    height: 120,
+    height: 135,  // 140 → 135로 조정
     decoration: BoxDecoration(
-      color: const Color(0xFFFFFFFF),
+      color: getColorWhiteType1(),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(DesignConstants.radiusXL),
         topRight: Radius.circular(DesignConstants.radiusXL),
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          offset: const Offset(0, -2),
+          color: getColorBlackType1().withOpacity(0.15),
+          blurRadius: 20,
+          offset: const Offset(0, -5),
         ),
       ],
     ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DesignConstants.spacing16,
-        vertical: DesignConstants.spacing12,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 상단 영역: 선박 정보와 버튼들
-          Row(
+    child: Column(
+      children: [
+        // 드래그 핸들
+        Container(
+          width: getSize40().toDouble(),
+          height: getSize4().toDouble(),
+          margin: EdgeInsets.only(top: getSize6().toDouble()),
+          decoration: BoxDecoration(
+            color: getColorGrayType7(),
+            borderRadius: BorderRadius.circular(getSize2().toDouble()),
+          ),
+        ),
+
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: getSize12().toDouble(), // 16 → 12로 감소
+            vertical: getSize8().toDouble(),    // 10 → 8 유지
+          ),
+          child: Column(
             children: [
-              // 선박 정보 (왼쪽)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidgetString(
-                      '$mmsi / $shipNm',
-                      getTextleft(),
-                      getSize18(),
-                      getText600(),
-                      getColorBlackType2(),
-                    ),
-                    SizedBox(height: getSize4().toDouble()),
-                    TextWidgetString(formattedTime, getTextleft(), getSize14(),
-                        getText400(), getColorGrayType3()),
-                  ],
-                ),
-              ),
-              // 버튼들 (오른쪽)
+              // 첫 번째 줄: MMSI와 선명 정보, 버튼들
               Row(
                 children: [
-                  // 항행이력 다시 열기 버튼 (아래 방향 화살표)
-                  IconButton(
-                    icon: SvgPicture.asset('assets/kdn/usm/img/down_select_img.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                            Colors.black, BlendMode.srcIn)),
-                    onPressed: () {
-                      // 현재 바텀시트 닫기
-                      Navigator.of(context).pop();
-                      // 항행이력 바텀시트 다시 열기
-                      Scaffold.of(context).showBottomSheet(
-                            (context) => MainViewNavigationSheet(
-                          onClose: () {},
-                          resetDate: false,   // 날짜 유지
-                          resetSearch: false, // 검색 조건 유지
-                        ),
-                        backgroundColor: Colors.transparent,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(DesignConstants.radiusXL)),
-                        ),
-                      );
-                    },
-                  ),
-                  // 닫기 버튼
-                  IconButton(
-                    icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                            Colors.black, BlendMode.srcIn)),
-                    onPressed: () {
-                      // MainScreen의 selectedIndex를 0으로 초기화
-                      final MainScreenState =
-                      context.findAncestorStateOfType<State<MainScreen>>();
-                      if (MainScreenState != null) {
-                        try {
-                          (MainScreenState as dynamic).selectedIndex = 0;
-                        } catch (e) {}
-                      }
+                  // MMSI와 선명 정보 (왼쪽) - 카드 스타일
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: getSize12().toDouble(),
+                        vertical: getSize10().toDouble(), // 8 → 10으로 증가
+                      ),
+                      decoration: BoxDecoration(
+                        color: getColorGrayType14(),
+                        borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                      ),
+                      child: Row(
+                        children: [
+                          // MMSI 섹션
+                          Container(
+                            padding: EdgeInsets.only(right: getSize12().toDouble()),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: getColorGrayType7(),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                TextWidgetString(
+                                  'MMSI : ',
+                                  getTextleft(),
+                                  getSize14(),  // 12 → 14로 증가
+                                  getText400(),
+                                  getColorGrayType3(),
+                                ),
+                                TextWidgetString(
+                                  mmsi,
+                                  getTextleft(),
+                                  getSize14(),  // 12 → 14로 증가
+                                  getText600(),
+                                  getColorBlackType2(),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: getSize12().toDouble()),
+                          // 선명 섹션 (줄임표 처리 + 탭으로 전체 표시)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                TextWidgetString(
+                                  '선명 : ',
+                                  getTextleft(),
+                                  getSize14(),
+                                  getText400(),
+                                  getColorGrayType3(),
+                                ),
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      // 텍스트가 실제로 잘리는지 확인
+                                      final textPainter = TextPainter(
+                                        text: TextSpan(
+                                          text: shipNm.isEmpty ? 'Unknown' : shipNm,
+                                          style: TextStyle(
+                                            fontSize: getSize14().toDouble(),
+                                            fontWeight: getText600(),
+                                          ),
+                                        ),
+                                        maxLines: 1,
+                                        textDirection: TextDirection.ltr,
+                                      )..layout(maxWidth: constraints.maxWidth);
 
-                      // 항행 히스토리 모드 해제
-                      viewModel.setNavigationHistoryMode(false);
-                      // 바텀시트 닫기
-                      Navigator.of(context).pop();
-                    },
+                                      final isOverflowing = textPainter.didExceedMaxLines ||
+                                          textPainter.width > constraints.maxWidth;
+
+                                      return GestureDetector(
+                                        onTap: isOverflowing ? () {
+                                          // 탭하면 다이얼로그로 전체 선명 표시
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.directions_boat,
+                                                      size: 20,
+                                                      color: getColorSkyType2(),
+                                                    ),
+                                                    SizedBox(width: getSize8().toDouble()),
+                                                    TextWidgetString(
+                                                      '선박 정보',
+                                                      getTextleft(),
+                                                      getSize16(),
+                                                      getText600(),
+                                                      getColorBlackType2(),
+                                                    ),
+                                                  ],
+                                                ),
+                                                content: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        TextWidgetString(
+                                                          'MMSI : ',
+                                                          getTextleft(),
+                                                          getSize14(),
+                                                          getText400(),
+                                                          getColorGrayType3(),
+                                                        ),
+                                                        TextWidgetString(
+                                                          mmsi,
+                                                          getTextleft(),
+                                                          getSize14(),
+                                                          getText600(),
+                                                          getColorBlackType2(),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: getSize8().toDouble()),
+                                                    Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        TextWidgetString(
+                                                          '선명 : ',
+                                                          getTextleft(),
+                                                          getSize14(),
+                                                          getText400(),
+                                                          getColorGrayType3(),
+                                                        ),
+                                                        Expanded(
+                                                          child: TextWidgetString(
+                                                            shipNm,
+                                                            getTextleft(),
+                                                            getSize14(),
+                                                            getText600(),
+                                                            getColorSkyType2(),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                    },
+                                                    child: TextWidgetString(
+                                                      '확인',
+                                                      getTextcenter(),
+                                                      getSize14(),
+                                                      getText600(),
+                                                      getColorSkyType2(),
+                                                    ),
+                                                  ),
+                                                ],
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(getSize12().toDouble()),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        } : null,
+                                        child: Container(
+                                          color: Colors.transparent,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  shipNm.isEmpty ? 'Unknown' : shipNm,
+                                                  style: TextStyle(
+                                                    fontSize: getSize14().toDouble(),
+                                                    fontWeight: getText600(),
+                                                    color: isOverflowing
+                                                        ? getColorSkyType2()  // 잘렸을 때 파란색
+                                                        : getColorBlackType2(), // 일반 검은색
+                                                    decoration: isOverflowing
+                                                        ? TextDecoration.underline
+                                                        : TextDecoration.none,
+                                                    decorationColor: getColorSkyType2(),
+                                                    decorationStyle: TextDecorationStyle.dotted,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                              // 텍스트가 잘렸을 때만 정보 아이콘 표시
+                                              if (isOverflowing) ...[
+                                                SizedBox(width: getSize4().toDouble()),
+                                                Icon(
+                                                  Icons.info_outlined,  // 동그라미 테두리 안에 i 아이콘
+                                                  size: 16,
+                                                  color: getColorSkyType2(),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: getSize8().toDouble()),
+                  // 버튼들 (오른쪽)
+                  Row(
+                    children: [
+                      // 항행이력 다시 열기 버튼
+                      Container(
+                        decoration: BoxDecoration(
+                          color: getColorGrayType14(),
+                          borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                        ),
+                        child: IconButton(
+                          icon: SvgPicture.asset('assets/kdn/home/img/down_select_img.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: ColorFilter.mode(
+                                  getColorGrayType3(), BlendMode.srcIn)),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Scaffold.of(context).showBottomSheet(
+                                  (context) => MainViewNavigationSheet(
+                                onClose: () {},
+                                resetDate: false,
+                                resetSearch: false,
+                                initialSearch: false,
+                              ),
+                              backgroundColor: Colors.transparent,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(DesignConstants.radiusXL)),
+                              ),
+                            );
+                          },
+                          padding: EdgeInsets.all(getSize8().toDouble()),
+                          constraints: const BoxConstraints(),
+                        ),
+                      ),
+                      SizedBox(width: getSize4().toDouble()),
+                      // 닫기 버튼
+                      Container(
+                        decoration: BoxDecoration(
+                          color: getColorGrayType14(),
+                          borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                        ),
+                        child: IconButton(
+                          icon: SvgPicture.asset('assets/kdn/home/img/close.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: ColorFilter.mode(
+                                  getColorGrayType3(), BlendMode.srcIn)),
+                          onPressed: () {
+                            final MainScreenState =
+                            context.findAncestorStateOfType<State<MainScreen>>();
+                            if (MainScreenState != null) {
+                              try {
+                                (MainScreenState as dynamic).selectedIndex = 0;
+                              } catch (e) {}
+                            }
+                            viewModel.setNavigationHistoryMode(false);
+                            Navigator.of(context).pop();
+                          },
+                          padding: EdgeInsets.all(getSize8().toDouble()),
+                          constraints: const BoxConstraints(),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              SizedBox(height: getSize6().toDouble()), // 8 → 6으로 감소
+              // 두 번째 줄: 항행 시간 정보 (아이콘 추가)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: getSize12().toDouble(),
+                  vertical: getSize10().toDouble(), // 8 → 10으로 증가
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      getColorSkyType2().withOpacity(0.1),
+                      getColorSkyType2().withOpacity(0.05),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(getSize8().toDouble()),
+                  border: Border.all(
+                    color: getColorSkyType2().withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 18,  // 16 → 18로 증가
+                      color: getColorSkyType2(),
+                    ),
+                    SizedBox(width: getSize8().toDouble()),
+                    TextWidgetString(
+                      '항행시간 : ',
+                      getTextleft(),
+                      getSize14(),  // 12 → 14로 증가
+                      getText400(),
+                      getColorGrayType3(),
+                    ),
+                    Expanded(
+                      child: TextWidgetString(
+                        timeRange,
+                        getTextleft(),
+                        getSize14(),  // 12 → 14로 증가
+                        getText600(),
+                        getColorSkyType2(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
-          SizedBox(height: getSize8().toDouble()),
-          // 시간 범위 정보
-          TextWidgetString(timeRange, getTextleft(), getSize14(),
-              getText400(), getColorGrayType3()),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
