@@ -592,13 +592,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         ],
                                       ),
                                     ),
-                                    // 리스트 아이템들
+                                    // 리스트 아이템들 - 현재 NavigationModel 구조에 맞춤
                                     for (int i = 0; i < rosList.length; i++) ...[
                                       _buildNavigationItem(
                                           context,
-                                          '${rosList[i].mmsi}',
-                                          '${rosList[i].shipName}',
-                                          '${rosList[i].odb_reg_date ?? rosList[i].reg_dt ?? ''}',
+                                          '${rosList[i].mmsi ?? ''}',
+                                          '${rosList[i].shipName ?? ''}',
+                                          '${rosList[i].odb_reg_date ?? rosList[i].reg_dt ?? ''}', // snake_case 사용
                                           routeSearchViewModel),
                                     ],
                                   ],
@@ -931,7 +931,7 @@ Widget _buildCollapsedBottomSheet(
       final firstRoute = viewModel.pastRoutes.first;
       final lastRoute = viewModel.pastRoutes.last;
 
-      // regDt가 있는 경우 파싱 (yyyyMMddHHmmss 형식)
+      // regDt가 있는 경우 파싱 (yyyyMMddHHmmss 형식) - 🔧 여기도 수정!
       if (firstRoute.regDt != null && lastRoute.regDt != null) {
         // int를 String으로 변환
         final startTime = firstRoute.regDt.toString();

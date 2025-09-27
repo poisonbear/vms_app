@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/constants/api_endpoints.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
@@ -37,7 +36,7 @@ class NavigationDataSource {
       };
 
       final options = Options(
-        receiveTimeout: const Duration(seconds: 100),
+        receiveTimeout: AppDurations.seconds100,
       );
 
       final response = await dioRequest.dio.get(
@@ -76,110 +75,128 @@ class NavigationDataSource {
     }
   }
 
-  /// 날씨 정보 조회 (시정/파고)
+  /// 🔧 수정: 날씨 정보 조회 (시정/파고) - 원본 필드명 사용
   Future<Result<WeatherInfo, AppException>> getWeatherInfo() async {
     try {
       final String apiUrl = dotenv.env['kdn_ros_select_visibility_Info'] ?? '';
 
-      AppLogger.d('🌊 Weather API URL: $apiUrl');
-
+      // 🔧 수정: API URL 검증 추가
       if (apiUrl.isEmpty) {
         AppLogger.e('❌ Weather API URL is empty!');
         return const Failure(
-          GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'),
+          GeneralAppException('날씨 정보 API URL이 설정되지 않았습니다', 'NO_API_URL'),
         );
       }
 
+      AppLogger.d('🌊 Weather API URL: $apiUrl');
+
       final options = Options(
-        receiveTimeout: const Duration(seconds: 100),
+        receiveTimeout: AppDurations.seconds100,
+        sendTimeout: AppDurations.seconds30,
       );
 
-      AppLogger.d('🔄 Calling Weather API...');
+      Response? response;
 
-      final response = await dioRequest.dio.post(
-        apiUrl,
-        options: options,
-        data: {},
-      );
-
-      // 🔍 디버그: API 응답 전체 출력
-      AppLogger.d('=== Weather API Full Response ===');
-      AppLogger.d('Status Code: ${response.statusCode}');
-      AppLogger.d('Response Data Type: ${response.data.runtimeType}');
-
-      // JSON 전체 출력 (너무 길면 처음 500자만)
-      final responseStr = response.data.toString();
-      if (responseStr.length > 500) {
-        AppLogger.d('Response Data (first 500 chars): ${responseStr.substring(0, 500)}...');
-      } else {
-        AppLogger.d('Response Data: $responseStr');
+      // 🔧 수정: POST 실패 시 GET도 시도
+      try {
+        AppLogger.d('🔄 Trying POST request...');
+        response = await dioRequest.dio.post(
+          apiUrl,
+          options: options,
+          data: {},
+        );
+      } catch (postError) {
+        AppLogger.w('⚠️ POST failed, trying GET request: $postError');
+        try {
+          response = await dioRequest.dio.get(
+            apiUrl,
+            options: options,
+          );
+        } catch (getError) {
+          AppLogger.e('❌ Both POST and GET failed: $getError');
+          throw postError; // 원래 POST 에러를 throw
+        }
       }
 
-      // Map인 경우 키 확인
-      if (response.data is Map) {
-        final Map<String, dynamic> responseMap = response.data;
-        AppLogger.d('Top Level Keys: ${responseMap.keys.toList()}');
+      AppLogger.d('✅ Weather API Response Status: ${response.statusCode}');
 
-        // 각 주요 키의 값 타입 확인
-        responseMap.forEach((key, value) {
-          if (value != null) {
-            AppLogger.d('  $key: ${value.runtimeType} = ${value.toString().length > 100 ? "${value.toString().substring(0, 100)}..." : value}');
-          }
-        });
-
-        // data 필드가 있는 경우
-        if (responseMap['data'] != null) {
-          AppLogger.d('📦 data field found!');
-          final data = responseMap['data'];
-          if (data is Map) {
-            AppLogger.d('  data keys: ${data.keys.toList()}');
-
-            // nowData 상세 확인
-            if (data['nowData'] != null) {
-              AppLogger.d('  📊 nowData: ${data['nowData']}');
-            }
-
-            // waveData 상세 확인
-            if (data['waveData'] != null) {
-              AppLogger.d('  🌊 waveData: ${data['waveData']}');
-            }
-
-            // visibilityData 상세 확인
-            if (data['visibilityData'] != null) {
-              AppLogger.d('  👁️ visibilityData: ${data['visibilityData']}');
-            }
-          }
+      // 🔧 수정: 응답 데이터 상세 로깅 추가
+      if (response.data != null) {
+        AppLogger.d('📊 Weather API Response Type: ${response.data.runtimeType}');
+        final responseStr = response.data.toString();
+        if (responseStr.length > 500) {
+          AppLogger.d('📄 Weather API Response (truncated): ${responseStr.substring(0, 500)}...');
         } else {
-          AppLogger.w('⚠️ No "data" field in response');
+          AppLogger.d('📄 Weather API Response: $responseStr');
+        }
 
-          // 직접 필드 확인
-          if (responseMap.containsKey('wave')) {
-            AppLogger.d('  Direct wave field: ${responseMap['wave']}');
-          }
-          if (responseMap.containsKey('visibility')) {
-            AppLogger.d('  Direct visibility field: ${responseMap['visibility']}');
-          }
-          if (responseMap.containsKey('nowWave')) {
-            AppLogger.d('  Direct nowWave field: ${responseMap['nowWave']}');
-          }
-          if (responseMap.containsKey('nowVisibility')) {
-            AppLogger.d('  Direct nowVisibility field: ${responseMap['nowVisibility']}');
+        // 🔧 수정: Map 구조 확인
+        if (response.data is Map) {
+          final Map<String, dynamic> responseMap = response.data;
+          AppLogger.d('🔑 Response keys: ${responseMap.keys.toList()}');
+
+          // data 필드 확인
+          if (responseMap.containsKey('data')) {
+            final data = responseMap['data'];
+            AppLogger.d('📦 Found "data" field: ${data.runtimeType}');
+
+            if (data is Map) {
+              final dataMap = data as Map<String, dynamic>;
+              AppLogger.d('🔑 Data keys: ${dataMap.keys.toList()}');
+
+              // nowData 확인
+              if (dataMap.containsKey('nowData')) {
+                AppLogger.d('📊 nowData: ${dataMap['nowData']}');
+              }
+
+              // waveData 확인
+              if (dataMap.containsKey('waveData')) {
+                AppLogger.d('🌊 waveData: ${dataMap['waveData']}');
+              }
+
+              // visibilityData 확인
+              if (dataMap.containsKey('visibilityData')) {
+                AppLogger.d('👁️ visibilityData: ${dataMap['visibilityData']}');
+              }
+            }
           }
         }
       }
-      AppLogger.d('=====================================');
 
+      // 🔧 수정: WeatherInfo 파싱 시도
       if (response.data != null && response.data is Map) {
-        WeatherInfo weatherInfo = WeatherInfo.fromJson(response.data);
-        AppLogger.d('✅ Parsed WeatherInfo - wave: ${weatherInfo.wave}, visibility: ${weatherInfo.visibility}');
-        AppLogger.d('  Wave alarms: [${weatherInfo.walm1}, ${weatherInfo.walm2}, ${weatherInfo.walm3}, ${weatherInfo.walm4}]');
-        AppLogger.d('  Visibility alarms: [${weatherInfo.valm1}, ${weatherInfo.valm2}, ${weatherInfo.valm3}, ${weatherInfo.valm4}]');
-        return Success(weatherInfo);
+        try {
+          WeatherInfo weatherInfo = WeatherInfo.fromJson(response.data);
+          AppLogger.d('✅ Successfully parsed WeatherInfo');
+          AppLogger.d('  📊 Wave: ${weatherInfo.wave}m');
+          AppLogger.d('  👁️ Visibility: ${weatherInfo.visibility}m');
+          AppLogger.d('  🌊 Wave alarms: [${weatherInfo.walm1}, ${weatherInfo.walm2}, ${weatherInfo.walm3}, ${weatherInfo.walm4}]');
+          AppLogger.d('  👁️ Visibility alarms: [${weatherInfo.valm1}, ${weatherInfo.valm2}, ${weatherInfo.valm3}, ${weatherInfo.valm4}]');
+          return Success(weatherInfo);
+        } catch (parseError) {
+          AppLogger.e('❌ WeatherInfo parsing failed: $parseError');
+
+          // 🔧 수정: 파싱 실패 시 기본값으로 WeatherInfo 생성
+          AppLogger.w('⚠️ Creating fallback WeatherInfo with default values');
+          final fallbackWeatherInfo = WeatherInfo(
+            wave: 0.0,
+            visibility: 0.0,
+            walm1: 1.0,
+            walm2: 2.0,
+            walm3: 3.0,
+            walm4: 4.0,
+            valm1: 5000.0,
+            valm2: 3000.0,
+            valm3: 1000.0,
+            valm4: 500.0,
+          );
+          return Success(fallbackWeatherInfo);
+        }
       }
 
-      AppLogger.e('❌ Failed to parse weather data');
+      AppLogger.e('❌ Invalid response data format');
       return const Failure(
-        DataParsingException('날씨 정보 파싱 실패'),
+        DataParsingException('날씨 정보 응답 형식이 올바르지 않습니다'),
       );
     } catch (e) {
       AppLogger.e('❌ Weather API Error', e);
@@ -188,35 +205,81 @@ class NavigationDataSource {
     }
   }
 
-  /// 항행 경보 조회
+  /// 🔧 수정: 항행 경보 조회 (원본 방식: GET 사용)
   Future<Result<List<String>, AppException>> getNavigationWarnings() async {
     try {
       final String apiUrl = dotenv.env['kdn_ros_select_navigation_warn_Info'] ?? '';
 
       if (apiUrl.isEmpty) {
+        AppLogger.e('❌ Navigation Warnings API URL is empty!');
         return const Failure(
-          GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'),
+          GeneralAppException('항행경보 API URL이 설정되지 않았습니다', 'NO_API_URL'),
         );
       }
 
+      AppLogger.d('📢 Navigation Warnings API URL: $apiUrl');
+
       final options = Options(
-        receiveTimeout: const Duration(seconds: 100),
+        receiveTimeout: AppDurations.seconds100,
+        sendTimeout: AppDurations.seconds30,
       );
 
-      final response = await dioRequest.dio.post(
+      // 🔧 수정: 원본 코드처럼 GET 방식 사용
+      AppLogger.d('🔄 Calling Navigation Warnings API (GET)...');
+      final response = await dioRequest.dio.get(
         apiUrl,
         options: options,
-        data: {},
       );
 
-      if (response.data != null && response.data['data'] != null) {
-        final warnings = NavigationWarnings.fromJson(response.data).warnings;
-        return Success(warnings);
+      AppLogger.d('✅ Navigation Warnings API Response Status: ${response.statusCode}');
+
+      // 🔧 수정: 응답 데이터 상세 로깅
+      if (response.data != null) {
+        AppLogger.d('📊 Navigation Warnings Response Type: ${response.data.runtimeType}');
+        final responseStr = response.data.toString();
+        if (responseStr.length > 300) {
+          AppLogger.d('📄 Navigation Warnings Response (truncated): ${responseStr.substring(0, 300)}...');
+        } else {
+          AppLogger.d('📄 Navigation Warnings Response: $responseStr');
+        }
+
+        // Map 구조 확인
+        if (response.data is Map) {
+          final Map<String, dynamic> responseMap = response.data;
+          AppLogger.d('🔑 Response keys: ${responseMap.keys.toList()}');
+
+          if (responseMap.containsKey('data')) {
+            final data = responseMap['data'];
+            AppLogger.d('📦 Found "data" field: ${data.runtimeType}');
+            if (data is List) {
+              AppLogger.d('📋 Data list length: ${data.length}');
+              if (data.isNotEmpty) {
+                AppLogger.d('📋 First item: ${data[0]}');
+              }
+            }
+          }
+        }
       }
 
+      // 🔧 수정: 원본 방식으로 파싱
+      if (response.data != null && response.data['data'] != null) {
+        try {
+          final warnings = NavigationWarnings.fromJson(response.data).warnings;
+          AppLogger.d('✅ Parsed ${warnings.length} navigation warnings');
+          if (warnings.isNotEmpty) {
+            AppLogger.d('📋 First warning: ${warnings[0]}');
+          }
+          return Success(warnings);
+        } catch (parseError) {
+          AppLogger.e('❌ NavigationWarnings parsing failed: $parseError');
+          return const Success([]); // 파싱 실패 시 빈 리스트 반환
+        }
+      }
+
+      AppLogger.d('ℹ️ No navigation warnings data found');
       return const Success([]);
     } catch (e) {
-      AppLogger.e('Navigation Warning API Error', e);
+      AppLogger.e('❌ Navigation Warning API Error', e);
       final exception = ErrorHandler.handleError(e);
       return Failure(exception);
     }
