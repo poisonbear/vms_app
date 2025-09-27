@@ -1,7 +1,7 @@
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/terms_model.dart';
-import 'package:vms_app/domain/usecases/auth/get_terms_list.dart';
+import 'package:vms_app/domain/usecases/terms_usecases.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
 /// 통합 약관 Provider

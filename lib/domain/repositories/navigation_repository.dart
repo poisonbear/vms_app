@@ -1,13 +1,18 @@
 import 'package:vms_app/data/models/navigation_model.dart';
 
+/// 항행 정보 저장소 인터페이스
 abstract class NavigationRepository {
-  Future<List<RosModel>> getRosList({
+  /// 항행 이력 조회
+  Future<List<NavigationModel>> getRosList({
     String? startDate,
     String? endDate,
     int? mmsi,
     String? shipName,
   });
 
+  /// 날씨 정보 조회 (시정/파고)
   Future<WeatherInfo?> getWeatherInfo();
+
+  /// 항행 경보 조회
   Future<List<String>?> getNavigationWarnings();
 }

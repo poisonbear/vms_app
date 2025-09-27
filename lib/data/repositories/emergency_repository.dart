@@ -1,14 +1,16 @@
 import 'package:vms_app/data/datasources/emergency_datasource.dart';
 import 'package:vms_app/data/models/emergency_model.dart';
+import 'package:vms_app/domain/repositories/emergency_repository.dart' as domain;
 import 'package:vms_app/core/utils/app_logger.dart';
 
 /// 긴급 상황 저장소 구현
-class EmergencyRepository {
+class EmergencyRepository implements domain.EmergencyRepository {
   final EmergencyDataSource _dataSource;
 
   EmergencyRepository(this._dataSource);
 
   /// 긴급 상황 데이터 저장
+  @override
   Future<bool> saveEmergencyData(EmergencyData data) async {
     final result = await _dataSource.saveEmergencyData(data);
 
@@ -22,6 +24,7 @@ class EmergencyRepository {
   }
 
   /// 긴급 히스토리 로드
+  @override
   Future<List<EmergencyData>> loadEmergencyHistory() async {
     final result = await _dataSource.loadEmergencyHistory();
 
@@ -35,6 +38,7 @@ class EmergencyRepository {
   }
 
   /// 마지막 긴급 상황 로드
+  @override
   Future<EmergencyData?> loadLastEmergency() async {
     final result = await _dataSource.loadLastEmergency();
 
@@ -48,6 +52,7 @@ class EmergencyRepository {
   }
 
   /// 긴급 히스토리 삭제
+  @override
   Future<bool> clearHistory() async {
     final result = await _dataSource.clearHistory();
 
@@ -61,6 +66,7 @@ class EmergencyRepository {
   }
 
   /// 위치 추적 데이터 저장
+  @override
   Future<bool> saveLocationTracking(List<LocationTrackingData> locations) async {
     final result = await _dataSource.saveLocationTracking(locations);
 
@@ -74,6 +80,7 @@ class EmergencyRepository {
   }
 
   /// 위치 추적 데이터 로드
+  @override
   Future<List<LocationTrackingData>> loadLocationTracking() async {
     final result = await _dataSource.loadLocationTracking();
 
@@ -86,3 +93,6 @@ class EmergencyRepository {
     );
   }
 }
+
+// ===== 하위 호환성을 위한 Type Alias =====
+typedef EmergencyRepositoryImpl = EmergencyRepository;

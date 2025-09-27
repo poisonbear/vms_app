@@ -2,11 +2,11 @@ import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/services/cache_service.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
-import 'package:vms_app/domain/repositories/route_search_repository.dart';
+import 'package:vms_app/domain/repositories/vessel_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 
 class RouteSearchProvider extends BaseProvider {
-  late final RouteSearchRepository _routeSearchRepository;
+  late final VesselRepository  _vesselRepository ;
   
   // 캐시 매니저
   final _cache = SimpleCache();
@@ -24,7 +24,7 @@ class RouteSearchProvider extends BaseProvider {
   bool get isNavigationHistoryMode => _isNavigationHistoryMode;
 
   RouteSearchProvider() {
-    _routeSearchRepository = getIt<RouteSearchRepository>();
+    _vesselRepository = getIt<VesselRepository>(); // 변경됨
   }
 
   // 항행이력 지도 데이터 조회 - 캐싱 활성화
@@ -79,7 +79,7 @@ class RouteSearchProvider extends BaseProvider {
       AppLogger.d('[API] 호출 시작...');
       
       final response = await executeAsync(() async {
-        return await _routeSearchRepository.getVesselRoute(
+        return await _vesselRepository.getVesselRoute(
           regDt: regDt,
           mmsi: mmsi,
         );
