@@ -1,4 +1,4 @@
-import 'package:vms_app/data/models/navigation/vessel_route_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 
 abstract class RouteSearchRepository {
   Future<VesselRouteResponse> getVesselRoute({

@@ -1,13 +1,13 @@
 import 'package:geolocator/geolocator.dart';
 
-// 긴급 상황 데이터 모델 - 프로젝트 파라미터명 규칙 적용
+/// 긴급 상황 데이터 모델 - 프로젝트 파라미터명 규칙 적용
 class EmergencyData {
   final String emergency_id;
-  final int? mmsi; // int 타입으로 변경 (프로젝트 표준)
-  final String? ship_nm; // ship_nm으로 변경 (프로젝트 표준)
-  final double? lttd; // 위도 - 프로젝트 표준 파라미터명
-  final double? lntd; // 경도 - 프로젝트 표준 파라미터명
-  final DateTime reg_dt; // 등록일시 - 프로젝트 표준
+  final int? mmsi;
+  final String? ship_nm;
+  final double? lttd;  // 위도
+  final double? lntd;  // 경도
+  final DateTime reg_dt;
   final String emergency_status;
   final String? phone_no;
   final Map<String, dynamic>? additional_info;
@@ -24,7 +24,7 @@ class EmergencyData {
     this.additional_info,
   });
 
-  // Position 객체에서 위도/경도 추출하는 생성자
+  /// Position 객체에서 위도/경도 추출하는 생성자
   factory EmergencyData.fromPosition({
     required String emergency_id,
     int? mmsi,
@@ -48,7 +48,7 @@ class EmergencyData {
     );
   }
 
-  // JSON 변환 (SharedPreferences 저장용)
+  /// JSON 변환 (SharedPreferences 저장용)
   Map<String, dynamic> toJson() {
     return {
       'emergency_id': emergency_id,
@@ -77,7 +77,7 @@ class EmergencyData {
     );
   }
 
-  // Position 객체로 변환 (호환성)
+  /// Position 객체로 변환 (호환성)
   Position? toPosition() {
     if (lttd == null || lntd == null) return null;
 
@@ -120,23 +120,23 @@ class EmergencyData {
   }
 }
 
-// 긴급 상황 상태
+/// 긴급 상황 상태
 enum EmergencyStatus {
-  idle, // 평상시
-  preparing, // 준비중 (카운트다운)
-  active, // 긴급상황 활성
-  completed, // 완료
-  cancelled, // 취소됨
+  idle,       // 평상시
+  preparing,  // 준비중 (카운트다운)
+  active,     // 긴급상황 활성
+  completed,  // 완료
+  cancelled,  // 취소됨
 }
 
-// 위치 추적 데이터 - 프로젝트 파라미터명 규칙 적용
+/// 위치 추적 데이터 - 프로젝트 파라미터명 규칙 적용
 class LocationTrackingData {
-  final double lttd; // 위도
-  final double lntd; // 경도
-  final DateTime reg_dt; // 등록일시
+  final double lttd;      // 위도
+  final double lntd;      // 경도
+  final DateTime reg_dt;  // 등록일시
   final double? accuracy;
-  final double? spd; // 속도 (프로젝트 표준)
-  final double? hdg; // heading (프로젝트 표준)
+  final double? spd;      // 속도 (프로젝트 표준)
+  final double? hdg;      // heading (프로젝트 표준)
 
   LocationTrackingData({
     required this.lttd,
@@ -147,7 +147,7 @@ class LocationTrackingData {
     this.hdg,
   });
 
-  // Position 객체에서 생성
+  /// Position 객체에서 생성
   factory LocationTrackingData.fromPosition({
     required Position position,
     required DateTime reg_dt,
@@ -184,7 +184,7 @@ class LocationTrackingData {
     );
   }
 
-  // Position 객체로 변환
+  /// Position 객체로 변환
   Position toPosition() {
     return Position(
       latitude: lttd,

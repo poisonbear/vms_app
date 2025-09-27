@@ -1,5 +1,5 @@
 import 'package:vms_app/domain/repositories/vessel_repository.dart';
-import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 
 class SearchVesselParams {
   final String? regDt;

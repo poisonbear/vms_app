@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/data/models/vessel/vessel_search_model.dart';  // ✅ import 추가
+import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';

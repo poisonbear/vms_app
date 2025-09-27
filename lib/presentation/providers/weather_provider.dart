@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/services/cache_service.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/data/models/weather/weather_model.dart';
+import 'package:vms_app/data/models/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 

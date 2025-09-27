@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 
 /// 선박 정보 테이블 위젯
 class VesselInfoTable extends StatelessWidget {

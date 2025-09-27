@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/route_search_provider.dart';
 import 'package:vms_app/presentation/screens/main/utils/geo_utils.dart';
 

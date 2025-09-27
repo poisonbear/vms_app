@@ -1,7 +1,7 @@
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/services/cache_service.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/data/models/vessel/vessel_search_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 

@@ -4,12 +4,14 @@ import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/data/models/terms/terms_model.dart';
+import 'package:vms_app/data/models/terms_model.dart';
 
-class CmdSource {
+/// 약관 정보 데이터소스 (기존 CmdSource)
+class TermsDataSource {
   final dioRequest = DioRequest();
 
-  Future<Result<List<CmdModel>, AppException>> getCmdList() async {
+  /// 약관 목록 조회
+  Future<Result<List<TermsModel>, AppException>> getCmdList() async {
     try {
       final String apiUrl = dotenv.env['kdn_usm_select_cmd_key'] ?? '';
 
@@ -22,7 +24,7 @@ class CmdSource {
       // 프로덕션에서는 로그 레벨 조정 필요
       AppLogger.d('[API Call] Terms list fetched successfully');
 
-      final list = (response.data as List).map<CmdModel>((json) => CmdModel.fromJson(json)).toList();
+      final list = (response.data as List).map<TermsModel>((json) => TermsModel.fromJson(json)).toList();
 
       return Success(list);
     } catch (e) {
@@ -32,3 +34,6 @@ class CmdSource {
     }
   }
 }
+
+// ===== 하위 호환성을 위한 Type Alias =====
+typedef CmdSource = TermsDataSource;

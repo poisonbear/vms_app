@@ -1,15 +1,17 @@
-import 'package:vms_app/data/datasources/remote/navigation_remote_datasource.dart';
-import 'package:vms_app/data/models/navigation/navigation_model.dart';
-import 'package:vms_app/domain/repositories/navigation_repository.dart';
+import 'package:vms_app/data/datasources/navigation_datasource.dart';
+import 'package:vms_app/data/models/navigation_model.dart';
+import 'package:vms_app/domain/repositories/navigation_repository.dart' as domain;
 import 'package:vms_app/core/utils/app_logger.dart';
 
-class NavigationRepositoryImpl implements NavigationRepository {
-  final RosSource _dataSource;
+/// 항행 정보 저장소 구현
+class NavigationRepository implements domain.NavigationRepository {
+  final NavigationDataSource _dataSource;
 
-  NavigationRepositoryImpl(this._dataSource);
+  NavigationRepository(this._dataSource);
 
+  /// 항행 이력 조회
   @override
-  Future<List<RosModel>> getRosList({
+  Future<List<NavigationModel>> getRosList({
     String? startDate,
     String? endDate,
     int? mmsi,
@@ -21,9 +23,13 @@ class NavigationRepositoryImpl implements NavigationRepository {
       mmsi: mmsi,
       shipName: shipName,
     );
-    
+
     return result.fold(
-      onSuccess: (list) => list,
+      onSuccess: (list) {
+        // 타입 확인
+        AppLogger.d('NavigationRepository: Returning ${list.length} NavigationModel items');
+        return list;
+      },
       onFailure: (error) {
         AppLogger.e('Navigation Repository Error: $error');
         return [];
@@ -31,10 +37,11 @@ class NavigationRepositoryImpl implements NavigationRepository {
     );
   }
 
+  /// 날씨 정보 조회 (시정/파고)
   @override
   Future<WeatherInfo?> getWeatherInfo() async {
     final result = await _dataSource.getWeatherInfo();
-    
+
     return result.fold(
       onSuccess: (info) => info,
       onFailure: (error) {
@@ -44,10 +51,11 @@ class NavigationRepositoryImpl implements NavigationRepository {
     );
   }
 
+  /// 항행 경보 조회
   @override
-  Future<List<String>> getNavigationWarnings() async {
+  Future<List<String>?> getNavigationWarnings() async {
     final result = await _dataSource.getNavigationWarnings();
-    
+
     return result.fold(
       onSuccess: (warnings) => warnings,
       onFailure: (error) {
@@ -57,3 +65,6 @@ class NavigationRepositoryImpl implements NavigationRepository {
     );
   }
 }
+
+// ===== 하위 호환성을 위한 Type Alias =====
+typedef NavigationRepositoryImpl = NavigationRepository;

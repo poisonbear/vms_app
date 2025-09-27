@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/data/models/emergency/emergency_model.dart';
+import 'package:vms_app/data/models/emergency_model.dart';
 
 /// 긴급 상황 관리 Provider
 /// EmergencyService 기능을 통합한 단일 Provider

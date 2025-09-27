@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/data/models/terms/terms_model.dart';
+import 'package:vms_app/data/models/terms_model.dart';
 import 'package:vms_app/presentation/providers/terms_provider.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 

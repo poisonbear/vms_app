@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/data/models/emergency/emergency_model.dart';
+import 'package:vms_app/data/models/emergency_model.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/emergency_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';

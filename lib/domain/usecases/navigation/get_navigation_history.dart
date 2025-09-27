@@ -1,5 +1,5 @@
 import 'package:vms_app/domain/repositories/navigation_repository.dart';
-import 'package:vms_app/data/models/navigation/navigation_model.dart';
+import 'package:vms_app/data/models/navigation_model.dart';
 
 class GetNavigationHistory {
   final NavigationRepository repository;

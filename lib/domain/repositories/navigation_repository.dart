@@ -1,4 +1,4 @@
-import 'package:vms_app/data/models/navigation/navigation_model.dart';
+import 'package:vms_app/data/models/navigation_model.dart';
 
 abstract class NavigationRepository {
   Future<List<RosModel>> getRosList({
