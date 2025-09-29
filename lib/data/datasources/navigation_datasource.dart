@@ -259,11 +259,11 @@ class NavigationDataSource {
         }
       }
 
-      AppLogger.d('✅ Navigation Warnings API Response Status: ${response?.statusCode}');
+      AppLogger.d('✅ Navigation Warnings API Response Status: ${response.statusCode}');
 
       // 🔧 수정: 응답 데이터 상세 로깅
-      if (response?.data != null) {
-        AppLogger.d('📊 Navigation Warnings Response Type: ${response!.data.runtimeType}');
+      if (response.data != null) {
+        AppLogger.d('📊 Navigation Warnings Response Type: ${response.data.runtimeType}');
         final responseStr = response.data.toString();
         if (responseStr.length > 300) {
           AppLogger.d('📄 Navigation Warnings Response (truncated): ${responseStr.substring(0, 300)}...');
@@ -290,7 +290,7 @@ class NavigationDataSource {
       }
 
       // 🔧 수정: 원본 방식으로 파싱
-      if (response?.data != null && response!.data['data'] != null) {
+      if (response.data != null && response.data['data'] != null) {
         try {
           final warnings = NavigationWarnings.fromJson(response.data).warnings;
           AppLogger.d('✅ Parsed ${warnings.length} navigation warnings');
