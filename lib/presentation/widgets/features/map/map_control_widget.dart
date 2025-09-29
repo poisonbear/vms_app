@@ -6,6 +6,8 @@ import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
+import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/screens/main/controllers/main_screen_controller.dart';
 import 'package:vms_app/presentation/screens/main/utils/vessel_focus_helper.dart';
 
 /// 통합된 지도 컨트롤 위젯
@@ -36,11 +38,61 @@ class MapControlWidget extends StatelessWidget {
     // ✅ 타입 명시
     final List<VesselSearchModel> vessels = context.watch<VesselProvider>().vessels;
 
+    // MainScreenController와 RouteSearchProvider 가져오기
+    final controller = context.watch<MainScreenController?>();
+    final routeViewModel = context.watch<RouteSearchProvider?>();
+
     return Positioned(
       right: getSize20(),
       bottom: getSize100(),
       child: Column(
         children: [
+          // ✨ NEW: 항적초기화(Refresh) 버튼 - 최상단에 위치
+          if (controller != null && routeViewModel != null)
+            if ((routeViewModel.pastRoutes.isNotEmpty == true ||
+                routeViewModel.predRoutes.isNotEmpty == true) &&
+                routeViewModel.isNavigationHistoryMode != true &&
+                controller.isTrackingEnabled) ...[
+              if (useCustomStyle)
+                CircularButton(
+                  svgPath: 'assets/kdn/home/img/refresh.svg',
+                  colorOn: getColorGrayType8(),
+                  colorOff: getColorGrayType8(),
+                  widthSize: getSizeInt56(),
+                  heightSize: getSizeInt56(),
+                  onTap: () {
+                    controller.stopTracking();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('항적 데이터가 초기화되었습니다.'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  },
+                )
+              else
+                _buildMaterialButton(
+                  context: context,
+                  icon: Icons.refresh,
+                  onTap: () {
+                    controller.stopTracking();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('항적 데이터가 초기화되었습니다.'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  },
+                  isActive: false,
+                  tooltip: '항적 초기화',
+                ),
+              SizedBox(height: getSize12()),
+            ],
+
           // 관리자용 다른 선박 표시 버튼
           if (role == 'ROLE_ADMIN') ...[
             if (useCustomStyle)

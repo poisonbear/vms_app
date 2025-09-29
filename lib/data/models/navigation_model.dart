@@ -9,6 +9,19 @@ double? _parseDouble(dynamic value) {
   return null;
 }
 
+// 안전한 double 파싱 함수 (기본값 포함)
+double _safeParseDouble(dynamic value, double defaultValue) {
+  if (value == null) return defaultValue;
+  if (value is double) return value;
+  if (value is int) return value.toDouble();
+  if (value is String) {
+    // 빈 문자열 체크
+    if (value.trim().isEmpty) return defaultValue;
+    return double.tryParse(value) ?? defaultValue;
+  }
+  return defaultValue;
+}
+
 /// 항행 이력 데이터 모델 (기존 RosModel)
 class NavigationModel {
   int? mmsi;
@@ -70,7 +83,7 @@ class NavigationModel {
   }
 }
 
-/// 🔧 수정: 파고와 시정 데이터 정보 - 원본 필드명 사용
+/// 🔧 수정: 파고와 시정 데이터 정보 - 안전한 파싱
 class WeatherInfo {
   final double wave;
   final double visibility;
@@ -96,20 +109,20 @@ class WeatherInfo {
     this.valm4 = 0.0,
   });
 
-  /// 🔧 수정: 원본 필드명을 사용한 robust한 JSON 파싱
+  /// 🔧 수정: 안전한 JSON 파싱
   factory WeatherInfo.fromJson(Map<String, dynamic> json) {
     AppLogger.d('🔍 WeatherInfo parsing started...');
 
     double wave = 0.0;
     double visibility = 0.0;
-    double walm1 = 0.0;
-    double walm2 = 0.0;
-    double walm3 = 0.0;
-    double walm4 = 0.0;
-    double valm1 = 0.0;
-    double valm2 = 0.0;
-    double valm3 = 0.0;
-    double valm4 = 0.0;
+    double walm1 = 1.0;  // 기본값 설정
+    double walm2 = 2.0;
+    double walm3 = 3.0;
+    double walm4 = 4.0;
+    double valm1 = 5000.0;
+    double valm2 = 3000.0;
+    double valm3 = 1000.0;
+    double valm4 = 500.0;
 
     try {
       // 🔧 수정: data 필드 확인 및 처리
@@ -117,118 +130,75 @@ class WeatherInfo {
         Map<String, dynamic> data = json['data'];
         AppLogger.d('✅ Found data field');
 
-        // 🔧 수정: nowData에서 현재 파고/시정 데이터 추출 (원본 필드명 사용)
+        // 🔧 수정: nowData에서 현재 파고/시정 데이터 추출
         if (data.containsKey('nowData')) {
           var nowData = data['nowData'];
           if (nowData != null && nowData is Map) {
             AppLogger.d('📊 Processing nowData: $nowData');
 
-            // 🌊 파고 데이터 - 원본 필드명: wvhgt_surf
+            // 🌊 파고 데이터 - 안전한 파싱
             if (nowData.containsKey('wvhgt_surf')) {
-              try {
-                wave = double.parse(nowData['wvhgt_surf'].toString());
-                AppLogger.d('✅ Wave found (wvhgt_surf): ${wave}m');
-              } catch (e) {
-                AppLogger.e('❌ Error parsing wvhgt_surf: $e');
-              }
+              wave = _safeParseDouble(nowData['wvhgt_surf'], 0.0);
+              AppLogger.d('✅ Wave found (wvhgt_surf): ${wave}m');
             }
 
-            // 👁️ 시정 데이터 - 원본 필드명: vdst
+            // 👁️ 시정 데이터 - 안전한 파싱
             if (nowData.containsKey('vdst')) {
-              try {
-                visibility = double.parse(nowData['vdst'].toString());
-                AppLogger.d('✅ Visibility found (vdst): ${visibility}m');
-              } catch (e) {
-                AppLogger.e('❌ Error parsing vdst: $e');
-              }
+              visibility = _safeParseDouble(nowData['vdst'], 0.0);
+              AppLogger.d('✅ Visibility found (vdst): ${visibility}m');
             }
           }
         } else {
           AppLogger.w('⚠️ No nowData field found');
         }
 
-        // 🔧 수정: waveData에서 파고 알람 임계값 추출
+        // 🔧 수정: waveData에서 파고 알람 임계값 추출 - 안전한 파싱
         if (data.containsKey('waveData')) {
           var waveData = data['waveData'];
           if (waveData != null && waveData is Map) {
             AppLogger.d('🌊 Processing waveData: $waveData');
 
-            try {
-              if (waveData.containsKey('alm_a_val')) {
-                walm1 = double.parse(waveData['alm_a_val'].toString());
-                AppLogger.d('✅ Wave alarm 1: ${walm1}m');
-              }
-              if (waveData.containsKey('alm_b_val')) {
-                walm2 = double.parse(waveData['alm_b_val'].toString());
-                AppLogger.d('✅ Wave alarm 2: ${walm2}m');
-              }
-              if (waveData.containsKey('alm_c_val')) {
-                walm3 = double.parse(waveData['alm_c_val'].toString());
-                AppLogger.d('✅ Wave alarm 3: ${walm3}m');
-              }
-              if (waveData.containsKey('alm_d_val')) {
-                walm4 = double.parse(waveData['alm_d_val'].toString());
-                AppLogger.d('✅ Wave alarm 4: ${walm4}m');
-              }
-            } catch (e) {
-              AppLogger.e('❌ Error parsing wave alarms: $e');
-              // 기본값 설정
-              walm1 = 1.0; walm2 = 2.0; walm3 = 3.0; walm4 = 4.0;
-            }
+            // 각 알람 값을 안전하게 파싱
+            walm1 = _safeParseDouble(waveData['alm_a_val'], 1.0);
+            walm2 = _safeParseDouble(waveData['alm_b_val'], 2.0);
+            walm3 = _safeParseDouble(waveData['alm_c_val'], 3.0);
+            walm4 = _safeParseDouble(waveData['alm_d_val'], 4.0);
+
+            AppLogger.d('✅ Wave alarms parsed: [$walm1, $walm2, $walm3, $walm4]');
           }
         } else {
-          AppLogger.w('⚠️ No waveData field found, using defaults');
-          walm1 = 1.0; walm2 = 2.0; walm3 = 3.0; walm4 = 4.0;
+          AppLogger.w('⚠️ No waveData field found, using default wave alarms');
         }
 
-        // 🔧 수정: visibilityData에서 시정 알람 임계값 추출
+        // 🔧 수정: visibilityData에서 시정 알람 임계값 추출 - 안전한 파싱
         if (data.containsKey('visibilityData')) {
           var visibilityData = data['visibilityData'];
           if (visibilityData != null && visibilityData is Map) {
             AppLogger.d('👁️ Processing visibilityData: $visibilityData');
 
-            try {
-              if (visibilityData.containsKey('alm_a_val')) {
-                valm1 = double.parse(visibilityData['alm_a_val'].toString());
-                AppLogger.d('✅ Visibility alarm 1: ${valm1}m');
-              }
-              if (visibilityData.containsKey('alm_b_val')) {
-                valm2 = double.parse(visibilityData['alm_b_val'].toString());
-                AppLogger.d('✅ Visibility alarm 2: ${valm2}m');
-              }
-              if (visibilityData.containsKey('alm_c_val')) {
-                valm3 = double.parse(visibilityData['alm_c_val'].toString());
-                AppLogger.d('✅ Visibility alarm 3: ${valm3}m');
-              }
-              if (visibilityData.containsKey('alm_d_val')) {
-                valm4 = double.parse(visibilityData['alm_d_val'].toString());
-                AppLogger.d('✅ Visibility alarm 4: ${valm4}m');
-              }
-            } catch (e) {
-              AppLogger.e('❌ Error parsing visibility alarms: $e');
-              // 기본값 설정
-              valm1 = 5000.0; valm2 = 3000.0; valm3 = 1000.0; valm4 = 500.0;
-            }
+            // 각 알람 값을 안전하게 파싱
+            valm1 = _safeParseDouble(visibilityData['alm_a_val'], 5000.0);
+            valm2 = _safeParseDouble(visibilityData['alm_b_val'], 3000.0);
+            valm3 = _safeParseDouble(visibilityData['alm_c_val'], 1000.0);
+            valm4 = _safeParseDouble(visibilityData['alm_d_val'], 500.0);
+
+            AppLogger.d('✅ Visibility alarms parsed: [$valm1, $valm2, $valm3, $valm4]');
           }
         } else {
-          AppLogger.w('⚠️ No visibilityData field found, using defaults');
-          valm1 = 5000.0; valm2 = 3000.0; valm3 = 1000.0; valm4 = 500.0;
+          AppLogger.w('⚠️ No visibilityData field found, using default visibility alarms');
         }
-      } else {
-        AppLogger.e('❌ No data field found in response');
-        // 🔧 수정: data 필드가 없을 때 직접 필드 확인
-        AppLogger.d('🔍 Checking for direct fields...');
 
-        // 직접 필드에서 파고/시정 찾기
+      } else {
+        AppLogger.w('⚠️ No data field found, checking direct fields...');
+
+        // 🔧 수정: 직접 필드 확인 (fallback) - 안전한 파싱
         final directWaveFields = ['wvhgt_surf', 'wave', 'nowWave'];
         for (final field in directWaveFields) {
           if (json.containsKey(field)) {
-            try {
-              wave = double.parse(json[field].toString());
+            wave = _safeParseDouble(json[field], 0.0);
+            if (wave != 0.0) {
               AppLogger.d('✅ Wave found in direct field "$field": ${wave}m');
               break;
-            } catch (e) {
-              AppLogger.w('⚠️ Failed to parse direct field "$field": $e');
             }
           }
         }
@@ -236,19 +206,13 @@ class WeatherInfo {
         final directVisibilityFields = ['vdst', 'visibility', 'nowVisibility'];
         for (final field in directVisibilityFields) {
           if (json.containsKey(field)) {
-            try {
-              visibility = double.parse(json[field].toString());
+            visibility = _safeParseDouble(json[field], 0.0);
+            if (visibility != 0.0) {
               AppLogger.d('✅ Visibility found in direct field "$field": ${visibility}m');
               break;
-            } catch (e) {
-              AppLogger.w('⚠️ Failed to parse direct field "$field": $e');
             }
           }
         }
-
-        // 기본 알람값 설정
-        walm1 = 1.0; walm2 = 2.0; walm3 = 3.0; walm4 = 4.0;
-        valm1 = 5000.0; valm2 = 3000.0; valm3 = 1000.0; valm4 = 500.0;
       }
 
       AppLogger.d('✅ WeatherInfo parsing completed');
@@ -261,12 +225,6 @@ class WeatherInfo {
     } catch (e) {
       AppLogger.e('❌ WeatherInfo parsing error: $e');
       AppLogger.w('⚠️ Using default values due to parsing error');
-
-      // 🔧 수정: 전체 파싱 실패 시 안전한 기본값
-      wave = 0.0;
-      visibility = 0.0;
-      walm1 = 1.0; walm2 = 2.0; walm3 = 3.0; walm4 = 4.0;
-      valm1 = 5000.0; valm2 = 3000.0; valm3 = 1000.0; valm4 = 500.0;
     }
 
     return WeatherInfo(

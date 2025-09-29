@@ -205,7 +205,7 @@ class NavigationDataSource {
     }
   }
 
-  /// 🔧 수정: 항행 경보 조회 (원본 방식: GET 사용)
+  /// 🔧 FIX: 항행 경보 조회 - GET에서 POST로 변경
   Future<Result<List<String>, AppException>> getNavigationWarnings() async {
     try {
       final String apiUrl = dotenv.env['kdn_ros_select_navigation_warn_Info'] ?? '';
@@ -224,18 +224,46 @@ class NavigationDataSource {
         sendTimeout: AppDurations.seconds30,
       );
 
-      // 🔧 수정: 원본 코드처럼 GET 방식 사용
-      AppLogger.d('🔄 Calling Navigation Warnings API (GET)...');
-      final response = await dioRequest.dio.get(
-        apiUrl,
-        options: options,
-      );
+      Response? response;
 
-      AppLogger.d('✅ Navigation Warnings API Response Status: ${response.statusCode}');
+      // 🔧 FIX: POST 메서드 사용 (GET은 지원하지 않음)
+      try {
+        AppLogger.d('🔄 Calling Navigation Warnings API (POST)...');
+        response = await dioRequest.dio.post(
+          apiUrl,
+          options: options,
+          data: {},  // 빈 body로 POST 요청
+        );
+      } catch (postError) {
+        // POST 실패 시 한번 더 시도 (fallback)
+        AppLogger.w('⚠️ POST failed, retrying with different config: $postError');
+        try {
+          // Content-Type을 명시적으로 설정
+          final retryOptions = Options(
+            receiveTimeout: AppDurations.seconds100,
+            sendTimeout: AppDurations.seconds30,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          );
+
+          response = await dioRequest.dio.post(
+            apiUrl,
+            options: retryOptions,
+            data: null,  // null body로 재시도
+          );
+        } catch (retryError) {
+          AppLogger.e('❌ Navigation Warnings API call failed completely: $retryError');
+          // 에러가 나도 빈 리스트 반환 (앱 크래시 방지)
+          return const Success([]);
+        }
+      }
+
+      AppLogger.d('✅ Navigation Warnings API Response Status: ${response?.statusCode}');
 
       // 🔧 수정: 응답 데이터 상세 로깅
-      if (response.data != null) {
-        AppLogger.d('📊 Navigation Warnings Response Type: ${response.data.runtimeType}');
+      if (response?.data != null) {
+        AppLogger.d('📊 Navigation Warnings Response Type: ${response!.data.runtimeType}');
         final responseStr = response.data.toString();
         if (responseStr.length > 300) {
           AppLogger.d('📄 Navigation Warnings Response (truncated): ${responseStr.substring(0, 300)}...');
@@ -262,7 +290,7 @@ class NavigationDataSource {
       }
 
       // 🔧 수정: 원본 방식으로 파싱
-      if (response.data != null && response.data['data'] != null) {
+      if (response?.data != null && response!.data['data'] != null) {
         try {
           final warnings = NavigationWarnings.fromJson(response.data).warnings;
           AppLogger.d('✅ Parsed ${warnings.length} navigation warnings');
@@ -280,8 +308,8 @@ class NavigationDataSource {
       return const Success([]);
     } catch (e) {
       AppLogger.e('❌ Navigation Warning API Error', e);
-      final exception = ErrorHandler.handleError(e);
-      return Failure(exception);
+      // 에러가 나도 빈 리스트 반환 (앱 크래시 방지)
+      return const Success([]);
     }
   }
 }
