@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
@@ -20,6 +21,7 @@ import 'package:vms_app/core/utils/helpers.dart';
 import 'package:latlong2/latlong.dart';
 
 // Helpers and Utils
+import 'helpers/auto_location_helper.dart';
 import 'utils/vessel_focus_helper.dart';
 import 'utils/navigation_utils.dart';
 import 'utils/navigation_debug.dart';
@@ -275,7 +277,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   padding: EdgeInsets.all(getSize20()),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       top: Radius.circular(DesignConstants.radiusXL),
                     ),
                     boxShadow: [
@@ -546,7 +548,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         ? SizedBox(
                       width: getSize16(),
                       height: getSize16(),
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
@@ -780,9 +782,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   onHomeButtonTap: (context) => controller.moveToHome(),
                 ),
 
-                // 4. Refresh 버튼 제거됨 (MapControlButtons 내부로 통합)
-
-                // 5. 플래싱 오버레이
+                // 4. 플래싱 오버레이
                 if (controller.isFlashing)
                   Positioned.fill(
                     child: IgnorePointer(
@@ -797,7 +797,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ),
                   ),
 
-                // 6. 상단 알림 메시지
+                // 5. 상단 알림 메시지
                 Positioned(
                   top: MediaQuery.of(context).padding.top + getSize10(),
                   left: getSize20(),
@@ -836,12 +836,66 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   ),
                 ),
 
-                // 7. 당일 항적보기 버튼
+                // 6. 당일 항적보기 버튼
                 Positioned(
                   bottom: 100,
                   left: 20,
                   right: 20,
                   child: _buildTodayRouteButton(context),
+                ),
+
+                // 7. ✨ 항행경보 표시 (새로 추가된 기능)
+                Positioned(
+                  bottom: 0,  // 하단 네비게이션 바 바로 위
+                  left: 0,
+                  right: 0,
+                  child: Consumer<NavigationProvider>(
+                    builder: (context, viewModel, child) {
+                      final warnings = viewModel.combinedNavigationWarnings;
+
+                      // 항행경보 바는 항상 표시됨
+                      return Container(
+                        height: getSize52(),
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: getSize12(),
+                        ),
+                        decoration: BoxDecoration(
+                          color: getColorRedType1().withOpacity(0.95),
+                        ),
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/kdn/ros/img/circle-exclamation_white.svg',
+                              width: getSize24(),
+                              height: getSize24(),
+                            ),
+                            SizedBox(width: getSize8()),
+                            Expanded(
+                              child: Marquee(
+                                text: warnings.isEmpty ? '금일 항행경보가 없습니다.' : warnings,
+                                style: TextStyle(
+                                  color: getColorWhiteType1(),
+                                  fontSize: getSize14(),
+                                  fontWeight: getText700(),
+                                ),
+                                scrollAxis: Axis.horizontal,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                blankSpace: 300.0,
+                                velocity: 35.0,
+                                pauseAfterRound: const Duration(seconds: 1),
+                                startPadding: 10.0,
+                                accelerationDuration: const Duration(seconds: 1),
+                                accelerationCurve: Curves.linear,
+                                decelerationDuration: const Duration(seconds: 1),
+                                decelerationCurve: Curves.easeOut,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             );
