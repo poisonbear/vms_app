@@ -299,11 +299,12 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet> {
                             widget.onClose!();
                           }
 
+                          // ✅ 수정: selectedIndex = 0 → selectedIndex = -1
                           final mainScreenState =
                           context.findAncestorStateOfType<State<MainScreen>>();
                           if (mainScreenState != null) {
                             try {
-                              (mainScreenState as dynamic).selectedIndex = 0;
+                              (mainScreenState as dynamic).selectedIndex = -1;
                             } catch (e) {}
                           }
 

@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/weather_provider.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
+import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
 // 싱글톤 인스턴스 관리
 class WeatherProviderManager {
@@ -32,40 +33,66 @@ Widget MainScreenWindy(BuildContext context, {Function? onClose}) {
 }
 
 // 내부 위젯으로 분리
-class _WeatherBottomSheet extends StatelessWidget {
+class _WeatherBottomSheet extends StatefulWidget {
   final Function? onClose;
 
   const _WeatherBottomSheet({this.onClose});
 
   @override
+  State<_WeatherBottomSheet> createState() => _WeatherBottomSheetState();
+}
+
+class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
+  bool _isClosing = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        constraints: BoxConstraints(
-          minHeight: getSize350(),
-          maxHeight: MediaQuery.of(context).size.height * 0.61,
-        ),
-        width: double.infinity,
-        padding: EdgeInsets.all(getSize20()),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(DesignConstants.radiusXL),
-            topRight: Radius.circular(DesignConstants.radiusXL),
+    return PopScope(
+      canPop: _isClosing,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop || _isClosing) return;
+
+        // ✅ MainScreen의 selectedIndex를 -1로 설정
+        final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+        if (mainScreenState != null) {
+          try {
+            (mainScreenState as dynamic).selectedIndex = -1;
+          } catch (e) {}
+        }
+
+        setState(() {
+          _isClosing = true;
+        });
+        Navigator.of(context).pop();
+      },
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          constraints: BoxConstraints(
+            minHeight: getSize350(),
+            maxHeight: MediaQuery.of(context).size.height * 0.61,
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(context),
-            _buildTitle(),
-            Flexible(
-              child: SingleChildScrollView(
-                child: _buildContent(context),
-              ),
+          width: double.infinity,
+          padding: EdgeInsets.all(getSize20()),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(DesignConstants.radiusXL),
+              topRight: Radius.circular(DesignConstants.radiusXL),
             ),
-          ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(context),
+              _buildTitle(),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: _buildContent(context),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -98,7 +125,23 @@ class _WeatherBottomSheet extends StatelessWidget {
 
   void _handleClose(BuildContext context) {
     try {
-      onClose?.call();
+      // onClose 콜백 호출
+      if (widget.onClose != null) {
+        widget.onClose!();
+      }
+
+      // ✅ MainScreen의 selectedIndex를 -1로 설정
+      final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+      if (mainScreenState != null) {
+        try {
+          (mainScreenState as dynamic).selectedIndex = -1;
+        } catch (e) {}
+      }
+
+      setState(() {
+        _isClosing = true;
+      });
+
       if (Navigator.of(context).canPop()) {
         Navigator.pop(context);
       }

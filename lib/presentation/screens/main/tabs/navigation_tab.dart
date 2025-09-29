@@ -184,10 +184,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop || _isClosing) return;
 
-          final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
-          if (mainScreenState != null) {
+          final mainScreenStat = context.findAncestorStateOfType<State<MainScreen>>();
+          if (mainScreenStat != null) {
             try {
-              (mainScreenState as dynamic).selectedIndex = 0;
+              (mainScreenStat as dynamic).selectedIndex = -1;
             } catch (e) {}
           }
 
@@ -236,10 +236,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   widget.onClose!();
                                 }
 
-                                final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
-                                if (mainScreenState != null) {
+                                final mainScreenStat = context.findAncestorStateOfType<State<MainScreen>>();
+                                if (mainScreenStat != null) {
                                   try {
-                                    (mainScreenState as dynamic).selectedIndex = 0;
+                                    (mainScreenStat as dynamic).selectedIndex = -1;
                                   } catch (e) {}
                                 }
 
@@ -807,11 +807,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       viewModel.clearRoutes();
                       viewModel.setNavigationHistoryMode(false);
 
-                      final MainScreenState =
+                      final mainScreenStat =
                       context.findAncestorStateOfType<State<MainScreen>>();
-                      if (MainScreenState != null) {
+                      if (mainScreenStat != null) {
                         try {
-                          (MainScreenState as dynamic).selectedIndex = 0;
+                          (mainScreenStat as dynamic).selectedIndex = -1;
                         } catch (e) {}
                       }
 
@@ -823,11 +823,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     onPopInvokedWithResult: (bool didPop, dynamic result) {
                       if (didPop) return;
 
-                      final MainScreenState =
+                      final mainScreenStat =
                       context.findAncestorStateOfType<State<MainScreen>>();
-                      if (MainScreenState != null) {
+                      if (mainScreenStat != null) {
                         try {
-                          (MainScreenState as dynamic).selectedIndex = 0;
+                          (mainScreenStat as dynamic).selectedIndex = -1;
                         } catch (e) {}
                       }
 
@@ -1257,11 +1257,11 @@ Widget _buildCollapsedBottomSheet(
                               colorFilter: ColorFilter.mode(
                                   getColorGrayType3(), BlendMode.srcIn)),
                           onPressed: () {
-                            final MainScreenState =
+                            final mainScreenStat =
                             context.findAncestorStateOfType<State<MainScreen>>();
-                            if (MainScreenState != null) {
+                            if (mainScreenStat != null) {
                               try {
-                                (MainScreenState as dynamic).selectedIndex = 0;
+                                (mainScreenStat as dynamic).selectedIndex = -1;
                               } catch (e) {}
                             }
                             viewModel.setNavigationHistoryMode(false);
