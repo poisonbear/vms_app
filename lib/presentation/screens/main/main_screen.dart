@@ -21,7 +21,6 @@ import 'package:vms_app/core/utils/helpers.dart';
 import 'package:latlong2/latlong.dart';
 
 // Helpers and Utils
-import 'helpers/auto_location_helper.dart';
 import 'utils/vessel_focus_helper.dart';
 import 'utils/navigation_utils.dart';
 import 'utils/navigation_debug.dart';
@@ -277,7 +276,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   padding: EdgeInsets.all(getSize20()),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(DesignConstants.radiusXL),
                     ),
                     boxShadow: [
@@ -548,7 +547,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         ? SizedBox(
                       width: getSize16(),
                       height: getSize16(),
-                      child: CircularProgressIndicator(
+                      child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),

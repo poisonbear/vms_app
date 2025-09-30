@@ -172,6 +172,52 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     _performSearch();
   }
 
+  // 닫기 처리 함수 - weather_tab.dart 참조하여 안정성 개선
+  void _handleClose(BuildContext context) {
+    try {
+      // onClose 콜백 호출
+      if (widget.onClose != null) {
+        widget.onClose!();
+      }
+
+      // MainScreen의 selectedIndex를 -1로 설정
+      final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+      if (mainScreenState != null) {
+        try {
+          (mainScreenState as dynamic).selectedIndex = -1;
+        } catch (e) {
+          // 에러 무시
+        }
+      }
+
+      // RouteSearchProvider 초기화 - mounted 체크 추가
+      if (mounted) {
+        try {
+          final routeSearchViewModel = Provider.of<RouteSearchProvider>(context, listen: false);
+          routeSearchViewModel.clearRoutes();
+          routeSearchViewModel.setNavigationHistoryMode(false);
+        } catch (e) {
+          // Provider 접근 실패 시 에러 무시
+        }
+      }
+
+      // 상태 업데이트
+      if (mounted) {
+        setState(() {
+          _isClosing = true;
+        });
+      }
+
+      // Navigator pop 처리
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      // 전체 에러 처리
+      NavigationDebugHelper.debugPrint('닫기 버튼 오류: $e', location: 'nav_tab.close_error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     NavigationDebugHelper.debugPrint('NavigationSheet build', location: 'nav_tab.build');
@@ -184,16 +230,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop || _isClosing) return;
 
-          final mainScreenStat = context.findAncestorStateOfType<State<MainScreen>>();
-          if (mainScreenStat != null) {
-            try {
-              (mainScreenStat as dynamic).selectedIndex = -1;
-            } catch (e) {}
-          }
-
-          routeSearchViewModel.clearRoutes();
-          routeSearchViewModel.setNavigationHistoryMode(false);
-          Navigator.of(context).pop();
+          _handleClose(context);
         },
         child: ChangeNotifierProvider.value(
           value: navigationViewModel,
@@ -231,26 +268,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                               icon: const Icon(Icons.close, color: Colors.black),
-                              onPressed: () {
-                                if (widget.onClose != null) {
-                                  widget.onClose!();
-                                }
-
-                                final mainScreenStat = context.findAncestorStateOfType<State<MainScreen>>();
-                                if (mainScreenStat != null) {
-                                  try {
-                                    (mainScreenStat as dynamic).selectedIndex = -1;
-                                  } catch (e) {}
-                                }
-
-                                routeSearchViewModel.clearRoutes();
-                                routeSearchViewModel.setNavigationHistoryMode(false);
-
-                                setState(() {
-                                  _isClosing = true;
-                                });
-                                Navigator.of(context).pop();
-                              },
+                              onPressed: () => _handleClose(context), // 안정적인 닫기 함수 호출
                             ),
                           ),
                         ],

@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/services/cache_service.dart';
 import 'package:vms_app/domain/repositories/navigation_repository.dart';
-import 'package:vms_app/domain/usecases/navigation_usecases.dart'; // 변경된 부분
+import 'package:vms_app/domain/usecases/navigation_usecases.dart';
 import 'package:vms_app/presentation/providers/base/base_provider.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/navigation_model.dart';
+import 'package:vms_app/core/constants/constants.dart'; // app_colors 포함
 
 /// 항행이력 상태 관리 Provider - 타입 안전성 개선 버전
 class NavigationProvider extends BaseProvider {
   // Use Cases
   late final GetNavigationHistory _getNavigationHistory;
-  late final GetWeatherInfo _getWeatherInfo; // as weather_usecase 제거
+  late final GetWeatherInfo _getWeatherInfo;
   late final NavigationRepository _navigationRepository;
 
   // 캐시 매니저 - 메모리 캐시
   final SimpleCache _cache = SimpleCache();
 
-  // 🔧 수정: State variables - 명확한 타입 정의
+  // State variables - 명확한 타입 정의
   List<NavigationModel> _rosList = [];
   bool _isInitialized = false;
   List<String> _navigationWarnings = [];
@@ -34,7 +35,7 @@ class NavigationProvider extends BaseProvider {
   double valm3 = 0.0;
   double valm4 = 0.0;
 
-  // 🔧 수정: Getters - 타입 안전성 확보
+  // Getters - 타입 안전성 확보
   List<NavigationModel> get rosList => _rosList;
   List<NavigationModel> get RosList => _rosList; // 하위 호환성
   bool get isInitialized => _isInitialized;
@@ -51,7 +52,7 @@ class NavigationProvider extends BaseProvider {
     try {
       _navigationRepository = getIt<NavigationRepository>();
       _getNavigationHistory = getIt<GetNavigationHistory>();
-      _getWeatherInfo = getIt<GetWeatherInfo>(); // as weather_usecase 제거
+      _getWeatherInfo = getIt<GetWeatherInfo>();
 
       // 초기 데이터 로드
       getWeatherInfo();
@@ -62,7 +63,7 @@ class NavigationProvider extends BaseProvider {
     }
   }
 
-  /// 🔧 수정: getRosList - 타입 안전성 확보
+  /// getRosList - 타입 안전성 확보
   Future<void> getRosList({
     String? startDate,
     String? endDate,
@@ -142,51 +143,62 @@ class NavigationProvider extends BaseProvider {
     }
   }
 
-  // ========== 기존 날씨 관련 UI 메소드들 (유지) ==========
+  // ========== 날씨 관련 UI 메소드들 (수정됨) ==========
 
+  /// 파고 색상 반환 - 수정된 기준
+  /// 양호: 0~0.5m (흰색), 주의: 0.5~1.5m (주황색), 심각: 1.5m 이상 (붉은색)
   Color getWaveColor(double waveValue) {
-    if (waveValue <= walm1) return Colors.green;
-    if (waveValue <= walm2) return Colors.yellow;
-    if (waveValue <= walm3) return Colors.orange;
-    return Colors.red;
+    if (waveValue <= 0.5) {
+      return getColorWhiteType1();       // 양호 (0~0.5m) - 흰색
+    } else if (waveValue <= 1.5) {
+      return getColorEmergencyOrange();  // 주의 (0.5~1.5m) - 주황색
+    } else {
+      return getColorRedType1();         // 심각 (1.5m 이상) - 빨간색
+    }
   }
 
+  /// 시정 색상 반환 - 수정된 기준
+  /// 양호: 10km 이상 (흰색), 주의: 0.5~10km (주황색), 심각: 0.5km 이하 (붉은색)
   Color getVisibilityColor(double visibilityValue) {
-    if (visibilityValue >= valm1) return Colors.green;
-    if (visibilityValue >= valm2) return Colors.yellow;
-    if (visibilityValue >= valm3) return Colors.orange;
-    return Colors.red;
+    // visibilityValue는 미터 단위이므로 km로 변환
+    double visibilityInKm = visibilityValue / 1000.0;
+
+    if (visibilityInKm >= 10.0) {
+      return getColorWhiteType1();       // 양호 (10km 이상) - 흰색
+    } else if (visibilityInKm > 0.5) {
+      return getColorEmergencyOrange();  // 주의 (0.5km 초과 ~ 10km 미만) - 주황색
+    } else {
+      return getColorRedType1();         // 심각 (0.5km 이하) - 빨간색
+    }
   }
 
+  /// 파고 상태 텍스트 반환
   String getFormattedWaveThresholdText(double waveValue) {
     String status = "";
     Color color = getWaveColor(waveValue);
 
-    if (color == Colors.green) {
+    if (color == getColorWhiteType1()) {
       status = "양호";
-    } else if (color == Colors.yellow) {
+    } else if (color == getColorEmergencyOrange()) {
       status = "주의";
-    } else if (color == Colors.orange) {
-      status = "경계";
     } else {
-      status = "위험";
+      status = "심각";
     }
 
     return "${waveValue.toStringAsFixed(1)}m ($status)";
   }
 
+  /// 시정 상태 텍스트 반환
   String getFormattedVisibilityThresholdText(double visibilityValue) {
     String status = "";
     Color color = getVisibilityColor(visibilityValue);
 
-    if (color == Colors.green) {
+    if (color == getColorWhiteType1()) {
       status = "양호";
-    } else if (color == Colors.yellow) {
+    } else if (color == getColorEmergencyOrange()) {
       status = "주의";
-    } else if (color == Colors.orange) {
-      status = "경계";
     } else {
-      status = "위험";
+      status = "심각";
     }
 
     double visibilityInKm = visibilityValue / 1000;
