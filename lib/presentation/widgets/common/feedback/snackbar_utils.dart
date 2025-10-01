@@ -141,17 +141,12 @@ class CustomSnackBar {
     switch (type) {
       case SnackBarType.success:
         showSuccessSnackBar(context, message);
-        break;
       case SnackBarType.error:
         showErrorSnackBar(context, message);
-        break;
       case SnackBarType.warning:
         showWarningSnackBar(context, message);
-        break;
       case SnackBarType.info:
-      default:
         showInfoSnackBar(context, message);
-        break;
     }
   }
 }

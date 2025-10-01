@@ -91,12 +91,6 @@ class ErrorHandler {
           '서버 연결에 실패했습니다',
           originalError: error,
         );
-
-      default:
-        return NetworkException(
-          '알 수 없는 네트워크 오류',
-          originalError: error,
-        );
     }
   }
 
@@ -112,74 +106,89 @@ class ErrorHandler {
     String message = _extractErrorMessage(data) ??
         _getDefaultMessageForStatusCode(statusCode);
 
-    switch (statusCode) {
-      case 400:
-        return ValidationException(
-          message,
-          code: '400',
-          originalError: response.data,
-        );
-      case 401:
-        return AuthException(
-          message,
-          code: '401',
-          originalError: response.data,
-        );
-      case 403:
-        return PermissionException(
-          message,
-          code: '403',
-          originalError: response.data,
-        );
-      case 404:
-        return ServerException(
-          message,
-          statusCode: statusCode,
-          code: '404',
-          originalError: response.data,
-        );
-      case 408:
-        return NetworkException(
-          message,
-          code: '408',
-          originalError: response.data,
-        );
-      case 429:
-        return ServerException(
-          '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.',
-          statusCode: statusCode,
-          code: '429',
-          originalError: response.data,
-        );
-      case 500:
-      case 502:
-      case 503:
-        return ServerException(
-          message,
-          statusCode: statusCode,
-          code: statusCode.toString(),
-          originalError: response.data,
-        );
-      default:
-        if (statusCode >= 500) {
-          return ServerException(
-            message,
-            statusCode: statusCode,
-            code: statusCode.toString(),
-            originalError: response.data,
-          );
-        } else if (statusCode >= 400) {
-          return BusinessException(
-            message,
-            code: statusCode.toString(),
-            originalError: response.data,
-          );
-        }
-        return BusinessException(
-          message,
-          originalError: response.data,
-        );
+    // 특정 상태 코드별 처리
+    if (statusCode == 400) {
+      return ValidationException(
+        message,
+        code: '400',
+        originalError: response.data,
+      );
     }
+
+    if (statusCode == 401) {
+      return AuthException(
+        message,
+        code: '401',
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode == 403) {
+      return PermissionException(
+        message,
+        code: '403',
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode == 404) {
+      return ServerException(
+        message,
+        statusCode: statusCode,
+        code: '404',
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode == 408) {
+      return NetworkException(
+        message,
+        code: '408',
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode == 429) {
+      return ServerException(
+        '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.',
+        statusCode: statusCode,
+        code: '429',
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode == 500 || statusCode == 502 || statusCode == 503) {
+      return ServerException(
+        message,
+        statusCode: statusCode,
+        code: statusCode.toString(),
+        originalError: response.data,
+      );
+    }
+
+    // 범위별 처리
+    if (statusCode >= 500) {
+      return ServerException(
+        message,
+        statusCode: statusCode,
+        code: statusCode.toString(),
+        originalError: response.data,
+      );
+    }
+
+    if (statusCode >= 400) {
+      return BusinessException(
+        message,
+        code: statusCode.toString(),
+        originalError: response.data,
+      );
+    }
+
+    // 그 외 모든 경우
+    return BusinessException(
+      message,
+      originalError: response.data,
+    );
   }
 
   /// 에러 메시지 추출
@@ -289,18 +298,7 @@ class ErrorHandler {
     }
 
     if (exception.code != null) {
-      switch (exception.code) {
-        case '400':
-        case '401':
-        case '403':
-        case '404':
-        case '408':
-        case '429':
-        case '500':
-        case '502':
-        case '503':
-          return int.tryParse(exception.code!);
-      }
+      return int.tryParse(exception.code!);
     }
 
     return null;

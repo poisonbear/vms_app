@@ -32,10 +32,10 @@ class WarningPopButton extends StatelessWidget {
     super.key,
     required this.svgPath,
     required this.color,
-    required double widthSize,
-    required double heightSize,
+    required this.widthSize,        // ✅ this.widthSize로 직접 초기화
+    required this.heightSize,       // ✅ this.heightSize로 직접 초기화
     required this.labelText,
-    required double widthSizeLine,
+    required this.widthSizeLine,    // ✅ this.widthSizeLine로 직접 초기화
     required this.title,
     required this.titleColor,
     required this.detail,
@@ -43,9 +43,7 @@ class WarningPopButton extends StatelessWidget {
     required this.alarmIcon,
     required this.shadowColor,
     this.isDetailVersion = false,
-  })  : widthSize = widthSize,
-        heightSize = heightSize,
-        widthSizeLine = widthSizeLine;
+  });
 
   // int 타입 지원을 위한 팩토리 생성자 (하위 호환성)
   factory WarningPopButton.fromInt({

@@ -26,7 +26,6 @@ class _EmergencyBottomSheet extends StatefulWidget {
 class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     with SingleTickerProviderStateMixin {
   bool _isEmergencyPressed = false;
-  bool _isClosing = false;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -81,10 +80,6 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           (mainScreenState as dynamic).selectedIndex = -1;
         } catch (e) {}
       }
-
-      setState(() {
-        _isClosing = true;
-      });
 
       if (Navigator.of(context).canPop()) {
         Navigator.pop(context);

@@ -13,7 +13,7 @@ class NetworkClient {
   late final Dio _dio;
   final _storage = const FlutterSecureStorage();
   final _tokenRefreshController = StreamController<bool>.broadcast();
-  final Map<String, String> _endpointCache = {};
+  // _endpointCache 제거 (사용되지 않음)
 
   NetworkClient._() {
     _initializeDio();
@@ -95,9 +95,7 @@ class NetworkClient {
     }
   }
 
-  AppException _handleDioError(DioException e) {
-    return ErrorHandler.handleError(e);
-  }
+  // _handleDioError 제거 (ErrorInterceptor에서 ErrorHandler를 직접 사용)
 
   void dispose() {
     _tokenRefreshController.close();

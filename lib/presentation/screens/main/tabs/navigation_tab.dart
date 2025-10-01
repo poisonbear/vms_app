@@ -40,7 +40,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   late TextEditingController mmsiController;
   late TextEditingController shipNameController;
   late NavigationProvider navigationViewModel;
-  PersistentBottomSheetController? _bottomSheetController;
   bool _isClosing = false;
 
   static NavigationProvider? _sharedNavigationProvider;
@@ -209,7 +208,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: DesignConstants.spacing16),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,

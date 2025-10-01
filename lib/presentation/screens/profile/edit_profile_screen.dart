@@ -484,7 +484,6 @@ class _MembershipviewState extends State<MemberInformationChange> {
     }
 
     // 데이터 준비
-    String id = idController.text;
     String password = passwordController.text;
     String newPassword = newPasswordController.text;
     String mmsi = mmsiController.text;
