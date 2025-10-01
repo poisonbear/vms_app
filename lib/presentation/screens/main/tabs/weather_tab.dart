@@ -52,7 +52,6 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop || _isClosing) return;
 
-        // ✅ MainScreen의 selectedIndex를 -1로 설정
         final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
         if (mainScreenState != null) {
           try {
@@ -73,7 +72,6 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
             maxHeight: MediaQuery.of(context).size.height * 0.61,
           ),
           width: double.infinity,
-          padding: EdgeInsets.all(getSize20()),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -84,10 +82,10 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildHeader(context),
-              _buildTitle(),
+              _buildHeader(),
               Flexible(
                 child: SingleChildScrollView(
+                  padding: EdgeInsets.all(getSize20()),
                   child: _buildContent(context),
                 ),
               ),
@@ -98,24 +96,43 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.zero,
+  Widget _buildHeader() {
+    return Container(
+      height: 43,
+      padding: EdgeInsets.symmetric(horizontal: getSize14()),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E3A5F), // 어두운 푸른색
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(getSize20()),
+          topRight: Radius.circular(getSize20()),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          SizedBox(
-            width: getSize24(),
-            height: getSize24(),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: SvgPicture.asset(
-                'assets/kdn/usm/img/close.svg',
-                width: getSize24(),
-                height: getSize24(),
+          Icon(
+            Icons.cloud,
+            color: getColorWhiteType1(),
+            size: 22,
+          ),
+          SizedBox(width: getSize6()),
+          TextWidgetString(
+            '기상정보',
+            getTextleft(),
+            getSizeInt18(),
+            getText700(),
+            getColorWhiteType1(),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => _handleClose(context),
+            child: Container(
+              padding: EdgeInsets.all(getSize8()),
+              color: Colors.transparent,
+              child: Icon(
+                Icons.close,
+                color: getColorWhiteType1(),
+                size: 24,
               ),
-              onPressed: () => _handleClose(context),
             ),
           ),
         ],
@@ -125,12 +142,10 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
   void _handleClose(BuildContext context) {
     try {
-      // onClose 콜백 호출
       if (widget.onClose != null) {
         widget.onClose!();
       }
 
-      // ✅ MainScreen의 selectedIndex를 -1로 설정
       final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
       if (mainScreenState != null) {
         try {
@@ -150,20 +165,6 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
     }
   }
 
-  Widget _buildTitle() {
-    return Row(
-      children: [
-        TextWidgetString(
-          '기상정보',
-          getTextleft(),
-          getSizeInt30(),
-          getText700(),
-          getColorBlackType2(),
-        ),
-      ],
-    );
-  }
-
   Widget _buildContent(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -180,35 +181,100 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
   Widget _buildLabelsColumn() {
     final labels = ['', '시간', '풍향', '풍속', '파고', '돌풍', '온도'];
-    final paddings = [
-      const EdgeInsets.only(top: 6, bottom: 10, left: 8, right: 8),
-      const EdgeInsets.all(10),
-      const EdgeInsets.only(top: 20, bottom: 37, left: 8, right: 8),
-      const EdgeInsets.all(10),
-      const EdgeInsets.all(10),
-      const EdgeInsets.all(10),
-      const EdgeInsets.all(10),
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: List.generate(labels.length, (index) {
-        return Padding(
-          padding: paddings[index].copyWith(
-            top: paddings[index].top * getSize1(),
-            bottom: paddings[index].bottom * getSize1(),
-            left: paddings[index].left * getSize1(),
-            right: paddings[index].right * getSize1(),
-          ),
+      children: [
+        // 날짜 (빈칸)
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
           child: TextWidgetString(
-            labels[index],
+            labels[0],
             getTextleft(),
-            getSizeInt16(),
+            getSizeInt14(),
             getText700(),
             getColorBlackType2(),
           ),
-        );
-      }),
+        ),
+
+        // 시간
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: TextWidgetString(
+            labels[1],
+            getTextleft(),
+            getSizeInt14(),
+            getText700(),
+            getColorBlackType2(),
+          ),
+        ),
+
+        // 풍향 (특별 처리)
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: SizedBox(
+            height: getSize36() + getSize4() + getSize9(), // 아이콘 + 간격 + 방향텍스트 높이
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextWidgetString(
+                labels[2],
+                getTextleft(),
+                getSizeInt14(),
+                getText700(),
+                getColorBlackType2(),
+              ),
+            ),
+          ),
+        ),
+
+        // 풍속
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: TextWidgetString(
+            labels[3],
+            getTextleft(),
+            getSizeInt14(),
+            getText700(),
+            getColorBlackType2(),
+          ),
+        ),
+
+        // 파고
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: TextWidgetString(
+            labels[4],
+            getTextleft(),
+            getSizeInt14(),
+            getText700(),
+            getColorBlackType2(),
+          ),
+        ),
+
+        // 돌풍
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: TextWidgetString(
+            labels[5],
+            getTextleft(),
+            getSizeInt14(),
+            getText700(),
+            getColorBlackType2(),
+          ),
+        ),
+
+        // 온도
+        Padding(
+          padding: EdgeInsets.all(getSize8()),
+          child: TextWidgetString(
+            labels[6],
+            getTextleft(),
+            getSizeInt14(),
+            getText700(),
+            getColorBlackType2(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -217,7 +283,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       builder: (context, provider, child) {
         if (provider.isLoading) {
           return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4,
+            height: MediaQuery.of(context).size.height * 0.35,
             child: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -265,19 +331,17 @@ class _WeatherDataColumn extends StatelessWidget {
       children: [
         _buildDate(textColor),
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: DesignConstants.spacing8,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: getSize6()),
           child: DottedBorder(
             borderType: BorderType.RRect,
-            radius: const Radius.circular(DesignConstants.radiusS),
-            dashPattern: const [6, 3],
+            radius: Radius.circular(getSize5()),
+            dashPattern: const [5, 2],
             color: getColorGrayType7(),
             strokeWidth: getSize1(),
             child: Container(
               decoration: BoxDecoration(
                 color: getColorGrayType12(),
-                borderRadius: BorderRadius.circular(6.0),
+                borderRadius: BorderRadius.circular(getSize5()),
               ),
               child: _buildDataContent(textColor),
             ),
@@ -302,11 +366,11 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(getSize10()),
+      padding: EdgeInsets.all(getSize8()),
       child: TextWidgetString(
         dateText,
         getTextleft(),
-        getSizeInt12(),
+        getSizeInt11(),
         getText700(),
         textColor,
       ),
@@ -350,11 +414,11 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(getSize10()),
+      padding: EdgeInsets.all(getSize8()),
       child: TextWidgetString(
         timeText,
         getTextleft(),
-        getSizeInt16(),
+        getSizeInt14(),
         getText700(),
         textColor,
       ),
@@ -363,14 +427,14 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildWindDirection(Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(getSize10()),
+      padding: EdgeInsets.all(getSize8()),
       child: Column(
         children: [
           FutureBuilder<Widget>(
             future: svgload(
               'assets/kdn/wid/img/gray_point_rotation0.svg',
-              getSize40(),
-              getSize40(),
+              getSize36(),
+              getSize36(),
               _safeGetWindIcon(),
               _safeGetWindSpeed(),
             ),
@@ -378,14 +442,17 @@ class _WeatherDataColumn extends StatelessWidget {
               if (snapshot.hasData) {
                 return snapshot.data!;
               }
-              return const SizedBox(width: 40, height: 40);
+              return SizedBox(
+                width: getSize36(),
+                height: getSize36(),
+              );
             },
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: getSize4()),
           TextWidgetString(
             _safeGetWindDirection(),
             getTextleft(),
-            getSizeInt10(),
+            getSizeInt9(),
             getText700(),
             textColor,
           ),
@@ -396,11 +463,11 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildDataText(String text, Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(getSize10()),
+      padding: EdgeInsets.all(getSize8()),
       child: TextWidgetString(
         text,
         getTextleft(),
-        getSizeInt16(),
+        getSizeInt14(),
         getText700(),
         textColor,
       ),
@@ -439,18 +506,25 @@ class _WeatherDataColumn extends StatelessWidget {
 
   String _calculateTemperature() {
     try {
-      final temp = data.current_temp ?? 0;
+      final temp = data.current_temp ?? data.temp_surface;
+      if (temp == null) return '0°C';
       final celsius = temp - 273.15;
-      return '${celsius.toStringAsFixed(0)}°C';
+      return '${celsius.toStringAsFixed(1)}°C';
     } catch (e) {
+      AppLogger.e('온도 계산 오류: $e');
       return '0°C';
     }
   }
 }
 
-// svgload 함수 - 그대로 유지
-Future<Widget> svgload(String svgurl, double height, double width,
-    String windIcon, String windSpeed) async {
+// 원본 svgload 함수
+Future<Widget> svgload(
+    String svgurl,
+    double height,
+    double width,
+    String windIcon,
+    String windSpeed,
+    ) async {
   try {
     AppLogger.d('SVG 로딩: url=$svgurl, windIcon=$windIcon, windSpeed=$windSpeed');
 
@@ -460,18 +534,20 @@ Future<Widget> svgload(String svgurl, double height, double width,
     final String svgString = await rootBundle.loadString(svgurl);
     String pathFillColor = '';
 
+    // 풍속에 따른 색상 변경
     if (speed < 5) {
-      pathFillColor = '#666666';
+      pathFillColor = '#666666'; // 회색
     } else if (speed >= 5 && speed < 10) {
-      pathFillColor = '#FFD700';
+      pathFillColor = '#FFD700'; // 노란색
     } else {
-      pathFillColor = '#FF0000';
+      pathFillColor = '#FF0000'; // 빨간색
     }
 
     RegExp pathRegex = RegExp(r'<path[^>]*>');
     RegExp strokeRectRegex = RegExp(r'<rect[^>]*stroke="#[0-9A-Fa-f]{6}"[^>]*>');
     String modifiedSvg = svgString;
 
+    // SVG 색상 변경
     modifiedSvg = modifiedSvg.replaceAllMapped(pathRegex, (Match match) {
       String matchText = match.group(0) ?? '';
       if (matchText.contains('fill="#')) {
@@ -492,6 +568,7 @@ Future<Widget> svgload(String svgurl, double height, double width,
 
     final iconName = windIcon.isEmpty ? 'ro0' : windIcon;
 
+    // 회전 적용
     if (iconName.startsWith('ro')) {
       final angleStr = iconName.replaceAll('ro', '');
       final angle = int.tryParse(angleStr) ?? 0;
