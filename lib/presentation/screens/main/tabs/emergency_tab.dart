@@ -8,7 +8,6 @@ import 'package:vms_app/presentation/providers/emergency_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // 메인 함수 - 다른 탭들과 동일한 구조
 Widget MainViewEmergencySheet(BuildContext context, {Function? onClose}) {

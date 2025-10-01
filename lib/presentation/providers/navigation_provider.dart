@@ -37,7 +37,6 @@ class NavigationProvider extends BaseProvider {
 
   // Getters - 타입 안전성 확보
   List<NavigationModel> get rosList => _rosList;
-  List<NavigationModel> get RosList => _rosList; // 하위 호환성
   bool get isInitialized => _isInitialized;
   List<String> get navigationWarnings => _navigationWarnings;
 
