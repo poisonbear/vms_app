@@ -80,319 +80,106 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       if (mainScreenState != null) {
         try {
           (mainScreenState as dynamic).selectedIndex = -1;
-        } catch (e) {
-          // 에러 무시
-        }
+        } catch (e) {}
       }
 
-      if (mounted) {
-        setState(() {
-          _isClosing = true;
-        });
-      }
+      setState(() {
+        _isClosing = true;
+      });
 
       if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
+        Navigator.pop(context);
       }
     } catch (e) {
-      // 전체 에러 처리
-    }
-  }
-
-  void _showEmergencyDialog() {
-    final userState = context.read<UserState>();
-    final vesselProvider = context.read<VesselProvider>();
-    final emergencyProvider = context.read<EmergencyProvider>();
-
-    if (emergencyProvider.isEmergencyActive) {
-      showTopSnackBar(context, '긴급신고가 이미 진행 중입니다');
-      return;
-    }
-
-    String? shipNm;
-    if (userState.mmsi != null) {
-      try {
-        final userVessel = vesselProvider.vessels.firstWhere(
-              (vessel) => vessel.mmsi == userState.mmsi,
-        );
-        shipNm = userVessel.ship_nm;
-      } catch (e) {
-        shipNm = null;
-      }
-    }
-
-    HapticFeedback.heavyImpact();
-
-    emergencyProvider.startEmergency(
-      mmsi: userState.mmsi,
-      ship_nm: shipNm,
-      countdownSeconds: 5,
-    );
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return Consumer<EmergencyProvider>(
-          builder: (context, provider, child) {
-            if (provider.status == EmergencyStatus.active ||
-                provider.status == EmergencyStatus.completed) {
-              Navigator.of(dialogContext, rootNavigator: true).pop();
-              return const SizedBox.shrink();
-            }
-
-            return WillPopScope(
-              onWillPop: () async {
-                provider.cancelEmergency();
-                return true;
-              },
-              child: AlertDialog(
-                backgroundColor: getColorWhiteType1(),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(getSize12()),
-                ),
-                title: Column(
-                  children: [
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: getColorEmergencyRed(),
-                      size: 48,
-                    ),
-                    SizedBox(height: getSize8()),
-                    TextWidgetString(
-                      '긴급신고',
-                      getTextcenter(),
-                      getSizeInt20(),
-                      getText700(),
-                      getColorEmergencyRed(),
-                    ),
-                  ],
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextWidgetString(
-                      '해양경찰 122로\n긴급신고를 진행하시겠습니까?',
-                      getTextcenter(),
-                      getSizeInt16(),
-                      getText500(),
-                      getColorBlackType2(),
-                    ),
-                    SizedBox(height: getSize20()),
-                    if (provider.countdownSeconds > 0) ...[
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: getColorEmergencyRed(),
-                            width: 3,
-                          ),
-                        ),
-                        child: Center(
-                          child: TextWidgetString(
-                            '${provider.countdownSeconds}',
-                            getTextcenter(),
-                            getSizeInt32(),
-                            getText700(),
-                            getColorEmergencyRed(),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: getSize12()),
-                      TextWidgetString(
-                        '${provider.countdownSeconds}초 후 자동 연결됩니다',
-                        getTextcenter(),
-                        getSizeInt14(),
-                        getText400(),
-                        getColorGrayType3(),
-                      ),
-                    ],
-                  ],
-                ),
-                actions: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            provider.cancelEmergency();
-                            Navigator.of(dialogContext).pop();
-                          },
-                          child: TextWidgetString(
-                            '취소',
-                            getTextcenter(),
-                            getSizeInt16(),
-                            getText500(),
-                            getColorGrayType2(),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: getSize8()),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await provider.activateEmergency();
-                            Navigator.of(dialogContext).pop();
-                            _makeEmergencyCall();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: getColorEmergencyRed(),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(getSize8()),
-                            ),
-                          ),
-                          child: TextWidgetString(
-                            '신고',
-                            getTextcenter(),
-                            getSizeInt16(),
-                            getText600(),
-                            getColorWhiteType1(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _makeEmergencyCall() async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: '122');
-    try {
-      if (await canLaunchUrl(phoneUri)) {
-        await launchUrl(phoneUri);
-      } else {
-        if (mounted) {
-          showTopSnackBar(context, '전화 앱을 실행할 수 없습니다');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showTopSnackBar(context, '긴급 전화 연결에 실패했습니다');
-      }
+      print('닫기 버튼 오류: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: _isClosing,
-      onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop || _isClosing) return;
+    return Consumer3<EmergencyProvider, UserState, VesselProvider>(
+      builder: (context, emergencyProvider, userState, vesselProvider, child) {
+        // 선박명 가져오기
+        String? shipNm;
+        if (userState.mmsi != null) {
+          try {
+            final userVessel = vesselProvider.vessels.firstWhere(
+                  (vessel) => vessel.mmsi == userState.mmsi,
+            );
+            shipNm = userVessel.ship_nm;
+          } catch (e) {
+            shipNm = null;
+          }
+        }
 
-        _handleClose(context);
-      },
-      child: Consumer<EmergencyProvider>(
-        builder: (context, emergencyProvider, child) {
-          return Consumer<UserState>(
-            builder: (context, userState, child) {
-              String? shipNm;
-              if (userState.mmsi != null) {
-                try {
-                  final vesselProvider = context.read<VesselProvider>();
-                  final userVessel = vesselProvider.vessels.firstWhere(
-                        (vessel) => vessel.mmsi == userState.mmsi,
-                  );
-                  shipNm = userVessel.ship_nm ?? '';
-                } catch (e) {
-                  shipNm = '';
-                }
-              } else {
-                shipNm = '';
-              }
-
-              return Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  constraints: BoxConstraints(
-                    minHeight: getSize400(),
-                    maxHeight: MediaQuery.of(context).size.height * 0.7,
-                  ),
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(DesignConstants.radiusXL),
-                      topRight: Radius.circular(DesignConstants.radiusXL),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildHeader(emergencyProvider),
-                      Flexible(
+        return GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.dark,
+            child: Container(
+              color: Colors.transparent,
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildHeader(emergencyProvider),
+                    Flexible(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: getColorWhiteType1(),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(getSize20()),
+                            bottomRight: Radius.circular(getSize20()),
+                          ),
+                        ),
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: EdgeInsets.all(getSize20()),
+                            padding: EdgeInsets.all(getSize16()),
                             child: Column(
                               children: [
-                                Container(
-                                  padding: EdgeInsets.all(getSize16()),
-                                  decoration: BoxDecoration(
-                                    color: getColorEmergencyRed50(),
-                                    borderRadius: BorderRadius.circular(getSize12()),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        flex: 4,
-                                        child: Center(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              _buildEmergencyButton(),
-                                              SizedBox(height: getSize10()),
-                                              TextWidgetString(
-                                                '긴급 상황 시\n3초간 길게 누르세요',
-                                                getTextcenter(),
-                                                getSizeInt12(),
-                                                getText500(),
-                                                getColorEmergencyRed600(),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                // 메인 컨텐츠 영역 - 좌우 배치
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // 왼쪽: 긴급신고 버튼 (40%)
+                                    Expanded(
+                                      flex: 4,
+                                      child: _buildEmergencyButton(
+                                        emergencyProvider,
+                                        userState.mmsi,
+                                        shipNm,
                                       ),
-                                      Container(
-                                        width: 1,
-                                        color: getColorGrayType5(),
-                                        margin: EdgeInsets.symmetric(vertical: getSize10()),
+                                    ),
+                                    SizedBox(width: getSize12()),
+                                    // 오른쪽: 선박 및 위치정보 (60%)
+                                    Expanded(
+                                      flex: 6,
+                                      child: _buildInfoSection(
+                                        emergencyProvider,
+                                        userState,
+                                        shipNm,
                                       ),
-                                      Expanded(
-                                        flex: 6,
-                                        child: Container(
-                                          padding: EdgeInsets.all(getSize8()),
-                                          child: _buildInfoSection(emergencyProvider, userState, shipNm),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.all(getSize8()),
-                                  child: _buildWarningSection(),
-                                ),
+                                SizedBox(height: getSize16()),
+                                // 아래: 경고 문구
+                                _buildWarningSection(),
                               ],
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -436,24 +223,22 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                     ? Icons.location_on
                     : Icons.location_off,
                 color: emergencyProvider.isLocationTracking
-                    ? getColorEmergencyGreenAccent()
-                    : getColorEmergencyWhite70(),
+                    ? getColorWhiteType1()
+                    : getColorWhiteType1().withOpacity(0.5),
                 size: 22,
               ),
             ),
           ),
-          SizedBox(
-            width: getSize24(),
-            height: getSize24(),
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: Icon(
+          GestureDetector(
+            onTap: () => _handleClose(context),
+            child: Container(
+              padding: EdgeInsets.all(getSize8()),
+              color: Colors.transparent,
+              child: Icon(
                 Icons.close,
                 color: getColorWhiteType1(),
                 size: 22,
               ),
-              onPressed: () => _handleClose(context),
             ),
           ),
         ],
@@ -461,74 +246,178 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     );
   }
 
-  Widget _buildEmergencyButton() {
+  Widget _buildEmergencyButton(
+      EmergencyProvider provider,
+      int? mmsi,
+      String? shipNm,
+      ) {
+    if (provider.status == EmergencyStatus.preparing) {
+      return _buildCountdownOverlay(provider);
+    }
+
     return GestureDetector(
-      onTapDown: (_) {
-        setState(() {
-          _isEmergencyPressed = true;
-        });
-        _animationController.forward();
-        HapticFeedback.mediumImpact();
+      onLongPressStart: (_) {
+        if (!_isEmergencyPressed) {
+          setState(() => _isEmergencyPressed = true);
+          HapticFeedback.heavyImpact();
+          _animationController.forward();
+          provider.startEmergency(
+            mmsi: mmsi,
+            ship_nm: shipNm,
+            countdownSeconds: 5,
+          );
+        }
       },
-      onTapUp: (_) {
-        setState(() {
-          _isEmergencyPressed = false;
-        });
-        _animationController.reverse();
-        HapticFeedback.lightImpact();
+      onLongPressEnd: (_) {
+        if (_isEmergencyPressed) {
+          setState(() => _isEmergencyPressed = false);
+          HapticFeedback.lightImpact();
+          _animationController.reverse();
+        }
       },
-      onTapCancel: () {
-        setState(() {
-          _isEmergencyPressed = false;
-        });
-        _animationController.reverse();
+      onLongPressCancel: () {
+        if (_isEmergencyPressed) {
+          setState(() => _isEmergencyPressed = false);
+          HapticFeedback.lightImpact();
+          _animationController.reverse();
+        }
       },
-      onTap: () {
-        HapticFeedback.lightImpact();
-      },
-      onLongPress: () {
-        HapticFeedback.heavyImpact();
-        _showEmergencyDialog();
-      },
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _isEmergencyPressed ? _scaleAnimation.value : 1.0,
-            child: Container(
-              width: 102,
-              height: 102,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: _isEmergencyPressed
-                      ? [
-                    getColorEmergencyRed600(),
-                    getColorEmergencyRed700(),
-                  ]
-                      : [
-                    getColorEmergencyRed(),
-                    getColorEmergencyRed600(),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: getColorEmergencyRedOpacity40(),
-                    blurRadius: 12,
-                    spreadRadius: _isEmergencyPressed ? 4 : 2,
-                  ),
-                ],
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                getColorEmergencyRed600(),
+                getColorEmergencyRed(),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(getSize12()),
+            boxShadow: [
+              BoxShadow(
+                color: getColorEmergencyRed().withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              child: Center(
-                child: Icon(
-                  Icons.emergency,
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.phone,
                   color: getColorWhiteType1(),
-                  size: 48,
+                  size: 64,
+                ),
+                SizedBox(height: getSize12()),
+                Text(
+                  '긴급신고',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: getSize16(),
+                    fontWeight: getText700(),
+                    color: getColorWhiteType1(),
+                  ),
+                ),
+                SizedBox(height: getSize4()),
+                Text(
+                  '3초간 길게 누르세요',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: getSize12(),
+                    fontWeight: getText400(),
+                    color: getColorWhiteType1().withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCountdownOverlay(EmergencyProvider provider) {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            getColorEmergencyRed600(),
+            getColorEmergencyRed(),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(getSize12()),
+        boxShadow: [
+          BoxShadow(
+            color: getColorEmergencyRed().withOpacity(0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: getColorWhiteType1().withOpacity(0.2),
+            ),
+            child: Center(
+              child: Text(
+                '${provider.countdownSeconds}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: getSize32(),
+                  fontWeight: getText700(),
+                  color: getColorWhiteType1(),
                 ),
               ),
             ),
-          );
-        },
+          ),
+          SizedBox(height: getSize12()),
+          Text(
+            '초 후 자동 연결됩니다',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: getSize14(),
+              fontWeight: getText600(),
+              color: getColorWhiteType1(),
+            ),
+          ),
+          SizedBox(height: getSize16()),
+          TextButton(
+            onPressed: () {
+              provider.cancelEmergency();
+              HapticFeedback.lightImpact();
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: getColorWhiteType1().withOpacity(0.2),
+              padding: EdgeInsets.symmetric(
+                horizontal: getSize20(),
+                vertical: getSize10(),
+              ),
+            ),
+            child: Text(
+              '취소',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: getSize14(),
+                fontWeight: getText600(),
+                color: getColorWhiteType1(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -538,17 +427,44 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     final latitude = position?.latitude.toStringAsFixed(6) ?? '정보 없음';
     final longitude = position?.longitude.toStringAsFixed(6) ?? '정보 없음';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildInfoRow('선박명', shipNm ?? '정보 없음'),
-        SizedBox(height: getSize8()),
-        _buildInfoRow('MMSI', userState.mmsi?.toString() ?? '정보 없음'),
-        SizedBox(height: getSize8()),
-        _buildInfoRow('위도', latitude),
-        SizedBox(height: getSize8()),
-        _buildInfoRow('경도', longitude),
-      ],
+    return Container(
+      height: 200,
+      padding: EdgeInsets.all(getSize16()),
+      decoration: BoxDecoration(
+        color: getColorGrayType1().withOpacity(0.3),
+        borderRadius: BorderRadius.circular(getSize12()),
+        border: Border.all(
+          color: getColorGrayType2(),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            '선박 및 위치정보',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: getSize16(),
+              fontWeight: getText700(),
+              color: getColorBlackType1(),
+            ),
+          ),
+          SizedBox(height: getSize16()),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInfoRow('선박명', shipNm ?? '정보 없음'),
+              SizedBox(height: getSize10()),
+              _buildInfoRow('MMSI', userState.mmsi?.toString() ?? '정보 없음'),
+              SizedBox(height: getSize10()),
+              _buildInfoRow('위도', latitude),
+              SizedBox(height: getSize10()),
+              _buildInfoRow('경도', longitude),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -558,21 +474,25 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       children: [
         SizedBox(
           width: getSize60(),
-          child: TextWidgetString(
+          child: Text(
             label,
-            getTextleft(),
-            getSizeInt12(),
-            getText400(),
-            getColorGrayType3(),
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: getSize14(),
+              fontWeight: getText500(),
+              color: getColorGrayType3(),
+            ),
           ),
         ),
         Expanded(
-          child: TextWidgetString(
+          child: Text(
             value,
-            getTextleft(),
-            getSizeInt12(),
-            getText600(),
-            getColorBlackType2(),
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontSize: getSize14(),
+              fontWeight: getText600(),
+              color: getColorBlackType2(),
+            ),
           ),
         ),
       ],
@@ -581,7 +501,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
   Widget _buildWarningSection() {
     return Container(
-      padding: EdgeInsets.all(getSize12()),
+      padding: EdgeInsets.all(getSize16()),
       decoration: BoxDecoration(
         color: getColorYellowType1().withOpacity(0.1),
         borderRadius: BorderRadius.circular(getSize8()),
@@ -595,16 +515,18 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           Icon(
             Icons.info_outline,
             color: getColorYellowType2(),
-            size: 20,
+            size: 24,
           ),
-          SizedBox(width: getSize8()),
+          SizedBox(width: getSize12()),
           Expanded(
-            child: TextWidgetString(
-              '긴급신고 시 해양경찰 122로 자동 연결됩니다',
-              getTextleft(),
-              getSizeInt12(),
-              getText400(),
-              getColorYellowType2(),
+            child: Text(
+              '긴급 상황 시 122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.',
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                fontSize: getSize13(),
+                fontWeight: getText400(),
+                color: getColorYellowType2(),
+              ),
             ),
           ),
         ],
