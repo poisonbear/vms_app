@@ -3,7 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 // ============================================
 // 🔧 캐시 엔트리 (크기 측정 추가)

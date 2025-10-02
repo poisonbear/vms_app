@@ -4,7 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:vms_app/presentation/services/services.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/presentation/widgets/overlay/popup_dialog.dart';
 
 /// FCM 메시지 타입 정의

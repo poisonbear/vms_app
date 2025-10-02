@@ -1,5 +1,5 @@
 import 'package:vms_app/core/services/services.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 캐시 상태 모니터링 유틸리티
 class CacheMonitor {

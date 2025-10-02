@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 통합된 에러 핸들러
 class ErrorHandler {

@@ -4,7 +4,7 @@ import 'package:vms_app/presentation/services/services.dart';
 import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'dart:async';
 
 /// MainScreen의 모든 상태와 로직을 관리하는 컨트롤러 (기존 메서드 모두 포함)

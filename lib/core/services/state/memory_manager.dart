@@ -1,7 +1,7 @@
 // lib/core/services/state/memory_manager.dart
 
 import 'package:flutter/material.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 메모리 관리자
 ///

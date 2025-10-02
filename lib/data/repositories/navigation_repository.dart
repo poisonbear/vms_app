@@ -1,7 +1,7 @@
 import 'package:vms_app/data/datasources/navigation_datasource.dart';
 import 'package:vms_app/data/models/navigation_model.dart';
 import 'package:vms_app/domain/repositories/navigation_repository.dart' as domain;
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 항행 정보 저장소 구현
 class NavigationRepository implements domain.NavigationRepository {

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/main/utils/vessel_focus_helper.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// MainScreen 초기화 확장
 extension MainScreenInit on State {

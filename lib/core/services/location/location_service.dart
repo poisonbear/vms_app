@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 
 /// 위치 서비스 관리자

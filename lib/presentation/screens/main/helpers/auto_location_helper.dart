@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 로그인 시 내 위치찾기 자동 실행 헬퍼 (최적화 버전)
 class AutoLocationHelper {

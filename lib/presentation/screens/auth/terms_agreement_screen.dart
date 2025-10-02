@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/presentation/providers/terms_provider.dart';
 import 'package:vms_app/presentation/screens/auth/unified_terms_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';

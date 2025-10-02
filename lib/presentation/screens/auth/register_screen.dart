@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/presentation/screens/auth/register_complete_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 

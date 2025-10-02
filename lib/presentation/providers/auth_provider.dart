@@ -2,7 +2,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/presentation/providers/base_provider.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 사용자 인증 상태 관리 Provider
 /// BaseProvider를 상속하여 일관된 에러 처리 적용

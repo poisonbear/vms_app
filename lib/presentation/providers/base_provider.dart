@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// Provider 기본 클래스 - 메모리 안전 및 에러 처리
 abstract class BaseProvider extends ChangeNotifier {

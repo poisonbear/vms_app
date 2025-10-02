@@ -2,7 +2,7 @@
 import 'dart:math' as math;
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

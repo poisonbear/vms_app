@@ -1,7 +1,7 @@
 // lib/core/services/system/app_initializer.dart
 
 import 'package:flutter/widgets.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/core/services/services.dart';
 
 /// 앱 초기화 관리자

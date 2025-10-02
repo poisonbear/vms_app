@@ -1,7 +1,7 @@
 import 'package:vms_app/domain/repositories/weather_repository.dart' as domain;
 import 'package:vms_app/data/datasources/weather_datasource.dart';
 import 'package:vms_app/data/models/weather_model.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 날씨 정보 저장소 구현
 class WeatherRepository implements domain.WeatherRepository {

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/core/utils/helpers.dart';
+import 'package:vms_app/core/utils/utils.dart';
 import 'package:vms_app/core/constants/constants.dart';
 
 class MainPermissionHandler {

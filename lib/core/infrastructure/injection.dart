@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/services/services.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 // DataSources - 새로운 이름과 기존 typedef 모두 포함
 import 'package:vms_app/data/datasources/terms_datasource.dart';

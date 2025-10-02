@@ -1,6 +1,6 @@
 // lib/core/services/cache/memory_cache.dart
 
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'persistent_cache.dart';
 
 // ============================================

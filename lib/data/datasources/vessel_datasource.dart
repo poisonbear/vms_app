@@ -5,7 +5,7 @@ import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 
 /// 선박 및 항로 데이터소스 (통합)

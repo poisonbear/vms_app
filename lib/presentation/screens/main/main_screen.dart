@@ -16,8 +16,7 @@ import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
 import 'package:vms_app/presentation/screens/main/tabs/emergency_tab.dart';
 import 'package:vms_app/presentation/screens/profile/profile_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/core/utils/helpers.dart';
+import 'package:vms_app/core/utils/utils.dart';
 import 'package:latlong2/latlong.dart';
 
 // Helpers and Utils

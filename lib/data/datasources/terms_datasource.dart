@@ -3,7 +3,7 @@ import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/terms_model.dart';
 
 /// 약관 정보 데이터소스 (기존 CmdSource)

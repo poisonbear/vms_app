@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/emergency_model.dart';
 
 /// 긴급 상황 로컬 데이터소스

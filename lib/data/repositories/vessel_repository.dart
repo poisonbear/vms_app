@@ -1,7 +1,7 @@
 import 'package:vms_app/data/datasources/vessel_datasource.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart' as domain;
-import 'package:vms_app/core/utils/app_logger.dart';
+import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 선박 및 항로 저장소 구현 (통합)
 class VesselRepository implements domain.VesselRepository {
