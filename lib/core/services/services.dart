@@ -16,8 +16,8 @@ library core_services;
 // ============================================
 // Cache 서비스
 // ============================================
-export 'cache/cache_service.dart';
-export 'cache/simple_cache.dart';
+export 'cache/persistent_cache.dart';
+export 'cache/memory_cache.dart';
 
 // ============================================
 // Location 서비스

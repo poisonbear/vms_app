@@ -11,7 +11,7 @@ class RouteProvider extends BaseProvider {
   late final VesselRepository _vesselRepository;
 
   // 캐시 매니저
-  final _cache = SimpleCache();
+  final _cache = MemoryCache();
 
   // 기존 구조 유지
   List<PastRouteSearchModel> _pastRouteList = [];

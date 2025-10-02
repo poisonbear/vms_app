@@ -1,4 +1,4 @@
-// lib/core/services/cache/cache_service.dart
+// lib/core/services/cache/persistent_cache.dart
 
 import 'dart:async';
 import 'dart:convert';
@@ -35,11 +35,11 @@ class CacheEntry<T> {
 }
 
 // ============================================
-// 🔧 CacheService (영구 캐시)
+// 🔧 PersistentCacheService (영구 캐시)
 // ============================================
 
-class CacheService {
-  static CacheService? _instance;
+class PersistentCacheService {
+  static PersistentCacheService? _instance;
   final Map<String, CacheEntry> _memoryCache = {};
   static const String _persistentPrefix = 'cache_';
   static const String _timestampPrefix = 'cache_time_';
@@ -62,12 +62,12 @@ class CacheService {
     'holiday_info': 1440, // 24시간
   };
 
-  CacheService._() {
+  PersistentCacheService._() {
     _startMaintenanceTimer();
   }
 
-  factory CacheService() {
-    _instance ??= CacheService._();
+  factory PersistentCacheService() {
+    _instance ??= PersistentCacheService._();
     return _instance!;
   }
 
@@ -139,7 +139,7 @@ class CacheService {
 
   static Future<void> saveCache(String key, dynamic data) async {
     // 메모리 캐시 저장
-    CacheService().put(
+    PersistentCacheService().put(
       key,
       data,
       Duration(minutes: _getCacheDuration(key)),
@@ -162,8 +162,9 @@ class CacheService {
 
   static Future<dynamic> getCache(String key) async {
     // 메모리 캐시 먼저 확인
-    final memoryData = CacheService().get(key);
+    final memoryData = PersistentCacheService().get(key);
     if (memoryData != null) {
+      AppLogger.d('Cache hit (memory): $key');
       return memoryData;
     }
 
@@ -188,8 +189,9 @@ class CacheService {
         // 메모리 캐시 복원
         final remainingDuration =
             duration - DateTime.now().difference(timestamp);
-        CacheService().put(key, data, remainingDuration);
+        PersistentCacheService().put(key, data, remainingDuration);
 
+        AppLogger.d('Cache hit (persistent): $key');
         return data;
       }
     } catch (e) {
@@ -200,21 +202,20 @@ class CacheService {
   }
 
   static Future<void> removeCache(String key) async {
-    CacheService().remove(key);
+    PersistentCacheService().remove(key);
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('$_persistentPrefix$key');
       await prefs.remove('$_timestampPrefix$key');
+      AppLogger.d('Cache removed: $key');
     } catch (e) {
       AppLogger.e('Failed to remove cache', e);
     }
   }
 
   static Future<bool> hasCache(String key) async {
-    if (CacheService().has(key)) {
-      return true;
-    }
+    if (PersistentCacheService().has(key)) return true;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -230,7 +231,7 @@ class CacheService {
   }
 
   static Future<void> clearCache(String pattern) async {
-    final instance = CacheService();
+    final instance = PersistentCacheService();
     final keysToRemove = instance._memoryCache.keys
         .where((key) => key.contains(pattern))
         .toList();
@@ -257,7 +258,7 @@ class CacheService {
   }
 
   static Future<void> clearAllCache() async {
-    CacheService().clear();
+    PersistentCacheService().clear();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -280,7 +281,7 @@ class CacheService {
       int totalSize = 0;
 
       // 메모리 캐시 크기
-      final instance = CacheService();
+      final instance = PersistentCacheService();
       instance._memoryCache.forEach((key, entry) {
         totalSize += entry.sizeBytes;
       });
@@ -308,6 +309,10 @@ class CacheService {
       return 'Unknown';
     }
   }
+
+  // ============================================
+  // 유틸리티 메서드
+  // ============================================
 
   // ============================================
   // 유지보수
@@ -405,21 +410,26 @@ class CacheManager {
   CacheManager._();
 
   static Future<void> saveCache(String key, dynamic data) =>
-      CacheService.saveCache(key, data);
+      PersistentCacheService.saveCache(key, data);
 
-  static Future<dynamic> getCache(String key) => CacheService.getCache(key);
+  static Future<dynamic> getCache(String key) =>
+      PersistentCacheService.getCache(key);
 
-  static Future<void> removeCache(String key) => CacheService.removeCache(key);
+  static Future<void> removeCache(String key) =>
+      PersistentCacheService.removeCache(key);
 
-  static Future<bool> hasCache(String key) => CacheService.hasCache(key);
+  static Future<bool> hasCache(String key) =>
+      PersistentCacheService.hasCache(key);
 
   static Future<bool> isCacheValid(String key) =>
-      CacheService.isCacheValid(key);
+      PersistentCacheService.isCacheValid(key);
 
   static Future<void> clearCache(String pattern) =>
-      CacheService.clearCache(pattern);
+      PersistentCacheService.clearCache(pattern);
 
-  static Future<void> clearAllCache() => CacheService.clearAllCache();
+  static Future<void> clearAllCache() =>
+      PersistentCacheService.clearAllCache();
 
-  static Future<String> getCacheSize() => CacheService.getCacheSize();
+  static Future<String> getCacheSize() =>
+      PersistentCacheService.getCacheSize();
 }

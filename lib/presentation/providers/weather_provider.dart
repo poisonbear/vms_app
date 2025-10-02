@@ -11,7 +11,7 @@ import 'package:vms_app/presentation/providers/base_provider.dart';
 /// 기상정보 Provider (캐싱 통합 버전)
 class WeatherProvider extends BaseProvider {
   late final WeatherRepository _widRepository;
-  final _cache = SimpleCache();
+  final _cache = MemoryCache();
 
   List<WidModel>? _widList;
   final List<String> _windDirection = [];

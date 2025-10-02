@@ -3,7 +3,7 @@ import 'package:vms_app/core/utils/app_logger.dart';
 
 /// 캐시 상태 모니터링 유틸리티
 class CacheMonitor {
-  static final _cache = SimpleCache();
+  static final _cache = MemoryCache();
   
   /// 캐시 상태 로깅
   static void logCacheStatus(String prefix) {

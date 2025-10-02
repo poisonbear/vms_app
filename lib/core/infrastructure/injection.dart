@@ -53,7 +53,7 @@ void _registerInfrastructure() {
   getIt.registerLazySingleton<DioRequest>(() => DioRequest());
 
   // Cache
-  getIt.registerLazySingleton<CacheService>(() => CacheService());
+  getIt.registerLazySingleton<PersistentCacheService>(() => PersistentCacheService());
 }
 
 /// Services 등록

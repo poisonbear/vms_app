@@ -1,24 +1,24 @@
-// lib/core/services/cache/simple_cache.dart
+// lib/core/services/cache/memory_cache.dart
 
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'cache_service.dart';
+import 'persistent_cache.dart';
 
 // ============================================
-// 🔧 SimpleCache (크기 제한 추가)
+// 🔧 MemoryCache (크기 제한 추가)
 // ============================================
 
-class SimpleCache {
-  static SimpleCache? _instance;
+class MemoryCache {
+  static MemoryCache? _instance;
   final Map<String, CacheEntry> _cache = {};
 
   // 🔧 신규: 캐시 크기 제한 (기본 10MB)
   static const int maxCacheSizeBytes = 10 * 1024 * 1024;
   int _currentSizeBytes = 0;
 
-  SimpleCache._();
+  MemoryCache._();
 
-  factory SimpleCache() {
-    _instance ??= SimpleCache._();
+  factory MemoryCache() {
+    _instance ??= MemoryCache._();
     return _instance!;
   }
 
@@ -80,7 +80,7 @@ class SimpleCache {
   void clear() {
     _cache.clear();
     _currentSizeBytes = 0;
-    AppLogger.d('SimpleCache cleared');
+    AppLogger.d('MemoryCache cleared');
   }
 
   int get size => _cache.length;
@@ -147,7 +147,7 @@ class SimpleCache {
 // ============================================
 
 class CacheMonitor {
-  static final _cache = SimpleCache();
+  static final _cache = MemoryCache();
 
   /// 캐시 상태 로깅
   static void logCacheStatus(String prefix) {
@@ -166,7 +166,7 @@ class CacheMonitor {
   /// 캐시 통계
   static Map<String, dynamic> getCacheStats() {
     return {
-      'system': 'SimpleCache',
+      'system': 'MemoryCache',
       'status': 'active',
       'size': _cache.size,
       'details': _cache.getStats(),
@@ -184,7 +184,7 @@ class CacheMonitor {
   /// 상세 캐시 정보 출력 (디버깅용)
   static void printCacheDetails() {
     final stats = _cache.getStats();
-    AppLogger.d('📊 SimpleCache Details:');
+    AppLogger.d('📊 MemoryCache Details:');
     AppLogger.d('  - Total Items: ${stats['totalItems']}');
     AppLogger.d('  - Active: ${stats['activeItems']}');
     AppLogger.d('  - Expired: ${stats['expiredItems']}');

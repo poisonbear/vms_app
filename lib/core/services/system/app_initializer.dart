@@ -2,8 +2,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import '../cache/cache_service.dart';
-import 'timer_service.dart';
+import 'package:vms_app/core/services/services.dart';
 
 /// 앱 초기화 관리자
 class AppInitializer {
@@ -18,11 +17,11 @@ class AppInitializer {
       WidgetsFlutterBinding.ensureInitialized();
 
       // 2. 캐시 서비스 초기화
-      final cacheService = CacheService();
-      cacheService.cleanExpired();
+      final persistentCacheService = PersistentCacheService();
+      persistentCacheService.cleanExpired();
 
       // 3. 캐시 통계 로깅
-      final stats = cacheService.getStatistics();
+      final stats = persistentCacheService.getStatistics();
       AppLogger.d('Cache initialized: $stats');
 
       AppLogger.d('App initialization completed successfully');
@@ -51,8 +50,8 @@ class AppInitializer {
 
     try {
       // 캐시 정리
-      final cacheService = CacheService();
-      cacheService.dispose();
+      final persistentCacheService = PersistentCacheService();
+      persistentCacheService.dispose();
 
       // 타이머 정리
       final timerService = TimerService();
