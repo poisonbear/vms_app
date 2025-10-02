@@ -424,7 +424,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 재시도 횟수 정보 로그
     if (retryCount > 0) {
-      AppLogger.e('총 ${retryCount}회 재시도했으나 실패');
+      AppLogger.e('총 $retryCount회 재시도했으나 실패');
     }
 
     // 네트워크 에러인 경우

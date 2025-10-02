@@ -6,7 +6,7 @@ import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/screens/main/controllers/main_screen_controller.dart';
 import 'package:vms_app/presentation/screens/main/utils/vessel_focus_helper.dart';
 
@@ -40,7 +40,7 @@ class MapControlWidget extends StatelessWidget {
 
     // MainScreenController와 RouteSearchProvider 가져오기
     final controller = context.watch<MainScreenController?>();
-    final routeViewModel = context.watch<RouteSearchProvider?>();
+    final routeViewModel = context.watch<RouteProvider?>();
 
     return Positioned(
       right: getSize20(),

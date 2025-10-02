@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import '../controllers/main_screen_controller.dart';
 
@@ -18,7 +18,7 @@ class NavigationDebugHelper {
     
     // RouteSearchProvider 체크
     try {
-      final routeProvider = Provider.of<RouteSearchProvider>(context, listen: false);
+      final routeProvider = Provider.of<RouteProvider>(context, listen: false);
       debugPrint('✅ RouteSearchProvider OK - past: ${routeProvider.pastRoutes.length}, pred: ${routeProvider.predRoutes.length}', location: location);
     } catch (e) {
       debugPrint('❌ RouteSearchProvider 실패: $e', location: location);

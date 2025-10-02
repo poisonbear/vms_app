@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/services/cache_service.dart';
 import 'package:vms_app/core/services/state_manager.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
@@ -20,7 +20,7 @@ class MainScreenController extends ChangeNotifier {
   final MapController mapController = MapController();
 
   // Route Search
-  late RouteSearchProvider _routeSearchViewModel;
+  late RouteProvider _routeSearchViewModel;
 
   // State variables
   int? _selectedVesselMmsi;
@@ -46,15 +46,15 @@ class MainScreenController extends ChangeNotifier {
   LatLng? get currentPosition => _currentPosition;
   int get selectedIndex => _selectedIndex;
   int? get selectedVesselMmsi => _selectedVesselMmsi;
-  RouteSearchProvider get routeSearchViewModel => _routeSearchViewModel;
+  RouteProvider get routeSearchViewModel => _routeSearchViewModel;
   bool get isDisposed => _isDisposed;
 
-  MainScreenController({RouteSearchProvider? routeSearchViewModel}) {
+  MainScreenController({RouteProvider? routeSearchViewModel}) {
     timerService = TimerService();
     popupService = PopupService();
     locationFocusService = LocationFocusService();
     stateManager = StateManager();
-    _routeSearchViewModel = routeSearchViewModel ?? RouteSearchProvider();
+    _routeSearchViewModel = routeSearchViewModel ?? RouteProvider();
 
     AppLogger.d('MainScreenController initialized');
   }

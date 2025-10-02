@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/main/tabs/navigation_tab.dart';
 import 'package:vms_app/presentation/screens/main/tabs/weather_tab.dart';
@@ -33,7 +33,7 @@ import 'services/vessel_data_manager.dart';
 
 class MainScreen extends StatefulWidget {
   final String username;
-  final RouteSearchProvider? routeSearchViewModel;
+  final RouteProvider? routeSearchViewModel;
   final int initTabIndex;
   final bool autoFocusLocation;
 
@@ -748,7 +748,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ChangeNotifierProvider<MapControllerProvider>.value(
           value: _mapControllerProvider,
         ),
-        ChangeNotifierProvider<RouteSearchProvider>.value(
+        ChangeNotifierProvider<RouteProvider>.value(
           value: _controller.routeSearchViewModel,
         ),
       ],

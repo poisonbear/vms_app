@@ -2,7 +2,7 @@ import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/terms_model.dart';
 import 'package:vms_app/domain/usecases/terms_usecases.dart';
-import 'package:vms_app/presentation/providers/base/base_provider.dart';
+import 'package:vms_app/presentation/providers/base_provider.dart';
 
 /// 통합 약관 Provider
 /// API에서 받아온 약관을 정밀한 키워드로 구분하여 정확한 매핑

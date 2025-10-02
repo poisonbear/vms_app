@@ -7,7 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import '../controllers/main_screen_controller.dart';
 import '../utils/navigation_debug.dart';
@@ -163,7 +163,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     NavigationDebugHelper.debugPrint('NavigationSheet build', location: 'nav_tab.build');
     NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.build');
 
-    final routeSearchViewModel = Provider.of<RouteSearchProvider>(context, listen: false);
+    final routeSearchViewModel = Provider.of<RouteProvider>(context, listen: false);
 
     return PopScope(
         canPop: _isClosing,
@@ -622,7 +622,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         } catch (e) {}
       }
 
-      final routeSearchViewModel = Provider.of<RouteSearchProvider>(context, listen: false);
+      final routeSearchViewModel = Provider.of<RouteProvider>(context, listen: false);
       routeSearchViewModel.clearRoutes();
       routeSearchViewModel.setNavigationHistoryMode(false);
 
@@ -740,7 +740,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   }
 
   Widget _buildNavigationItem(BuildContext context, String mmsi, String shipNm,
-      String startTime, RouteSearchProvider viewModel) {
+      String startTime, RouteProvider viewModel) {
     String formattedTime;
     DateTime? dateTime;
     if (startTime.isNotEmpty && int.tryParse(startTime) != null) {
@@ -931,7 +931,7 @@ Widget _buildCollapsedBottomSheet(
     String shipNm,
     String mmsi,
     String formattedTime,
-    RouteSearchProvider viewModel,
+    RouteProvider viewModel,
     ) {
   String timeRange = '';
   if (viewModel.pastRoutes.isNotEmpty) {

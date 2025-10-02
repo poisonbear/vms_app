@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/screens/main/utils/geo_utils.dart';
 
 /// 통합된 메인 지도 위젯
@@ -32,7 +32,7 @@ class MapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RouteSearchProvider>(
+    return Consumer<RouteProvider>(
       builder: (context, routeSearchViewModel, child) {
         // 항적 데이터 처리
         final pastRouteLine = _processPastRoute(routeSearchViewModel);
@@ -110,7 +110,7 @@ class MapWidget extends StatelessWidget {
   }
 
   /// 과거 항적 처리
-  List<LatLng> _processPastRoute(RouteSearchProvider viewModel) {
+  List<LatLng> _processPastRoute(RouteProvider viewModel) {
     var pastRouteLine = <LatLng>[];
 
     if (viewModel.pastRoutes.isEmpty) return pastRouteLine;
@@ -139,7 +139,7 @@ class MapWidget extends StatelessWidget {
   }
 
   /// 예측 항로 처리
-  List<LatLng> _processPredRoute(RouteSearchProvider viewModel, List<LatLng> pastRouteLine) {
+  List<LatLng> _processPredRoute(RouteProvider viewModel, List<LatLng> pastRouteLine) {
     var predRouteLine = viewModel.predRoutes
         .map((route) => LatLng(route.lttd ?? 0, route.lntd ?? 0))
         .toList();

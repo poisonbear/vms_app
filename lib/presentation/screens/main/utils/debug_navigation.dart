@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
-import 'package:vms_app/presentation/providers/route_search_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import '../controllers/main_screen_controller.dart';
 
 class NavigationDebugHelper {
@@ -10,7 +10,7 @@ class NavigationDebugHelper {
     
     // RouteSearchProvider 체크
     try {
-      final routeProvider = Provider.of<RouteSearchProvider>(context, listen: false);
+      final routeProvider = Provider.of<RouteProvider>(context, listen: false);
       AppLogger.d('✅ RouteSearchProvider 접근 가능');
       AppLogger.d('   - pastRoutes: ${routeProvider.pastRoutes.length}');
       AppLogger.d('   - predRoutes: ${routeProvider.predRoutes.length}');
