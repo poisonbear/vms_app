@@ -10,6 +10,12 @@ class ErrorMessages {
   static const String notFound = '요청한 정보를 찾을 수 없습니다';
   static const String general = '오류가 발생했습니다. 잠시 후 다시 시도해주세요';
   static const String dataFormat = '데이터 형식이 올바르지 않습니다';
+
+  // ============ 자동 로그인 관련 ============
+  static const String firebaseTokenMissing = 'Firebase 토큰을 가져올 수 없습니다.';
+  static const String apiUrlNotSet = 'API URL이 설정되지 않았습니다.';
+  static const String roleDataMissing = '권한 정보를 가져올 수 없습니다.';
+  static const String loginFailed = '로그인 실패';
 }
 
 /// 성공 메시지
@@ -49,7 +55,8 @@ class ValidationMessages {
 class InfoMessages {
   InfoMessages._();
 
-  static const String loading = '불러오는 중...';
+  static const String loading = 'loading...';
+  static const String loadingKorean = '불러오는 중...';
   static const String noData = '데이터가 없습니다';
   static const String noResult = '검색 결과가 없습니다';
   static const String noHistory = '이력이 없습니다';

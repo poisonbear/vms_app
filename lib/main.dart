@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'dart:math' as math;
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,13 +23,16 @@ import 'package:vms_app/firebase_options.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
-import 'package:vms_app/presentation/providers/emergency_provider.dart'; // ✅ EmergencyProvider 추가
+import 'package:vms_app/presentation/providers/emergency_provider.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
+/// Flutter 로컬 알림 플러그인 인스턴스
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
+/// Flutter 알림 설정 초기화
+/// Android 및 iOS 플랫폼별 알림 채널 및 초기 설정 수행
 Future<void> _setupFlutterNotifications() async {
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel',
@@ -37,9 +41,8 @@ Future<void> _setupFlutterNotifications() async {
     importance: Importance.high,
   );
 
-  final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
-  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>();
+  final androidPlugin = flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidPlugin != null) {
     await androidPlugin.createNotificationChannel(channel);
@@ -57,62 +60,48 @@ Future<void> _setupFlutterNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
+/// 앱 권한 관리 클래스
 class PermissionManager {
+  PermissionManager._();
+
+  /// 앱 실행에 필요한 권한 요청
   static Future<void> requestPermissions() async {
-    // 위치 권한
     await Permission.location.request();
-
-    // 알림 권한
     await Permission.notification.request();
-
-    // 카메라 권한 (필요한 경우)
-    // await Permission.camera.request();
-
-    // 저장소 권한 (필요한 경우)
-    // await Permission.storage.request();
   }
 }
 
+/// 앱 진입점
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase 초기화
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 알림 설정
   await _setupFlutterNotifications();
-
-  // 로케일 초기화
   await initializeDateFormatting('ko_KR', null);
 
-  // SharedPreferences 초기화
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  // 환경 변수 로드
   await dotenv.load(fileName: '.env');
-
-  // DI 컨테이너 초기화
   await initInjection();
-
-  // 보안 설정 초기화
   await AppInitializer.initializeSecurity();
 
-  // MultiProvider로 앱 실행
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(create: (_) => UserState()),
         ChangeNotifierProvider(create: (_) => VesselProvider()),
-        ChangeNotifierProvider(create: (_) => EmergencyProvider()), // ✅ EmergencyProvider 추가
+        ChangeNotifierProvider(create: (_) => EmergencyProvider()),
       ],
       child: MyApp(prefs: prefs),
     ),
   );
 }
 
+/// 앱의 최상위 위젯
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
   const MyApp({super.key, required this.prefs});
@@ -141,6 +130,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// 스플래시 화면 위젯
 class SplashScreen extends StatefulWidget {
   final SharedPreferences prefs;
   const SplashScreen({super.key, required this.prefs});
@@ -149,16 +139,29 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+/// 자동 로그인 재시도 설정
+class _AutoLoginRetryConfig {
+  const _AutoLoginRetryConfig._();
+
+  static const int maxRetries = 3;
+  static const Duration retryDelay = AppDurations.seconds2;
+}
+
+/// 스플래시 화면 상태 관리 클래스
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  String fcmToken = '';
+  String fcmToken = StringConstants.emptyString;
   late AnimationController _rotationController;
+
+  final String apiUrl = dotenv.env[EnvKeys.loginUrl] ?? StringConstants.emptyString;
+  final String apiUrl2 = dotenv.env[EnvKeys.userRoleUrl] ?? StringConstants.emptyString;
+  final dioRequest = DioRequest();
 
   @override
   void initState() {
     super.initState();
     _rotationController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: AppDurations.seconds2,
       vsync: this,
     )..repeat();
     _checkLoginStatus();
@@ -170,165 +173,353 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  final String apiUrl = dotenv.env['kdn_loginForm_key'] ?? '';
-  final String apiUrl2 = dotenv.env['kdn_usm_select_role_data_key'] ?? '';
-  final dioRequest = DioRequest();
-
+  /// 로그인 상태 확인 메서드
   Future<void> _checkLoginStatus() async {
     await Future.delayed(AppDurations.seconds3);
-
-    // 권한 확인 및 요청
     await PermissionManager.requestPermissions();
+    await _initializeFcmToken();
 
-    // Firebase 토큰 가져오기
-    fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
-    AppLogger.d('Firebase Token: $fcmToken');
+    if (apiUrl.isEmpty || apiUrl2.isEmpty) {
+      AppLogger.e(ErrorMessages.apiUrlNotSet);
+      _navigateToLogin();
+      return;
+    }
 
-    // SharedPreferences에 토큰 저장
-    widget.prefs.setString('firebase_token', fcmToken);
+    final isAutoLogin = widget.prefs.getBool(StringConstants.autoLoginKey);
+    final savedId = widget.prefs.getString(StringConstants.savedIdKey);
+    final savedPw = widget.prefs.getString(StringConstants.savedPwKey);
 
-    // 자동 로그인 상태 확인
-    bool? isAutoLogin = widget.prefs.getBool('auto_login');
-    String? savedId = widget.prefs.getString('saved_id');
-    String? savedPw = widget.prefs.getString('saved_pw');
+    _logAutoLoginCheck(isAutoLogin, savedId, savedPw);
 
-    // ========== 디버그 로그 추가 ==========
-    AppLogger.d('========== 자동 로그인 체크 ==========');
+    if (isAutoLogin == true && savedId != null && savedPw != null) {
+      await _performAutoLogin(savedId, savedPw);
+    } else {
+      _navigateToLogin();
+    }
+  }
+
+  /// FCM 토큰 초기화
+  Future<void> _initializeFcmToken() async {
+    try {
+      fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
+
+      if (fcmToken.isEmpty) {
+        AppLogger.w(LogMessages.fcmTokenRetry);
+        await Future.delayed(AppDurations.seconds2);
+        fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
+      }
+
+      AppLogger.d('Firebase Token: $fcmToken');
+      widget.prefs.setString(StringConstants.firebaseTokenKey, fcmToken);
+    } catch (e) {
+      AppLogger.e('FCM 토큰 가져오기 실패: $e');
+      fcmToken = StringConstants.emptyString;
+    }
+  }
+
+  /// 자동 로그인 체크 로그 출력
+  void _logAutoLoginCheck(bool? isAutoLogin, String? savedId, String? savedPw) {
+    AppLogger.d(LogMessages.autoLoginCheck);
     AppLogger.d('자동 로그인 상태: $isAutoLogin');
     AppLogger.d('저장된 ID: $savedId');
     AppLogger.d('저장된 PW 존재: ${savedPw != null}');
-    AppLogger.d('=====================================');
-
-    if (isAutoLogin == true && savedId != null && savedPw != null) {
-      // 자동 로그인이 활성화되어 있고 저장된 정보가 있으면
-      await _performAutoLogin(savedId, savedPw);
-    } else {
-      // 자동 로그인이 비활성화되어 있거나 저장된 정보가 없으면 로그인 화면으로
-      if (!mounted) return;
-
-      AppLogger.d('🔄 로그인 화면으로 이동');
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-        );
-      }
-    }
+    AppLogger.d(LogMessages.separator);
   }
 
-  // 자동 로그인 수행
-  Future<void> _performAutoLogin(String userId, String password) async {
+  /// 자동 로그인 수행 (재시도 로직 포함)
+  Future<void> _performAutoLogin(String userId, String password, {int retryCount = 0}) async {
     try {
-      AppLogger.d('========== 자동 로그인 시작 ==========');
+      AppLogger.d(LogMessages.autoLoginStart);
+      if (retryCount > 0) {
+        AppLogger.d('재시도 횟수: $retryCount/${_AutoLoginRetryConfig.maxRetries}');
+      }
       AppLogger.d('사용자 ID: $userId');
 
-      // 로그인 API 호출
-      final response = await dioRequest.dio.post(
-        apiUrl,
-        data: {'user_id': userId, 'passwd': password},
-      );
+      final firebaseEmail = _buildFirebaseEmail(userId);
+      AppLogger.d('Firebase 인증 시도: $firebaseEmail');
 
-      AppLogger.d('로그인 API 응답: ${response.statusCode}');
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: firebaseEmail, password: password);
 
-      // 권한 정보 가져오기
-      final roleResponse = await dioRequest.dio.post(
-        apiUrl2,
-        data: {'user_id': userId},
-      );
+      final firebaseToken = await userCredential.user?.getIdToken();
+      final uuid = userCredential.user?.uid;
 
-      final List<dynamic> result = roleResponse.data;
-      AppLogger.d('권한 정보 응답: $result');
-
-      // MMSI 값 추출
-      int mmsi = 0;
-      if (result.isNotEmpty && result[0]['mmsi'] != null) {
-        mmsi = result[0]['mmsi'];
+      if (firebaseToken == null) {
+        throw Exception(ErrorMessages.firebaseTokenMissing);
       }
 
-      AppLogger.d('추출된 MMSI: $mmsi');
+      AppLogger.d(LogMessages.firebaseAuthSuccess);
 
-      // UserState Provider에 사용자 정보 저장 (화면 이동 전에 설정)
-      if (!mounted) return;
-      final userState = Provider.of<UserState>(context, listen: false);
+      await widget.prefs.setString(StringConstants.firebaseTokenKey, firebaseToken);
 
-      // 역할 정보 설정
-      if (result.isNotEmpty && result[0]['role'] != null) {
-        userState.setRole(result[0]['role'].toString());
-        AppLogger.d('역할 설정: ${result[0]['role']}');
-      }
+      final pureUserId = _extractPureUserId(userId);
+      final response = await _callLoginApi(pureUserId, password, firebaseToken, uuid);
 
-      // MMSI 설정
-      if (mmsi != 0) {
-        userState.setMmsi(mmsi);
-        AppLogger.d('MMSI 설정 완료: $mmsi');
-      }
+      _validateApiResponse(response);
 
-      // Firebase 토큰 업데이트
-      await _updateFirebaseToken(userId);
+      final roleData = await _fetchUserRole(pureUserId);
+      final mmsi = _extractMmsi(roleData);
+      final role = roleData[StringConstants.roleKey]?.toString();
 
-      // ========== 중요: autoFocusLocation 추가 ==========
+      AppLogger.d('추출된 MMSI: $mmsi, Role: $role');
+
+      await _updateUserState(role, mmsi);
+      await _updateFirebaseToken(pureUserId);
+
       if (!mounted) return;
 
-      AppLogger.d('🚢 MainScreen으로 이동 (autoFocusLocation: true, MMSI: $mmsi)');
-
-      AppLogger.d('========================================');
-      AppLogger.d('🚀 자동 로그인 성공! MainScreen으로 이동');
-      AppLogger.d('👤 userId: $userId');
-      AppLogger.d('✅ autoFocusLocation: true 설정');
-      AppLogger.d('========================================');
-
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainScreen(
-              username: userId,
-              autoFocusLocation: true, // ✅ 자동 포커스 활성화
-            ),
-          ),
-        );
+      _logSuccessAndNavigate(pureUserId);
+    } on FirebaseAuthException catch (e) {
+      // 네트워크 에러이고 재시도 횟수가 남아있으면 재시도
+      if (_isNetworkError(e.code) && retryCount < _AutoLoginRetryConfig.maxRetries) {
+        AppLogger.w('네트워크 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
+        await Future.delayed(_AutoLoginRetryConfig.retryDelay);
+        return _performAutoLogin(userId, password, retryCount: retryCount + 1);
       }
-
-      AppLogger.d('========== 자동 로그인 완료 ==========');
+      _handleFirebaseAuthError(e, retryCount);
+    } on DioException catch (e) {
+      // Dio 네트워크 에러도 재시도
+      if (_isDioNetworkError(e) && retryCount < _AutoLoginRetryConfig.maxRetries) {
+        AppLogger.w('서버 통신 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
+        await Future.delayed(_AutoLoginRetryConfig.retryDelay);
+        return _performAutoLogin(userId, password, retryCount: retryCount + 1);
+      }
+      _handleDioError(e);
     } catch (e) {
-      AppLogger.e('========== 자동 로그인 실패 ==========');
-      AppLogger.e('에러: $e');
-      AppLogger.e('=====================================');
-
-      // 자동 로그인 실패 시 로그인 화면으로
-      if (!mounted) return;
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginView()),
-        );
-      }
+      _handleGeneralError(e);
     }
   }
 
-  // Firebase 토큰 업데이트
+  /// Firebase 에러가 네트워크 관련 에러인지 확인
+  bool _isNetworkError(String errorCode) {
+    return errorCode == 'network-request-failed' ||
+        errorCode == 'unknown' ||
+        errorCode == 'timeout';
+  }
+
+  /// Dio 에러가 네트워크 관련 에러인지 확인
+  bool _isDioNetworkError(DioException e) {
+    return e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
+        e.type == DioExceptionType.connectionError;
+  }
+
+  /// Firebase 이메일 형식 생성
+  String _buildFirebaseEmail(String userId) {
+    return userId.contains('@')
+        ? userId
+        : '$userId${StringConstants.emailDomain}';
+  }
+
+  /// 순수 사용자 ID 추출
+  String _extractPureUserId(String userId) {
+    return userId.contains('@') ? userId.split('@')[0] : userId;
+  }
+
+  /// 서버 로그인 API 호출
+  Future<Response> _callLoginApi(
+      String userId,
+      String password,
+      String firebaseToken,
+      String? uuid,
+      ) async {
+    return await dioRequest.dio.post(
+      apiUrl,
+      data: {
+        'user_id': userId,
+        'user_pwd': password,
+        'auto_login': true,
+        'fcm_tkn': fcmToken,
+        'uuid': uuid,
+      },
+      options: Options(
+        headers: {'Authorization': 'Bearer $firebaseToken'},
+        sendTimeout: AppDurations.seconds10,
+        receiveTimeout: AppDurations.seconds10,
+      ),
+    );
+  }
+
+  /// API 응답 검증
+  void _validateApiResponse(Response response) {
+    AppLogger.d('로그인 API 응답: ${response.statusCode}');
+
+    if (response.statusCode != NumericConstants.httpStatusOk) {
+      throw Exception('${ErrorMessages.loginFailed}: ${response.statusCode}');
+    }
+
+    if (response.data == null) {
+      throw Exception(ErrorMessages.dataFormat);
+    }
+  }
+
+  /// 사용자 권한 정보 조회
+  Future<Map<String, dynamic>> _fetchUserRole(String userId) async {
+    final roleResponse = await dioRequest.dio.post(
+      apiUrl2,
+      data: {'user_id': userId},
+      options: Options(
+        sendTimeout: AppDurations.seconds10,
+        receiveTimeout: AppDurations.seconds10,
+      ),
+    );
+
+    AppLogger.d('권한 정보 응답 타입: ${roleResponse.data.runtimeType}');
+
+    final roleData = _parseRoleResponse(roleResponse.data);
+    if (roleData == null) {
+      throw Exception(ErrorMessages.roleDataMissing);
+    }
+
+    return roleData;
+  }
+
+  /// Provider에 사용자 정보 업데이트
+  Future<void> _updateUserState(String? role, int mmsi) async {
+    if (!mounted) return;
+
+    try {
+      final userState = context.read<UserState>();
+
+      if (role != null) {
+        await userState.setRole(role);
+        AppLogger.d('${LogMessages.roleSetComplete}: $role');
+      }
+
+      if (mmsi != NumericConstants.zeroValue) {
+        await userState.setMmsi(mmsi);
+        AppLogger.d('${LogMessages.mmsiSetComplete}: $mmsi');
+      }
+    } catch (e) {
+      AppLogger.e('${LogMessages.userInfoSaveFailed}: $e');
+    }
+  }
+
+  /// 성공 로그 출력 및 메인 화면 이동
+  void _logSuccessAndNavigate(String userId) {
+    AppLogger.d(LogMessages.separator);
+    AppLogger.d('자동 로그인 성공! ${LogMessages.navigateToMain}');
+    AppLogger.d('userId: $userId');
+    AppLogger.d('autoFocusLocation: true 설정');
+    AppLogger.d(LogMessages.separator);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainScreen(
+          username: userId,
+          autoFocusLocation: true,
+        ),
+      ),
+    );
+
+    AppLogger.d(LogMessages.autoLoginComplete);
+  }
+
+  /// Firebase 인증 에러 처리
+  void _handleFirebaseAuthError(FirebaseAuthException e, int retryCount) {
+    AppLogger.e(LogMessages.autoLoginFailed);
+    AppLogger.e('Firebase 인증 실패: ${e.code} - ${e.message}');
+
+    // 재시도 횟수 정보 로그
+    if (retryCount > 0) {
+      AppLogger.e('총 ${retryCount}회 재시도했으나 실패');
+    }
+
+    // 네트워크 에러인 경우
+    if (_isNetworkError(e.code)) {
+      AppLogger.e('네트워크 연결 문제로 인한 실패');
+    }
+
+    // 잘못된 자격 증명인 경우만 자동 로그인 데이터 삭제
+    if (e.code == FirebaseErrorCodes.userNotFound ||
+        e.code == FirebaseErrorCodes.wrongPassword) {
+      _clearAutoLoginData();
+    }
+
+    AppLogger.e(LogMessages.separator);
+    _navigateToLogin();
+  }
+
+  /// Dio 통신 에러 처리
+  void _handleDioError(DioException e) {
+    AppLogger.e(LogMessages.autoLoginFailed);
+    AppLogger.e('서버 통신 실패: ${e.type}');
+    AppLogger.e('응답 코드: ${e.response?.statusCode}');
+    AppLogger.e(LogMessages.separator);
+    _navigateToLogin();
+  }
+
+  /// 일반 에러 처리
+  void _handleGeneralError(dynamic e) {
+    AppLogger.e(LogMessages.autoLoginFailed);
+    AppLogger.e('에러: $e');
+    AppLogger.e(LogMessages.separator);
+    _navigateToLogin();
+  }
+
+  /// 역할 응답 데이터 파싱
+  Map<String, dynamic>? _parseRoleResponse(dynamic responseData) {
+    if (responseData is List &&
+        responseData.isNotEmpty &&
+        responseData[0] is Map) {
+      return responseData[0] as Map<String, dynamic>;
+    } else if (responseData is Map) {
+      return responseData as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  /// MMSI 값 추출
+  int _extractMmsi(Map<String, dynamic> data) {
+    final mmsiValue = data['mmsi'];
+    if (mmsiValue == null) return NumericConstants.zeroValue;
+    if (mmsiValue is int) return mmsiValue;
+    return int.tryParse(mmsiValue.toString()) ?? NumericConstants.zeroValue;
+  }
+
+  /// 자동 로그인 데이터 삭제
+  Future<void> _clearAutoLoginData() async {
+    await widget.prefs.remove(StringConstants.savedIdKey);
+    await widget.prefs.remove(StringConstants.savedPwKey);
+    await widget.prefs.setBool(StringConstants.autoLoginKey, false);
+    AppLogger.d(LogMessages.autoLoginDataCleared);
+  }
+
+  /// 로그인 화면으로 이동
+  void _navigateToLogin() {
+    if (!mounted) return;
+    AppLogger.d(LogMessages.navigateToLogin);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginView()),
+    );
+  }
+
+  /// Firestore에 FCM 토큰 업데이트
   Future<void> _updateFirebaseToken(String userId) async {
     try {
-      AppLogger.d('Firebase 토큰 업데이트 시작: $userId');
+      AppLogger.d('${LogMessages.firebaseTokenUpdate} 시작: $userId');
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await FirebaseFirestore.instance
-            .collection('firebase_App')
-            .doc('userToken')
-            .collection('users')
+            .collection(StringConstants.firestoreAppCollection)
+            .doc(StringConstants.userTokenDoc)
+            .collection(StringConstants.usersCollection)
             .doc(userId)
             .set({
           'token': fcmToken,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
-        AppLogger.d('Firebase 토큰 업데이트 성공');
+        AppLogger.d('${LogMessages.firebaseTokenUpdate} 성공');
       } else {
         AppLogger.w('Firebase 사용자가 null입니다');
       }
     } catch (e) {
-      AppLogger.e('Firebase 토큰 업데이트 실패: $e');
+      AppLogger.e('${LogMessages.firebaseTokenUpdate} 실패: $e');
     }
   }
 
@@ -341,59 +532,57 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0A1931),  // 진한 네이비 (상단)
-              Color(0xFF185A9D),  // 중간 블루
-              Color(0xFF43A6C6),  // 밝은 블루 (하단)
+              Color(SplashConstants.gradientTop),
+              Color(SplashConstants.gradientMiddle),
+              Color(SplashConstants.gradientBottom),
             ],
-            stops: [0.0, 0.5, 1.0],  // 그라데이션 위치
+            stops: SplashConstants.gradientStops,
           ),
         ),
         child: Stack(
           children: [
-            // 터빈 애니메이션과 로딩 텍스트를 하단에 배치
             Positioned(
-              bottom: 50,  // 화면 하단에서 50픽셀 위
+              bottom: SplashConstants.turbineBottom,
               left: 0,
               right: 0,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 터빈 애니메이션 컨테이너
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 500,
+                    height: SplashConstants.containerHeight,
                     child: Stack(
                       alignment: Alignment.bottomCenter,
                       children: [
-                        // 터빈 기둥 (고정)
                         Positioned(
                           bottom: 0,
                           child: SvgPicture.asset(
-                            'assets/kdn/home/img/turbine_pole.svg',
-                            width: 150,
-                            height: 300,
+                            StringConstants.turbinePoleAsset,
+                            width: SplashConstants.turbineWidth,
+                            height: SplashConstants.turbineHeight,
                             fit: BoxFit.contain,
                           ),
                         ),
-                        // 터빈 날개 컨테이너 (1.5배 크기)
                         Positioned(
-                          bottom: 200, // 조정된 위치
-                          width: 300,  // 200 → 300 (1.5배)
-                          height: 300, // 200 → 300 (1.5배)
+                          bottom: SplashConstants.bladeBottom,
+                          width: SplashConstants.bladeSize,
+                          height: SplashConstants.bladeSize,
                           child: AnimatedBuilder(
                             animation: _rotationController,
                             builder: (context, child) {
                               return Transform.rotate(
                                 angle: _rotationController.value * 2 * math.pi,
-                                // SVG 파일 내 실제 회전축 위치로 조정
-                                alignment: const Alignment(0.0, 0.29),
+                                alignment: const Alignment(
+                                  SplashConstants.turbineAlignmentX,
+                                  SplashConstants.turbineAlignmentY,
+                                ),
                                 child: child,
                               );
                             },
                             child: SvgPicture.asset(
-                              'assets/kdn/home/img/turbine_blade.svg',
-                              width: 300,  // 200 → 300 (1.5배)
-                              height: 300, // 200 → 300 (1.5배)
+                              StringConstants.turbineBladeAsset,
+                              width: SplashConstants.bladeSize,
+                              height: SplashConstants.bladeSize,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -401,15 +590,16 @@ class _SplashScreenState extends State<SplashScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // 로딩 텍스트 (터빈 아래)
+                  const SizedBox(height: SplashConstants.textSpacing),
                   Text(
-                    'loading...',
+                    InfoMessages.loading,
                     style: TextStyle(
-                      color: getColorWhiteType1().withValues(alpha: 0.9),
-                      fontSize: 25,
+                      color: getColorWhiteType1().withValues(
+                        alpha: SplashConstants.textOpacity,
+                      ),
+                      fontSize: SplashConstants.textSize,
                       fontWeight: FontWeight.w400,
-                      letterSpacing: 1,
+                      letterSpacing: SplashConstants.textLetterSpacing,
                     ),
                   ),
                 ],
