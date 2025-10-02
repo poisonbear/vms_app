@@ -17,7 +17,7 @@ class NavigationProvider extends BaseProvider {
   late final NavigationRepository _navigationRepository;
 
   // 캐시 매니저
-  final MemoryCache _cache = MemoryCache();
+  final _cache = MemoryCache();
 
   // State variables
   List<NavigationModel> _rosList = [];
