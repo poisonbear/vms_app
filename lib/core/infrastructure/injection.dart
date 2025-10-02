@@ -1,8 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
-import 'package:vms_app/core/services/cache_service.dart';
-import 'package:vms_app/core/services/state_manager.dart' as sm;
-import 'package:vms_app/core/services/location_service.dart';
+import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 
 // DataSources - 새로운 이름과 기존 typedef 모두 포함
@@ -61,7 +59,7 @@ void _registerInfrastructure() {
 /// Services 등록
 void _registerServices() {
   // State Manager
-  getIt.registerLazySingleton<sm.StateManager>(() => sm.StateManager());
+  getIt.registerLazySingleton<StateManager>(() => StateManager());
 
   // Location Service
   getIt.registerLazySingleton<LocationService>(() => LocationService());

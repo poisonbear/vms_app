@@ -1,3 +1,5 @@
+// lib/presentation/widgets/widgets.dart
+
 /// VMS App 위젯 라이브러리
 ///
 /// 앱에서 사용되는 모든 커스텀 위젯들을 포함합니다.
@@ -13,6 +15,7 @@ export 'base/base.dart';
 
 // Common Widgets - 공통 기능 컴포넌트
 export 'common/feedback/snackbar_utils.dart';
+export 'common/dialogs/dialog_utils.dart';  // ✅ 추가
 export 'common/loading/loading_widget.dart';
 export 'common/loading/loading_container.dart';
 export 'common/app_bar/custom_app_bar.dart';

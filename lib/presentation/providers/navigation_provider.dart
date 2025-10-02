@@ -1,7 +1,7 @@
 // lib/presentation/providers/navigation_provider.dart
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/infrastructure/injection.dart';
-import 'package:vms_app/core/services/cache_service.dart';
+import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/navigation_model.dart';

@@ -1,6 +1,6 @@
 // lib/presentation/providers/route_provider.dart
 import 'package:vms_app/core/infrastructure/injection.dart';
-import 'package:vms_app/core/services/cache_service.dart';
+import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/utils/app_logger.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart';

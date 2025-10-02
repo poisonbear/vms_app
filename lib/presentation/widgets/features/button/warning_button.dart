@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_app/core/constants/constants.dart';
-import 'package:vms_app/core/infrastructure/network_client.dart';
+import 'package:vms_app/presentation/widgets/common/dialogs/dialog_utils.dart';
 
 /// 통합된 경고 팝업 버튼 위젯
 class WarningPopButton extends StatelessWidget {
