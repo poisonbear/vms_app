@@ -1,10 +1,11 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/weather_model.dart';
+
+import 'package:vms_app/core/constants/constants.dart';
 
 /// 날씨 정보 데이터소스 (기존 WidSource)
 class WeatherDataSource {
@@ -13,7 +14,7 @@ class WeatherDataSource {
   /// 날씨 정보 목록 조회
   Future<Result<List<WeatherModel>, AppException>> getWidList() async {
     try {
-      final String apiUrl = dotenv.env['kdn_wid_select_weather_Info'] ?? '';
+      final String apiUrl = ApiConfig.weatherInfo;
 
       if (apiUrl.isEmpty) {
         return const Failure(

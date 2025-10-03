@@ -36,7 +36,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
 
           return SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.all(AppSizes.s20),
+              padding: const EdgeInsets.all(AppSizes.s20),
               child: Column(
                 children: [
                   _buildHeader(),
@@ -57,7 +57,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
       children: [
         // 진행 단계 표시 - 회원정보 입력 화면과 동일한 스타일로 변경
         Padding(
-          padding: EdgeInsets.only(bottom: AppSizes.s20),
+          padding: const EdgeInsets.only(bottom: AppSizes.s20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -72,7 +72,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
         TextWidgetString('K-VMS', TextAligns.center, AppSizes.i32, FontWeights.w700, AppColors.blackType2),
         TextWidgetString('약관동의', TextAligns.center, AppSizes.i32, FontWeights.w700, AppColors.blackType2),
         Padding(
-          padding: EdgeInsets.only(top: AppSizes.s12, bottom: AppSizes.s60),
+          padding: const EdgeInsets.only(top: AppSizes.s12, bottom: AppSizes.s60),
           child: TextWidgetString(
             '회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
             TextAligns.center,
@@ -87,8 +87,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
 
   Widget _buildAllAgreementSection(BuildContext context, TermsProvider provider) {
     return Container(
-      margin: EdgeInsets.only(bottom: AppSizes.s20),
-      padding: EdgeInsets.all(AppSizes.s14),
+      margin: const EdgeInsets.only(bottom: AppSizes.s20),
+      padding: const EdgeInsets.all(AppSizes.s14),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.grayType4, width: AppSizes.s1),
         borderRadius: BorderRadius.circular(AppSizes.s4),
@@ -176,7 +176,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSizes.s8),
+        padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
         child: Row(
           children: [
             Transform.scale(
@@ -196,7 +196,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
                   Row(
                     children: [
                       TextWidgetString(title, TextAlign.left, AppSizes.i14, FontWeights.w400, AppColors.blackType2),
-                      SizedBox(width: AppSizes.s4),
+                      const SizedBox(width: AppSizes.s4),
                       TextWidgetString(
                         subtitle,
                         TextAlign.left,
@@ -206,7 +206,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Icon(
+                  const Icon(
                     Icons.arrow_forward_ios,
                     size: AppSizes.s16,
                     color: AppColors.grayType3,
@@ -222,7 +222,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
 
   Widget _buildSubmitButton(BuildContext context, TermsProvider provider) {
     return Padding(
-      padding: EdgeInsets.only(top: AppSizes.s40),
+      padding: const EdgeInsets.only(top: AppSizes.s40),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
@@ -257,7 +257,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
             backgroundColor: AppColors.skyType2,
             shape: Borders.rounded10,
             elevation: 0,
-            padding: EdgeInsets.all(AppSizes.s18),
+            padding: const EdgeInsets.all(AppSizes.s18),
           ),
           child: TextWidgetString(
             '약관에 동의하고 계속하기',
@@ -285,7 +285,7 @@ class _CmdChoiceViewBody extends StatelessWidget {
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeights.w600,
                 color: AppColors.whiteType1,

@@ -121,7 +121,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                     _buildHeader(emergencyProvider),
                     Flexible(
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.whiteType1,
                           borderRadius: BorderRadius.only(
                             bottomLeft: Radius.circular(AppSizes.s20),
@@ -130,7 +130,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                         ),
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: EdgeInsets.all(AppSizes.s16),
+                            padding: const EdgeInsets.all(AppSizes.s16),
                             child: Column(
                               children: [
                                 // 메인 컨텐츠 영역 - 좌우 배치
@@ -146,7 +146,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                                         shipNm,
                                       ),
                                     ),
-                                    SizedBox(width: AppSizes.s12),
+                                    const SizedBox(width: AppSizes.s12),
                                     // 오른쪽: 선박 및 위치정보 (60%)
                                     Expanded(
                                       flex: 6,
@@ -158,7 +158,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: AppSizes.s16),
+                                const SizedBox(height: AppSizes.s16),
                                 // 아래: 경고 문구
                                 _buildWarningSection(),
                               ],
@@ -180,8 +180,8 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
   Widget _buildHeader(EmergencyProvider emergencyProvider) {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.s14),
+      decoration: const BoxDecoration(
         color: AppColors.emergencyRed600,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppSizes.s20),
@@ -190,12 +190,12 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.emergency,
             color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: AppSizes.s6),
+          const SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '긴급신고',
             TextAligns.left,
@@ -210,7 +210,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               HapticFeedback.lightImpact();
             },
             child: Container(
-              padding: EdgeInsets.all(AppSizes.s8),
+              padding: const EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
               child: Icon(
                 emergencyProvider.isLocationTracking
@@ -226,9 +226,9 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(AppSizes.s8),
+              padding: const EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
-              child: Icon(
+              child: const Icon(
                 Icons.close,
                 color: AppColors.whiteType1,
                 size: 22,
@@ -281,7 +281,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
         child: Container(
           height: 200,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -302,13 +302,13 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.phone,
                   color: AppColors.whiteType1,
                   size: 64,
                 ),
-                SizedBox(height: AppSizes.s12),
-                Text(
+                const SizedBox(height: AppSizes.s12),
+                const Text(
                   '긴급신고',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -317,7 +317,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                     color: AppColors.whiteType1,
                   ),
                 ),
-                SizedBox(height: AppSizes.s4),
+                const SizedBox(height: AppSizes.s4),
                 Text(
                   '3초간 길게 누르세요',
                   textAlign: TextAlign.center,
@@ -339,7 +339,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     return Container(
       height: 200,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -370,7 +370,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               child: Text(
                 '${provider.countdownSeconds}',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: AppSizes.s32,
                   fontWeight: FontWeights.w700,
                   color: AppColors.whiteType1,
@@ -378,8 +378,8 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               ),
             ),
           ),
-          SizedBox(height: AppSizes.s12),
-          Text(
+          const SizedBox(height: AppSizes.s12),
+          const Text(
             '초 후 자동 연결됩니다',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -388,7 +388,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               color: AppColors.whiteType1,
             ),
           ),
-          SizedBox(height: AppSizes.s16),
+          const SizedBox(height: AppSizes.s16),
           TextButton(
             onPressed: () {
               provider.cancelEmergency();
@@ -396,12 +396,12 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             },
             style: TextButton.styleFrom(
               backgroundColor: AppColors.whiteType1.withOpacity(0.2),
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                 horizontal: AppSizes.s20,
                 vertical: AppSizes.s10,
               ),
             ),
-            child: Text(
+            child: const Text(
               '취소',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -423,7 +423,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
     return Container(
       height: 200,
-      padding: EdgeInsets.all(AppSizes.s16),
+      padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
         color: AppColors.grayType1.withOpacity(0.3),
         borderRadius: BorderRadius.circular(AppSizes.s12),
@@ -435,7 +435,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             '선박 및 위치정보',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -444,16 +444,16 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               color: AppColors.blackType1,
             ),
           ),
-          SizedBox(height: AppSizes.s16),
+          const SizedBox(height: AppSizes.s16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInfoRow('선박명', shipNm ?? '정보 없음'),
-              SizedBox(height: AppSizes.s10),
+              const SizedBox(height: AppSizes.s10),
               _buildInfoRow('MMSI', userState.mmsi?.toString() ?? '정보 없음'),
-              SizedBox(height: AppSizes.s10),
+              const SizedBox(height: AppSizes.s10),
               _buildInfoRow('위도', latitude),
-              SizedBox(height: AppSizes.s10),
+              const SizedBox(height: AppSizes.s10),
               _buildInfoRow('경도', longitude),
             ],
           ),
@@ -471,7 +471,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           child: Text(
             label,
             textAlign: TextAlign.left,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: AppSizes.s14,
               fontWeight: FontWeights.w500,
               color: AppColors.grayType3,
@@ -482,7 +482,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           child: Text(
             value,
             textAlign: TextAlign.left,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: AppSizes.s14,
               fontWeight: FontWeights.w600,
               color: AppColors.blackType2,
@@ -495,7 +495,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
   Widget _buildWarningSection() {
     return Container(
-      padding: EdgeInsets.all(AppSizes.s16),
+      padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
         color: AppColors.yellowType1.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppSizes.s8),
@@ -504,7 +504,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           width: 1,
         ),
       ),
-      child: Row(
+      child: const Row(
         children: [
           Icon(
             Icons.info_outline,

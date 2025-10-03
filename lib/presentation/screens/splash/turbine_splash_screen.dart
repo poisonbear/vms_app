@@ -77,14 +77,14 @@ class _TurbineSplashWidgetState extends State<TurbineSplashWidget>
               ),
               const SizedBox(height: 40),
               // 앱 이름
-              Text(
+              const Text(
                 'K-VMS',
                 style: TextStyle(
                   color: AppColors.whiteType1,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 3,
-                  shadows: const [
+                  shadows: [
                     Shadow(
                       color: Colors.black26,
                       offset: Offset(0, 2),
@@ -95,7 +95,7 @@ class _TurbineSplashWidgetState extends State<TurbineSplashWidget>
               ),
               const SizedBox(height: 30),
               // 로딩 인디케이터
-              SizedBox(
+              const SizedBox(
                 width: 30,
                 height: 30,
                 child: CircularProgressIndicator(

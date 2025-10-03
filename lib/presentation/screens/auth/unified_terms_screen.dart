@@ -59,7 +59,7 @@ class UnifiedTermsScreen extends StatelessWidget {
 
   Widget _buildTermsContent(CmdModel terms) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSizes.s20),
+      padding: const EdgeInsets.all(AppSizes.s20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -75,7 +75,7 @@ class UnifiedTermsScreen extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: AppSizes.s30),
+          const SizedBox(height: AppSizes.s30),
 
           // K-VMS 타이틀
           TextWidgetString(
@@ -95,7 +95,7 @@ class UnifiedTermsScreen extends StatelessWidget {
 
           // 소제목
           Padding(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
               top: AppSizes.s14,
               bottom: AppSizes.s40,
             ),
@@ -111,7 +111,7 @@ class UnifiedTermsScreen extends StatelessWidget {
           // 약관 내용
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(AppSizes.s16),
+            padding: const EdgeInsets.all(AppSizes.s16),
             decoration: BoxDecoration(
               border: Border.all(
                 color: AppColors.grayType4,
@@ -146,7 +146,7 @@ class UnifiedTermsScreen extends StatelessWidget {
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeights.w600,
                 color: AppColors.whiteType1,

@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -28,8 +27,8 @@ class LoginView extends StatefulWidget {
 class _CmdViewState extends State<LoginView> {
   final TextEditingController idController = TextEditingController(); // 아이디 입력값
   final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력값
-  final String apiUrl = dotenv.env['kdn_loginForm_key'] ?? ''; // 로그인  url
-  final String apiUrl2 = dotenv.env['kdn_usm_select_role_data_key'] ?? ''; // 사용자 역할 권한  url
+  final String apiUrl = ApiConfig.authLogin; // 로그인  url
+  final String apiUrl2 = ApiConfig.authRole; // 사용자 역할 권한  url
   bool auto_login = false; // 자동 로그인
   bool save_id = false; // ID 저장 체크박스 상태
   late FirebaseMessaging messaging;

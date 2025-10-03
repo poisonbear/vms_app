@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
@@ -18,7 +17,7 @@ class VesselDataSource {
     int? mmsi,
   }) async {
     try {
-      final String apiUrl = dotenv.env['kdn_gis_select_vessel_List'] ?? '';
+      final String apiUrl = ApiConfig.vesselList;
 
       if (apiUrl.isEmpty) {
         return const Failure(
@@ -65,7 +64,7 @@ class VesselDataSource {
     int? mmsi,
   }) async {
     try {
-      final String apiUrl = dotenv.env['kdn_gis_select_vessel_Route'] ?? '';
+      final String apiUrl = ApiConfig.vesselRoute;
 
       if (apiUrl.isEmpty) {
         return const Failure(

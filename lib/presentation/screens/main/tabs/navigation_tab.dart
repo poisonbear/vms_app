@@ -213,7 +213,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              SizedBox(height: AppSizes.s10),
+                              const SizedBox(height: AppSizes.s10),
 
                               // 날짜 빠른 선택 버튼들
                               SingleChildScrollView(
@@ -221,13 +221,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 child: Row(
                                   children: [
                                     _buildQuickDateButton('오늘', () => _quickSelectDate(0)),
-                                    SizedBox(width: AppSizes.s8),
+                                    const SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('어제', () => _quickSelectDate(1)),
-                                    SizedBox(width: AppSizes.s8),
+                                    const SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('최근 7일', () => _quickSelectDate(7)),
-                                    SizedBox(width: AppSizes.s8),
+                                    const SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('최근 30일', () => _quickSelectDate(30)),
-                                    SizedBox(width: AppSizes.s8),
+                                    const SizedBox(width: AppSizes.s8),
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
@@ -248,7 +248,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.skyType2,
-                                        padding: EdgeInsets.symmetric(
+                                        padding: const EdgeInsets.symmetric(
                                           horizontal: AppSizes.s12,
                                           vertical: AppSizes.s8,
                                         ),
@@ -256,12 +256,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           borderRadius: BorderRadius.circular(AppSizes.s4),
                                         ),
                                       ),
-                                      child: Icon(Icons.refresh, size: AppSizes.s20, color: AppColors.whiteType1),
+                                      child: const Icon(Icons.refresh, size: AppSizes.s20, color: AppColors.whiteType1),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: AppSizes.s10),
+                              const SizedBox(height: AppSizes.s10),
 
                               // 선택된 날짜 표시 (클릭 가능)
                               InkWell(
@@ -290,7 +290,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 },
                                 borderRadius: BorderRadius.circular(AppSizes.s4),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: AppSizes.s12,
                                       vertical: AppSizes.s8
                                   ),
@@ -302,8 +302,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.calendar_today, size: AppSizes.s16, color: AppColors.grayType3),
-                                      SizedBox(width: AppSizes.s8),
+                                      const Icon(Icons.calendar_today, size: AppSizes.s16, color: AppColors.grayType3),
+                                      const SizedBox(width: AppSizes.s8),
                                       TextWidgetString(
                                           '$selectedStartDate ~ $selectedEndDate',
                                           TextAligns.center,
@@ -311,13 +311,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           FontWeights.w500,
                                           AppColors.blackType2
                                       ),
-                                      SizedBox(width: AppSizes.s8),
-                                      Icon(Icons.arrow_drop_down, size: AppSizes.s20, color: AppColors.grayType3),
+                                      const SizedBox(width: AppSizes.s8),
+                                      const Icon(Icons.arrow_drop_down, size: AppSizes.s20, color: AppColors.grayType3),
                                     ],
                                   ),
                                 ),
                               ),
-                              SizedBox(height: AppSizes.s10),
+                              const SizedBox(height: AppSizes.s10),
 
                               // 검색 입력 필드들
                               Row(
@@ -327,19 +327,19 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       height: AppSizes.s40,
                                       child: TextFormField(
                                         controller: mmsiController,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: AppSizes.s12,
                                           color: AppColors.blackType2,
                                         ),
                                         decoration: InputDecoration(
                                           hintText: 'MMSI 입력',
-                                          hintStyle: TextStyle(
+                                          hintStyle: const TextStyle(
                                               color: AppColors.grayType8,
                                               fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
                                           suffixIcon: mmsiController.text.isNotEmpty
                                               ? IconButton(
-                                            icon: Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
+                                            icon: const Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
                                             onPressed: () {
                                               setState(() {
                                                 mmsiController.clear();
@@ -349,17 +349,17 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                               : null,
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
                                           ),
-                                          contentPadding: EdgeInsets.symmetric(
+                                          contentPadding: const EdgeInsets.symmetric(
                                               horizontal: AppSizes.s12,
                                               vertical: AppSizes.s12),
                                           isDense: true,
@@ -373,26 +373,26 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: AppSizes.s12),
+                                  const SizedBox(width: AppSizes.s12),
 
                                   Expanded(
                                     child: SizedBox(
                                       height: AppSizes.s40,
                                       child: TextFormField(
                                         controller: shipNameController,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: AppSizes.s12,
                                           color: AppColors.blackType2,
                                         ),
                                         decoration: InputDecoration(
                                           hintText: '선박명 입력',
-                                          hintStyle: TextStyle(
+                                          hintStyle: const TextStyle(
                                               color: AppColors.grayType8,
                                               fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
                                           suffixIcon: shipNameController.text.isNotEmpty
                                               ? IconButton(
-                                            icon: Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
+                                            icon: const Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
                                             onPressed: () {
                                               setState(() {
                                                 shipNameController.clear();
@@ -402,17 +402,17 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                               : null,
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
+                                            borderSide: const BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
                                           ),
-                                          contentPadding: EdgeInsets.symmetric(
+                                          contentPadding: const EdgeInsets.symmetric(
                                               horizontal: AppSizes.s12,
                                               vertical: AppSizes.s12),
                                           isDense: true,
@@ -425,7 +425,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: AppSizes.s12),
+                                  const SizedBox(width: AppSizes.s12),
 
                                   SizedBox(
                                     height: AppSizes.s40,
@@ -438,11 +438,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(AppSizes.s4),
                                             ),
-                                            fixedSize: Size(AppSizes.s65, AppSizes.s40),
+                                            fixedSize: const Size(AppSizes.s65, AppSizes.s40),
                                             padding: EdgeInsets.zero,
                                           ),
                                           child: provider.isLoading
-                                              ? SizedBox(
+                                              ? const SizedBox(
                                             width: AppSizes.s16,
                                             height: AppSizes.s16,
                                             child: CircularProgressIndicator(
@@ -450,7 +450,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                               strokeWidth: AppSizes.s2,
                                             ),
                                           )
-                                              : Text(
+                                              : const Text(
                                             '조회',
                                             style: TextStyle(
                                               fontSize: AppSizes.s14,
@@ -464,7 +464,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: AppSizes.s20),
+                              const SizedBox(height: AppSizes.s20),
 
                               // 리스트 영역
                               Expanded(
@@ -485,12 +485,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           child: Container(
                                             height: MediaQuery.of(context).size.height * 0.4,
                                             width: double.infinity,
-                                            padding: EdgeInsets.all(AppSizes.s20),
+                                            padding: const EdgeInsets.all(AppSizes.s20),
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.info_outline, size: AppSizes.s48, color: AppColors.grayType8),
-                                                SizedBox(height: AppSizes.s16),
+                                                const Icon(Icons.info_outline, size: AppSizes.s48, color: AppColors.grayType8),
+                                                const SizedBox(height: AppSizes.s16),
                                                 TextWidgetString(
                                                   '검색 결과가 없습니다.',
                                                   TextAligns.center,
@@ -498,7 +498,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                                   FontWeights.w600,
                                                   AppColors.grayType2,
                                                 ),
-                                                SizedBox(height: AppSizes.s8),
+                                                const SizedBox(height: AppSizes.s8),
                                                 TextWidgetString(
                                                   '아래로 당겨서 새로고침',
                                                   TextAligns.center,
@@ -521,7 +521,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         child: Column(
                                           children: [
                                             Container(
-                                              padding: EdgeInsets.symmetric(
+                                              padding: const EdgeInsets.symmetric(
                                                 horizontal: AppSizes.s12,
                                                 vertical: AppSizes.s8,
                                               ),
@@ -568,9 +568,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   Widget _buildHeader() {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A5F),
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.s14),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E3A5F),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppSizes.s20),
           topRight: Radius.circular(AppSizes.s20),
@@ -578,12 +578,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.navigation,
             color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: AppSizes.s6),
+          const SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '항행 이력 내역 조회',
             TextAligns.left,
@@ -595,9 +595,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(AppSizes.s8),
+              padding: const EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
-              child: Icon(
+              child: const Icon(
                 Icons.close,
                 color: AppColors.whiteType1,
                 size: 24,
@@ -640,11 +640,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.s12,
             vertical: AppSizes.s8
         ),
-        side: BorderSide(color: AppColors.grayType7),
+        side: const BorderSide(color: AppColors.grayType7),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.s4),
         ),
@@ -669,14 +669,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   Widget _buildSkeletonItem() {
     return Container(
-      margin: EdgeInsets.only(bottom: AppSizes.s12),
+      margin: const EdgeInsets.only(bottom: AppSizes.s12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSizes.s4),
         border: Border.all(color: AppColors.grayType7, width: AppSizes.s1),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
             vertical: AppSizes.s16,
             horizontal: AppSizes.s12),
         child: Row(
@@ -693,7 +693,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       borderRadius: BorderRadius.circular(AppSizes.s4),
                     ),
                   ),
-                  SizedBox(height: AppSizes.s8),
+                  const SizedBox(height: AppSizes.s8),
                   Row(
                     children: [
                       Container(
@@ -704,7 +704,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                           borderRadius: BorderRadius.circular(AppSizes.s4),
                         ),
                       ),
-                      SizedBox(width: AppSizes.s12),
+                      const SizedBox(width: AppSizes.s12),
                       Container(
                         height: AppSizes.s12,
                         width: AppSizes.s80,
@@ -721,7 +721,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             Container(
               width: AppSizes.s20,
               height: AppSizes.s20,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.grayType7,
                 shape: BoxShape.circle,
               ),
@@ -869,14 +869,14 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             }
           },
           child: Container(
-            margin: EdgeInsets.only(bottom: AppSizes.s12),
+            margin: const EdgeInsets.only(bottom: AppSizes.s12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(AppSizes.s4),
               border: Border.all(color: AppColors.grayType4, width: AppSizes.s1),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                   vertical: AppSizes.s16,
                   horizontal: AppSizes.s12),
               child: Row(
@@ -887,7 +887,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       children: [
                         TextWidgetString(shipNm, TextAligns.left, AppSizes.i16,
                             FontWeights.w700, AppColors.blackType2),
-                        SizedBox(height: AppSizes.s4),
+                        const SizedBox(height: AppSizes.s4),
                         Row(
                           children: [
                             TextWidgetString(
@@ -898,7 +898,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 AppColors.grayType3),
                             TextWidgetString(mmsi, TextAligns.left, AppSizes.i12,
                                 FontWeights.w600, AppColors.grayType3),
-                            SizedBox(width: AppSizes.s12),
+                            const SizedBox(width: AppSizes.s12),
                             TextWidgetString(
                                 'DATE ',
                                 TextAligns.left,
@@ -916,7 +916,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right,
+                  const Icon(Icons.chevron_right,
                       color: AppColors.grayType8, size: AppSizes.s20),
                 ],
               ),
@@ -981,7 +981,7 @@ Widget _buildCollapsedBottomSheet(
         Container(
           width: AppSizes.s40,
           height: AppSizes.s4,
-          margin: EdgeInsets.only(top: AppSizes.s6),
+          margin: const EdgeInsets.only(top: AppSizes.s6),
           decoration: BoxDecoration(
             color: AppColors.grayType7,
             borderRadius: BorderRadius.circular(AppSizes.s2),
@@ -989,7 +989,7 @@ Widget _buildCollapsedBottomSheet(
         ),
 
         Padding(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.s12,
             vertical: AppSizes.s8,
           ),
@@ -999,7 +999,7 @@ Widget _buildCollapsedBottomSheet(
                 children: [
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppSizes.s12,
                         vertical: AppSizes.s10,
                       ),
@@ -1010,8 +1010,8 @@ Widget _buildCollapsedBottomSheet(
                       child: Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.only(right: AppSizes.s12),
-                            decoration: BoxDecoration(
+                            padding: const EdgeInsets.only(right: AppSizes.s12),
+                            decoration: const BoxDecoration(
                               border: Border(
                                 right: BorderSide(
                                   color: AppColors.grayType7,
@@ -1038,7 +1038,7 @@ Widget _buildCollapsedBottomSheet(
                               ],
                             ),
                           ),
-                          SizedBox(width: AppSizes.s12),
+                          const SizedBox(width: AppSizes.s12),
                           Expanded(
                             child: Row(
                               children: [
@@ -1055,7 +1055,7 @@ Widget _buildCollapsedBottomSheet(
                                       final textPainter = TextPainter(
                                         text: TextSpan(
                                           text: shipNm.isEmpty ? 'Unknown' : shipNm,
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontSize: AppSizes.s14,
                                             fontWeight: FontWeights.w600,
                                           ),
@@ -1075,12 +1075,12 @@ Widget _buildCollapsedBottomSheet(
                                               return AlertDialog(
                                                 title: Row(
                                                   children: [
-                                                    Icon(
+                                                    const Icon(
                                                       Icons.directions_boat,
                                                       size: AppSizes.s20,
                                                       color: AppColors.skyType2,
                                                     ),
-                                                    SizedBox(width: AppSizes.s8),
+                                                    const SizedBox(width: AppSizes.s8),
                                                     TextWidgetString(
                                                       '선박 정보',
                                                       TextAligns.left,
@@ -1112,7 +1112,7 @@ Widget _buildCollapsedBottomSheet(
                                                         ),
                                                       ],
                                                     ),
-                                                    SizedBox(height: AppSizes.s8),
+                                                    const SizedBox(height: AppSizes.s8),
                                                     Row(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
@@ -1182,8 +1182,8 @@ Widget _buildCollapsedBottomSheet(
                                                 ),
                                               ),
                                               if (isOverflowing) ...[
-                                                SizedBox(width: AppSizes.s4),
-                                                Icon(
+                                                const SizedBox(width: AppSizes.s4),
+                                                const Icon(
                                                   Icons.info_outlined,
                                                   size: AppSizes.s16,
                                                   color: AppColors.skyType2,
@@ -1203,7 +1203,7 @@ Widget _buildCollapsedBottomSheet(
                       ),
                     ),
                   ),
-                  SizedBox(width: AppSizes.s8),
+                  const SizedBox(width: AppSizes.s8),
                   Row(
                     children: [
                       Container(
@@ -1215,7 +1215,7 @@ Widget _buildCollapsedBottomSheet(
                           icon: SvgPicture.asset('assets/kdn/home/img/down_select_img.svg',
                               width: AppSizes.s20,
                               height: AppSizes.s20,
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                   AppColors.grayType3, BlendMode.srcIn)),
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -1233,11 +1233,11 @@ Widget _buildCollapsedBottomSheet(
                               ),
                             );
                           },
-                          padding: EdgeInsets.all(AppSizes.s8),
+                          padding: const EdgeInsets.all(AppSizes.s8),
                           constraints: const BoxConstraints(),
                         ),
                       ),
-                      SizedBox(width: AppSizes.s4),
+                      const SizedBox(width: AppSizes.s4),
                       Container(
                         decoration: BoxDecoration(
                           color: AppColors.grayType14,
@@ -1247,7 +1247,7 @@ Widget _buildCollapsedBottomSheet(
                           icon: SvgPicture.asset('assets/kdn/home/img/close.svg',
                               width: AppSizes.s20,
                               height: AppSizes.s20,
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                   AppColors.grayType3, BlendMode.srcIn)),
                           onPressed: () {
                             final MainScreenState =
@@ -1260,7 +1260,7 @@ Widget _buildCollapsedBottomSheet(
                             viewModel.setNavigationHistoryMode(false);
                             Navigator.of(context).pop();
                           },
-                          padding: EdgeInsets.all(AppSizes.s8),
+                          padding: const EdgeInsets.all(AppSizes.s8),
                           constraints: const BoxConstraints(),
                         ),
                       ),
@@ -1268,9 +1268,9 @@ Widget _buildCollapsedBottomSheet(
                   ),
                 ],
               ),
-              SizedBox(height: AppSizes.s6),
+              const SizedBox(height: AppSizes.s6),
               Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSizes.s12,
                   vertical: AppSizes.s10,
                 ),
@@ -1291,12 +1291,12 @@ Widget _buildCollapsedBottomSheet(
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.access_time,
                       size: AppSizes.s18,
                       color: AppColors.skyType2,
                     ),
-                    SizedBox(width: AppSizes.s8),
+                    const SizedBox(width: AppSizes.s8),
                     TextWidgetString(
                       '항행시간 : ',
                       TextAligns.left,

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/screens/main/utils/geo_utils.dart';
+
+import 'package:vms_app/core/constants/constants.dart';
 
 /// 통합된 메인 지도 위젯
 class MapWidget extends StatelessWidget {
@@ -91,7 +92,7 @@ class MapWidget extends StatelessWidget {
 
   /// WMS 타일 레이어 생성
   List<Widget> _buildWMSLayers() {
-    final baseUrl = "${dotenv.env['GEOSERVER_URL']}?";
+    final baseUrl = "${ApiConfig.geoserverUrl}?";
     final layers = [
       'vms_space:enc_map',        // 전자해도
       'vms_space:t_enc_sou_sp01', // 수심

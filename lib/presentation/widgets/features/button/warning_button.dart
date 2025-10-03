@@ -83,7 +83,7 @@ class WarningPopButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: AppSizes.s12),
+      padding: const EdgeInsets.only(bottom: AppSizes.s12),
       child: GestureDetector(
         onTap: () => _handleTap(context),
         child: _buildButton(),

@@ -272,7 +272,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               children: [
                 // 헤더 영역
                 Container(
-                  padding: EdgeInsets.all(AppSizes.s20),
+                  padding: const EdgeInsets.all(AppSizes.s20),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.vertical(
@@ -288,19 +288,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.directions_boat,
                         color: AppColors.skyType2,
                         size: AppSizes.s28,
                       ),
-                      SizedBox(width: AppSizes.s12),
+                      const SizedBox(width: AppSizes.s12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               vessel.ship_nm ?? '선박명 없음',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: AppSizes.s18,
                                 fontWeight: FontWeights.w700,
                                 color: AppColors.blackType2,
@@ -308,7 +308,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             ),
                             Text(
                               'MMSI: ${vessel.mmsi ?? 0}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: AppSizes.s14,
                                 color: AppColors.grayType3,
                               ),
@@ -323,7 +323,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 // 본문 영역
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(AppSizes.s20),
+                    padding: const EdgeInsets.all(AppSizes.s20),
                     child: Column(
                       children: [
                         _buildInfoRow('위치', '${vessel.lttd?.toStringAsFixed(6) ?? '-'}, ${vessel.lntd?.toStringAsFixed(6) ?? '-'}'),
@@ -338,9 +338,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
                 // 버튼 영역 - 하단 고정
                 Container(
-                  padding: EdgeInsets.all(AppSizes.s16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
+                  padding: const EdgeInsets.all(AppSizes.s16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F5F5),
                     border: Border(
                       top: BorderSide(
                         color: AppColors.grayType4,
@@ -375,7 +375,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                      SizedBox(width: AppSizes.s12),
+                      const SizedBox(width: AppSizes.s12),
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -396,7 +396,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                           child: Container(
                             height: AppSizes.s44,
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
+                              gradient: const LinearGradient(
                                 colors: [
                                   AppColors.skyType2,
                                   AppColors.skyType1,
@@ -431,7 +431,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppSizes.s8),
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -439,7 +439,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             width: AppSizes.s80,
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: AppSizes.s14,
                 color: AppColors.grayType3,
               ),
@@ -448,7 +448,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: AppSizes.s14,
                 fontWeight: FontWeights.w600,
                 color: AppColors.blackType2,
@@ -506,12 +506,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             child: GestureDetector(
               onTap: _isLoadingRoute ? null : () => _loadTodayRoute(userMmsi),
               child: Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSizes.s20,
                   vertical: AppSizes.s12,
                 ),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [
                       AppColors.skyType2,
                       AppColors.skyType1,
@@ -541,17 +541,17 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         BlendMode.srcIn,
                       ),
                     ),
-                    SizedBox(width: AppSizes.s8),
+                    const SizedBox(width: AppSizes.s8),
                     _isLoadingRoute
-                        ? SizedBox(
+                        ? const SizedBox(
                       width: AppSizes.s16,
                       height: AppSizes.s16,
-                      child: const CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
-                        : Text(
+                        : const Text(
                       '당일 항적보기',
                       style: TextStyle(
                         color: Colors.white,
@@ -805,12 +805,12 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     child: selectedIndex == 2
                         ? Container(
                       key: const ValueKey('navigation_history'),
-                      padding: EdgeInsets.all(AppSizes.s12),
+                      padding: const EdgeInsets.all(AppSizes.s12),
                       decoration: BoxDecoration(
                         color: AppColors.skyType2.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(AppSizes.s8),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Icon(
                             Icons.info_outline,
@@ -855,7 +855,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       return Container(
                         height: AppSizes.s52,
                         alignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: AppSizes.s12,
                         ),
                         decoration: BoxDecoration(
@@ -868,11 +868,11 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                               width: AppSizes.s24,
                               height: AppSizes.s24,
                             ),
-                            SizedBox(width: AppSizes.s8),
+                            const SizedBox(width: AppSizes.s8),
                             Expanded(
                               child: Marquee(
                                 text: warnings.isEmpty ? '금일 항행경보가 없습니다.' : warnings,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.whiteType1,
                                   fontSize: AppSizes.s14,
                                   fontWeight: FontWeights.w700,

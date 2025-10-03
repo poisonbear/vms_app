@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
@@ -78,7 +77,7 @@ class NavigationDataSource {
   /// 🔧 수정: 날씨 정보 조회 (시정/파고) - 원본 필드명 사용
   Future<Result<WeatherInfo, AppException>> getWeatherInfo() async {
     try {
-      final String apiUrl = dotenv.env['kdn_ros_select_visibility_Info'] ?? '';
+      final String apiUrl = ApiConfig.navigationVisibility;
 
       // 🔧 수정: API URL 검증 추가
       if (apiUrl.isEmpty) {
@@ -208,7 +207,7 @@ class NavigationDataSource {
   /// 🔧 FIX: 항행 경보 조회 - GET에서 POST로 변경
   Future<Result<List<String>, AppException>> getNavigationWarnings() async {
     try {
-      final String apiUrl = dotenv.env['kdn_ros_select_navigation_warn_Info'] ?? '';
+      final String apiUrl = ApiConfig.navigationWarnings;
 
       if (apiUrl.isEmpty) {
         AppLogger.e('❌ Navigation Warnings API URL is empty!');

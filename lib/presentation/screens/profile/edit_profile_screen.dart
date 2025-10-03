@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
@@ -49,8 +48,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
   bool isDropdownOpened = false;
 
   // API URLs
-  final String apiUrl = dotenv.env['kdn_usm_update_membership_key'] ?? '';
-  final String userInfoUrl = dotenv.env['kdn_usm_select_member_info_data'] ?? '';
+  final String apiUrl = ApiConfig.updateMember;
+  final String userInfoUrl = ApiConfig.memberInfo;
   final dioRequest = DioRequest();
 
   // Dropdown data
@@ -566,7 +565,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: AppSizes.s40, bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(top: AppSizes.s40, bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -577,13 +576,13 @@ class _MembershipviewState extends State<MemberInformationChange> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget_deactivate(AppSizes.i266, AppSizes.i48, idController, '', AppColors.grayType7,
                       isReadOnly: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -594,14 +593,14 @@ class _MembershipviewState extends State<MemberInformationChange> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s13),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s13),
                   child: inputWidget(AppSizes.i266, AppSizes.i48, passwordController, '비밀번호', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               if (!isValpw && !isSubmitting)
                 Padding(
-                  padding: EdgeInsets.only(top: AppSizes.s0),
+                  padding: const EdgeInsets.only(top: AppSizes.s0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -611,7 +610,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                   ),
                 ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -622,13 +621,13 @@ class _MembershipviewState extends State<MemberInformationChange> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget(AppSizes.i266, AppSizes.i48, newPasswordController, '비밀번호', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -639,38 +638,38 @@ class _MembershipviewState extends State<MemberInformationChange> {
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget(
                       AppSizes.i266, AppSizes.i48, confirmPasswordController, '비밀번호 확인', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: TextWidgetString('선박 MMSI 번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget(
                       AppSizes.i266, AppSizes.i48, mmsiController, 'MMSI 번호(숫자 9자리)를 입력해주세요', AppColors.grayType7),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: TextWidgetString('휴대폰 번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s20),
                   child:
                       inputWidget(AppSizes.i266, AppSizes.i48, phoneController, "'-' 구분없이 숫자만 입력", AppColors.grayType7),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                padding: const EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -679,7 +678,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: AppSizes.s20),
+                padding: const EdgeInsets.only(bottom: AppSizes.s20),
                 child: Row(
                   children: [
                     Expanded(
@@ -692,7 +691,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSizes.s4),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSizes.s4),
                       child: TextWidgetString('@', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                     ),
                     Expanded(
@@ -707,15 +706,15 @@ class _MembershipviewState extends State<MemberInformationChange> {
                               fillColor: AppColors.whiteType1,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
@@ -754,7 +753,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: AppSizes.s20),
+                padding: const EdgeInsets.only(top: AppSizes.s20),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -763,7 +762,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                       backgroundColor: AppColors.skyType2,
                       shape: Borders.rounded10,
                       elevation: 0,
-                      padding: EdgeInsets.all(AppSizes.s18),
+                      padding: const EdgeInsets.all(AppSizes.s18),
                     ),
                     child: TextWidgetString(
                       '회원정보수정 완료하기',

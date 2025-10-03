@@ -85,7 +85,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
               _buildHeader(),
               Flexible(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppSizes.s20),
+                  padding: const EdgeInsets.all(AppSizes.s20),
                   child: _buildContent(context),
                 ),
               ),
@@ -99,9 +99,9 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
   Widget _buildHeader() {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E3A5F), // 어두운 푸른색
+      padding: const EdgeInsets.symmetric(horizontal: AppSizes.s14),
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E3A5F), // 어두운 푸른색
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppSizes.s20),
           topRight: Radius.circular(AppSizes.s20),
@@ -109,12 +109,12 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.cloud,
             color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: AppSizes.s6),
+          const SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '기상정보',
             TextAligns.left,
@@ -126,9 +126,9 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(AppSizes.s8),
+              padding: const EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
-              child: Icon(
+              child: const Icon(
                 Icons.close,
                 color: AppColors.whiteType1,
                 size: 24,
@@ -187,7 +187,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       children: [
         // 날짜 (빈칸)
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[0],
             TextAligns.left,
@@ -199,7 +199,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 시간
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[1],
             TextAligns.left,
@@ -211,7 +211,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 풍향 (특별 처리)
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: SizedBox(
             height: AppSizes.s36 + AppSizes.s4 + AppSizes.s9, // 아이콘 + 간격 + 방향텍스트 높이
             child: Align(
@@ -229,7 +229,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 풍속
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[3],
             TextAligns.left,
@@ -241,7 +241,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 파고
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[4],
             TextAligns.left,
@@ -253,7 +253,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 돌풍
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[5],
             TextAligns.left,
@@ -265,7 +265,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 온도
         Padding(
-          padding: EdgeInsets.all(AppSizes.s8),
+          padding: const EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[6],
             TextAligns.left,
@@ -331,10 +331,10 @@ class _WeatherDataColumn extends StatelessWidget {
       children: [
         _buildDate(textColor),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSizes.s6),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.s6),
           child: DottedBorder(
             borderType: BorderType.RRect,
-            radius: Radius.circular(AppSizes.s5),
+            radius: const Radius.circular(AppSizes.s5),
             dashPattern: const [5, 2],
             color: AppColors.grayType7,
             strokeWidth: AppSizes.s1,
@@ -366,7 +366,7 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(AppSizes.s8),
+      padding: const EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         dateText,
         TextAligns.left,
@@ -414,7 +414,7 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(AppSizes.s8),
+      padding: const EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         timeText,
         TextAligns.left,
@@ -427,7 +427,7 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildWindDirection(Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(AppSizes.s8),
+      padding: const EdgeInsets.all(AppSizes.s8),
       child: Column(
         children: [
           FutureBuilder<Widget>(
@@ -442,13 +442,13 @@ class _WeatherDataColumn extends StatelessWidget {
               if (snapshot.hasData) {
                 return snapshot.data!;
               }
-              return SizedBox(
+              return const SizedBox(
                 width: AppSizes.s36,
                 height: AppSizes.s36,
               );
             },
           ),
-          SizedBox(height: AppSizes.s4),
+          const SizedBox(height: AppSizes.s4),
           TextWidgetString(
             _safeGetWindDirection(),
             TextAligns.left,
@@ -463,7 +463,7 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildDataText(String text, Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(AppSizes.s8),
+      padding: const EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         text,
         TextAligns.left,

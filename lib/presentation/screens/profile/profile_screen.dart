@@ -106,7 +106,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
             right: AppSizes.s20,
             left: AppSizes.s20,
             bottom: AppSizes.s20,
@@ -115,7 +115,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
             children: [
               // 프로필 이미지와 이름 (세로 배치로 변경)
               Padding(
-                padding: EdgeInsets.only(top: AppSizes.s40),
+                padding: const EdgeInsets.only(top: AppSizes.s40),
                 child: Column(
                   children: [
                     // 프로필 이미지
@@ -132,7 +132,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                     ),
                     // 이름과 환영 메시지 (세로 배치)
                     Padding(
-                      padding: EdgeInsets.only(top: AppSizes.s6),
+                      padding: const EdgeInsets.only(top: AppSizes.s6),
                       child: Column(
                         children: [
                           TextWidgetString(
@@ -141,7 +141,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                               AppSizes.i20,
                               FontWeights.w700,
                               AppColors.blackType2),
-                          SizedBox(height: AppSizes.s8),
+                          const SizedBox(height: AppSizes.s8),
                           TextWidgetString(
                               '반갑습니다.',
                               TextAligns.center,
@@ -156,10 +156,10 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               // 프로필과 로그인/회원정보 섹션 사이 간격 추가
-              SizedBox(height: AppSizes.s20),
+              const SizedBox(height: AppSizes.s20),
 
               Padding(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                     top: AppSizes.s20,
                     bottom: AppSizes.s20),
                 child: Align(
@@ -176,7 +176,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
               Container(
                 child: Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                       right: AppSizes.s12,
                       left: AppSizes.s12,
                       bottom: AppSizes.s8,
@@ -224,7 +224,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                 ),
               ),
 
-              Divider(
+              const Divider(
                 thickness: AppSizes.s1,
                 height: AppSizes.s12,
                 indent: 0,
@@ -233,7 +233,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               Padding(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                     right: AppSizes.s12,
                     left: AppSizes.s12),
                 child: Align(
@@ -276,7 +276,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                                 child: Container(
                                   width: AppSizes.s30,
                                   height: AppSizes.s30,
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: AppColors.whiteType1,
                                   ),
@@ -289,7 +289,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                     ])),
               ),
 
-              Divider(
+              const Divider(
                 thickness: AppSizes.s1,
                 height: AppSizes.s12,
                 indent: 0,
@@ -299,7 +299,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
               Container(
                 child: Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                       right: AppSizes.s12,
                       left: AppSizes.s12,
                       bottom: AppSizes.s8,

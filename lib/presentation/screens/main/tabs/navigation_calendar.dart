@@ -110,7 +110,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 horizontal: AppSizes.s16.toDouble(),
                 vertical: AppSizes.s12.toDouble(),
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: AppColors.grayType7, width: 1),
                 ),
@@ -224,15 +224,15 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       fontSize: AppSizes.s12.toDouble()
                   ),
                   rangeHighlightColor: AppColors.skyType2.withOpacity(0.2),
-                  rangeStartDecoration: BoxDecoration(
+                  rangeStartDecoration: const BoxDecoration(
                     color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
-                  rangeEndDecoration: BoxDecoration(
+                  rangeEndDecoration: const BoxDecoration(
                     color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
-                  selectedDecoration: BoxDecoration(
+                  selectedDecoration: const BoxDecoration(
                     color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
@@ -330,7 +330,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 horizontal: AppSizes.s16.toDouble(),
                 vertical: AppSizes.s12.toDouble(),
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
                   top: BorderSide(color: AppColors.grayType7, width: 1),
                 ),
@@ -352,7 +352,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                         horizontal: AppSizes.s12.toDouble(),
                         vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: AppColors.grayType7),
+                      side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
@@ -381,7 +381,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                         horizontal: AppSizes.s12.toDouble(),
                         vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: AppColors.grayType7),
+                      side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
@@ -410,7 +410,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                         horizontal: AppSizes.s12.toDouble(),
                         vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: AppColors.grayType7),
+                      side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),

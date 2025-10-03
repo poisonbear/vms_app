@@ -1,10 +1,11 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/exceptions/result.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/exceptions/error_handler.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/terms_model.dart';
+
+import 'package:vms_app/core/constants/constants.dart';
 
 /// 약관 정보 데이터소스 (기존 CmdSource)
 class TermsDataSource {
@@ -13,7 +14,7 @@ class TermsDataSource {
   /// 약관 목록 조회
   Future<Result<List<TermsModel>, AppException>> getCmdList() async {
     try {
-      final String apiUrl = dotenv.env['kdn_usm_select_cmd_key'] ?? '';
+      final String apiUrl = ApiConfig.termsList;
 
       if (apiUrl.isEmpty) {
         return const Failure(GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'));

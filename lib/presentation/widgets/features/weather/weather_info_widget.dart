@@ -21,7 +21,7 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
     return Consumer<NavigationProvider>(
       builder: (context, viewModel, _) {
         return Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
             top: AppSizes.s56,
             bottom: AppSizes.s32,
             right: AppSizes.s20,

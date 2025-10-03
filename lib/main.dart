@@ -116,7 +116,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: AppColors.whiteType1,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
-          iconTheme: IconThemeData(color: AppColors.blackType1),
+          iconTheme: const IconThemeData(color: AppColors.blackType1),
           titleTextStyle: TextStyle(
             color: AppColors.blackType1,
             fontSize: AppSizes.s20.toDouble(),
@@ -153,8 +153,8 @@ class _SplashScreenState extends State<SplashScreen>
   String fcmToken = StringConstants.emptyString;
   late AnimationController _rotationController;
 
-  final String apiUrl = dotenv.env[ApiConfig.loginUrl] ?? StringConstants.emptyString;
-  final String apiUrl2 = dotenv.env[ApiConfig.userRoleUrl] ?? StringConstants.emptyString;
+  final String apiUrl = ApiConfig.authLogin;
+  final String apiUrl2 = ApiConfig.authRole;
   final dioRequest = DioRequest();
 
   @override

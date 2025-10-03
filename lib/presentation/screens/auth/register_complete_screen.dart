@@ -50,7 +50,7 @@ class RegisterCompleteView extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: AppColors.skyType2.withValues(alpha: 0.1),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.check_circle,
                     size: 60,
                     color: AppColors.skyType2,
@@ -106,7 +106,7 @@ class RegisterCompleteView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       '로그인하기',
                       style: TextStyle(
                         fontSize: 16,
@@ -138,7 +138,7 @@ class RegisterCompleteView extends StatelessWidget {
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeights.w600,
                 color: AppColors.whiteType1,

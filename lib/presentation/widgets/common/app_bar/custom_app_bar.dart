@@ -19,7 +19,7 @@ class _AppBarState extends State<AppBarLayerView> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         top: AppSizes.s16,
         bottom: AppSizes.s16,
       ),

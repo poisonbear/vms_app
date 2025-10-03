@@ -155,13 +155,13 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                         fontSize: DesignConstants.fontSizeXL,
                         fontWeight: FontWeight.bold),
                   ),
-                  calendarStyle: CalendarStyle(
+                  calendarStyle: const CalendarStyle(
                     selectedDecoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.greenType1,
                     ),
-                    todayDecoration: const BoxDecoration(),
-                    todayTextStyle: const TextStyle(
+                    todayDecoration: BoxDecoration(),
+                    todayTextStyle: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),

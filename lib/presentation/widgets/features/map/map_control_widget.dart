@@ -90,7 +90,7 @@ class MapControlWidget extends StatelessWidget {
                   isActive: false,
                   tooltip: '항적 초기화',
                 ),
-              SizedBox(height: AppSizes.s12),
+              const SizedBox(height: AppSizes.s12),
             ],
 
           // 관리자용 다른 선박 표시 버튼
@@ -112,7 +112,7 @@ class MapControlWidget extends StatelessWidget {
                 isActive: isOtherVesselsVisible,
                 tooltip: '다른 선박',
               ),
-            SizedBox(height: AppSizes.s12),
+            const SizedBox(height: AppSizes.s12),
           ],
 
           // 현재 위치 버튼
@@ -136,7 +136,7 @@ class MapControlWidget extends StatelessWidget {
               ),
 
           if (vessels.any((vessel) => vessel.mmsi == mmsi))
-            SizedBox(height: AppSizes.s12),
+            const SizedBox(height: AppSizes.s12),
 
           // 항적 표시 버튼 (옵션)
           if (onTrackingToggle != null) ...[
@@ -157,7 +157,7 @@ class MapControlWidget extends StatelessWidget {
                 isActive: isTrackingEnabled,
                 tooltip: '항적 표시',
               ),
-            SizedBox(height: AppSizes.s12),
+            const SizedBox(height: AppSizes.s12),
           ],
 
           // 홈 버튼 (옵션)

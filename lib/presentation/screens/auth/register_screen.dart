@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
@@ -97,8 +96,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _loadApiConfiguration() {
-    _apiUrl = dotenv.env['kdn_usm_insert_membership_key'] ?? '';
-    _apiSearchUrl = dotenv.env['kdn_usm_select_membership_search_key'] ?? '';
+    _apiUrl = ApiConfig.authRegister;
+    _apiSearchUrl = ApiConfig.memberSearch;
 
     // 디버깅용 로그
     AppLogger.d('===== API URLs 로드 =====');
@@ -420,7 +419,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeights.w600,
                 color: AppColors.whiteType1,
@@ -491,7 +490,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         child: Text(
           _isIdAvailable == ValidationRules.idAvailable ? '재확인' : '중복확인',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeights.w600,
             color: AppColors.whiteType1,
@@ -625,8 +624,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               keyboardType: TextInputType.emailAddress,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               '@',
               style: TextStyle(
@@ -665,7 +664,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: DropdownButton<String>(
           value: _selectedEmailDomain,
           isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down, color: AppColors.grayType2),
+          icon: const Icon(Icons.arrow_drop_down, color: AppColors.grayType2),
           items: _emailDomains.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -698,7 +697,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
-            : Text(
+            : const Text(
                 '회원가입',
                 style: TextStyle(
                   fontSize: 16,
@@ -761,13 +760,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       keyboardType: keyboardType,
       enabled: enabled,
       onChanged: onChanged,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 14,
         color: AppColors.blackType2,
       ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           fontSize: 14,
           color: AppColors.grayType2,
         ),
@@ -780,19 +779,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.grayType3),
+          borderSide: const BorderSide(color: AppColors.grayType3),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.grayType3),
+          borderSide: const BorderSide(color: AppColors.grayType3),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.skyType2, width: 2),
+          borderSide: const BorderSide(color: AppColors.skyType2, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.grayType3),
+          borderSide: const BorderSide(color: AppColors.grayType3),
         ),
       ),
     );
