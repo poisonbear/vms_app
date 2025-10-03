@@ -1,30 +1,32 @@
+// lib/core/infrastructure/injection.dart
+
 import 'package:get_it/get_it.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 
-// DataSources - 새로운 이름과 기존 typedef 모두 포함
+// DataSources
 import 'package:vms_app/data/datasources/terms_datasource.dart';
 import 'package:vms_app/data/datasources/navigation_datasource.dart';
 import 'package:vms_app/data/datasources/vessel_datasource.dart';
 import 'package:vms_app/data/datasources/weather_datasource.dart';
 import 'package:vms_app/data/datasources/emergency_datasource.dart';
 
-// Repositories - 새로운 이름과 기존 typedef 모두 포함
+// Repositories
 import 'package:vms_app/data/repositories/terms_repository.dart';
 import 'package:vms_app/data/repositories/navigation_repository.dart';
 import 'package:vms_app/data/repositories/vessel_repository.dart';
 import 'package:vms_app/data/repositories/weather_repository.dart';
 import 'package:vms_app/data/repositories/emergency_repository.dart';
 
-// Domain Repositories - 수정된 import
+// Domain Repositories
 import 'package:vms_app/domain/repositories/terms_repository.dart' as domain;
 import 'package:vms_app/domain/repositories/navigation_repository.dart' as domain;
 import 'package:vms_app/domain/repositories/vessel_repository.dart' as domain;
 import 'package:vms_app/domain/repositories/weather_repository.dart' as domain;
 import 'package:vms_app/domain/repositories/emergency_repository.dart' as domain;
 
-// UseCases - 새로운 평면 구조
+// UseCases
 import 'package:vms_app/domain/usecases/terms_usecases.dart';
 import 'package:vms_app/domain/usecases/navigation_usecases.dart';
 import 'package:vms_app/domain/usecases/vessel_usecases.dart';
@@ -50,10 +52,13 @@ void setupDependencies() {
 /// Infrastructure 등록
 void _registerInfrastructure() {
   // Network
+  getIt.registerLazySingleton<NetworkClient>(() => NetworkClient());
   getIt.registerLazySingleton<DioRequest>(() => DioRequest());
 
   // Cache
   getIt.registerLazySingleton<PersistentCacheService>(() => PersistentCacheService());
+
+  AppLogger.d('Infrastructure registered');
 }
 
 /// Services 등록
@@ -63,11 +68,13 @@ void _registerServices() {
 
   // Location Service
   getIt.registerLazySingleton<LocationService>(() => LocationService());
+
+  AppLogger.d('Services registered');
 }
 
 /// DataSources 등록
 void _registerDataSources() {
-  // Remote DataSources (새로운 클래스명만 등록)
+  // Remote DataSources
   getIt.registerLazySingleton<TermsDataSource>(
         () => TermsDataSource(),
   );
@@ -89,17 +96,12 @@ void _registerDataSources() {
         () => EmergencyDataSource(),
   );
 
-  // 기존 이름들은 typedef로 자동 처리됨
-  // CmdSource = TermsDataSource
-  // RosSource = NavigationDataSource
-  // VesselSearchSource = VesselDataSource
-  // RouteSearchSource = VesselDataSource
-  // WidSource = WeatherDataSource
+  AppLogger.d('DataSources registered');
 }
 
 /// Repositories 등록
 void _registerRepositories() {
-  // Data Layer Repositories (새로운 클래스명만 등록)
+  // Data Layer Repositories
   getIt.registerLazySingleton<TermsRepository>(
         () => TermsRepository(getIt<TermsDataSource>()),
   );
@@ -120,7 +122,7 @@ void _registerRepositories() {
         () => EmergencyRepository(getIt<EmergencyDataSource>()),
   );
 
-  // Domain Layer Repository Interfaces
+  // Domain Repositories
   getIt.registerLazySingleton<domain.TermsRepository>(
         () => getIt<TermsRepository>(),
   );
@@ -141,46 +143,12 @@ void _registerRepositories() {
         () => getIt<EmergencyRepository>(),
   );
 
-  // 기존 이름들은 typedef로 자동 처리됨
-  // TermsRepositoryImpl = TermsRepository
-  // NavigationRepositoryImpl = NavigationRepository
-  // VesselRepositoryImpl = VesselRepository
-  // RouteSearchRepositoryImpl = VesselRepository (vessel에 통합)
-  // WeatherRepositoryImpl = WeatherRepository
+  AppLogger.d('Repositories registered');
 }
 
 /// UseCases 등록
 void _registerUseCases() {
-  // ===== 통합 UseCase 클래스들 등록 =====
-
-  // Terms
-  getIt.registerFactory<TermsUseCases>(
-        () => TermsUseCases(getIt<domain.TermsRepository>()),
-  );
-
-  // Navigation
-  getIt.registerFactory<NavigationUseCases>(
-        () => NavigationUseCases(getIt<domain.NavigationRepository>()),
-  );
-
-  // Vessel
-  getIt.registerFactory<VesselUseCases>(
-        () => VesselUseCases(getIt<domain.VesselRepository>()),
-  );
-
-  // Weather
-  getIt.registerFactory<WeatherUseCases>(
-        () => WeatherUseCases(getIt<domain.WeatherRepository>()),
-  );
-
-  // Emergency
-  getIt.registerFactory<EmergencyUseCases>(
-        () => EmergencyUseCases(getIt<domain.EmergencyRepository>()),
-  );
-
-  // ===== 개별 UseCase 클래스들 등록 (기존 호환성 유지) =====
-
-  // Terms/Auth UseCases
+  // Terms UseCases
   getIt.registerFactory<GetTermsList>(
         () => GetTermsList(getIt<domain.TermsRepository>()),
   );
@@ -244,18 +212,20 @@ void _registerUseCases() {
   getIt.registerFactory<CheckActiveEmergency>(
         () => CheckActiveEmergency(getIt<domain.EmergencyRepository>()),
   );
+
+  AppLogger.d('UseCases registered');
 }
 
 /// DI 초기화 확인
 void verifyDependencies() {
   AppLogger.d('=== DI Configuration ===');
-  AppLogger.d('Infrastructure: ${getIt.isRegistered<DioRequest>() ? "✓" : "✗"}');
+  AppLogger.d('NetworkClient: ${getIt.isRegistered<NetworkClient>() ? "✓" : "✗"}');
+  AppLogger.d('DioRequest: ${getIt.isRegistered<DioRequest>() ? "✓" : "✗"}');
   AppLogger.d('DataSources: ${getIt.isRegistered<VesselDataSource>() ? "✓" : "✗"}');
   AppLogger.d('Repositories: ${getIt.isRegistered<VesselRepository>() ? "✓" : "✗"}');
   AppLogger.d('Domain Repositories: ${getIt.isRegistered<domain.VesselRepository>() ? "✓" : "✗"}');
-  AppLogger.d('UseCases (Individual): ${getIt.isRegistered<SearchVessel>() ? "✓" : "✗"}');
-  AppLogger.d('UseCases (Integrated): ${getIt.isRegistered<VesselUseCases>() ? "✓" : "✗"}');
-  AppLogger.d('Emergency: ${getIt.isRegistered<EmergencyUseCases>() ? "✓" : "✗"}');
+  AppLogger.d('UseCases: ${getIt.isRegistered<SearchVessel>() ? "✓" : "✗"}');
+  AppLogger.d('Emergency: ${getIt.isRegistered<EmergencyDataSource>() ? "✓" : "✗"}');
   AppLogger.d('========================');
 }
 
