@@ -107,12 +107,12 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
             // 헤더 영역 (패딩 축소)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: getSize16().toDouble(),
-                vertical: getSize12().toDouble(),
+                horizontal: AppSizes.s16.toDouble(),
+                vertical: AppSizes.s12.toDouble(),
               ),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: getColorGrayType7(), width: 1),
+                  bottom: BorderSide(color: AppColors.grayType7, width: 1),
                 ),
               ),
               child: Row(
@@ -120,10 +120,10 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 children: [
                   TextWidgetString(
                     widget.title,
-                    getTextleft(),
-                    getSizeInt18(),
-                    getText600(),
-                    getColorBlackType2(),
+                    TextAligns.left,
+                    AppSizes.i18,
+                    FontWeights.w600,
+                    AppColors.blackType2,
                   ),
                   SizedBox(
                     width: 24,
@@ -143,40 +143,40 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(
-                horizontal: getSize16().toDouble(),
-                vertical: getSize10().toDouble(),
+                horizontal: AppSizes.s16.toDouble(),
+                vertical: AppSizes.s10.toDouble(),
               ),
-              color: getColorGrayType14(),
+              color: AppColors.grayType14,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextWidgetString(
                     '조회기간 : ',
-                    getTextcenter(),
-                    getSizeInt14(),
-                    getText500(),
-                    getColorGrayType3(),
+                    TextAligns.center,
+                    AppSizes.i14,
+                    FontWeights.w500,
+                    AppColors.grayType3,
                   ),
                   TextWidgetString(
                     "${_selectedStartDate.year}.${_selectedStartDate.month.toString().padLeft(2, '0')}.${_selectedStartDate.day.toString().padLeft(2, '0')}",
-                    getTextcenter(),
-                    getSizeInt14(),
-                    getText600(),
-                    getColorSkyType2(),
+                    TextAligns.center,
+                    AppSizes.i14,
+                    FontWeights.w600,
+                    AppColors.skyType2,
                   ),
                   TextWidgetString(
                     ' ~ ',
-                    getTextcenter(),
-                    getSizeInt14(),
-                    getText500(),
-                    getColorGrayType3(),
+                    TextAligns.center,
+                    AppSizes.i14,
+                    FontWeights.w500,
+                    AppColors.grayType3,
                   ),
                   TextWidgetString(
                     "${_selectedEndDate.year}.${_selectedEndDate.month.toString().padLeft(2, '0')}.${_selectedEndDate.day.toString().padLeft(2, '0')}",
-                    getTextcenter(),
-                    getSizeInt14(),
-                    getText600(),
-                    getColorSkyType2(),
+                    TextAligns.center,
+                    AppSizes.i14,
+                    FontWeights.w600,
+                    AppColors.skyType2,
                   ),
                 ],
               ),
@@ -184,7 +184,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
 
             // 달력 (패딩 제거 및 높이 최적화)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: getSize8().toDouble()),
+              padding: EdgeInsets.symmetric(horizontal: AppSizes.s8.toDouble()),
               child: TableCalendar(
                 locale: 'ko_KR',
                 firstDay: DateTime.utc(2020, 1, 1),
@@ -214,58 +214,58 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                   cellPadding: EdgeInsets.zero,  // 완전 제거
                   weekendTextStyle: TextStyle(
                       color: Colors.red,
-                      fontSize: getSize12().toDouble()  // 더 작게
+                      fontSize: AppSizes.s12.toDouble()  // 더 작게
                   ),
                   holidayTextStyle: TextStyle(
                       color: Colors.red,
-                      fontSize: getSize12().toDouble()
+                      fontSize: AppSizes.s12.toDouble()
                   ),
                   defaultTextStyle: TextStyle(
-                      fontSize: getSize12().toDouble()
+                      fontSize: AppSizes.s12.toDouble()
                   ),
-                  rangeHighlightColor: getColorSkyType2().withOpacity(0.2),
+                  rangeHighlightColor: AppColors.skyType2.withOpacity(0.2),
                   rangeStartDecoration: BoxDecoration(
-                    color: getColorSkyType2(),
+                    color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
                   rangeEndDecoration: BoxDecoration(
-                    color: getColorSkyType2(),
+                    color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
                   selectedDecoration: BoxDecoration(
-                    color: getColorSkyType2(),
+                    color: AppColors.skyType2,
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
-                    color: getColorGrayType3().withOpacity(0.5),
+                    color: AppColors.grayType3.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
                   selectedTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: getSize12().toDouble(),  // 더 작게
-                    fontWeight: getText600(),
+                    fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                    fontWeight: FontWeights.w600,
                   ),
                   todayTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: getSize12().toDouble(),  // 더 작게
-                    fontWeight: getText500(),
+                    fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                    fontWeight: FontWeights.w500,
                   ),
                 ),
                 headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  headerPadding: EdgeInsets.symmetric(vertical: getSize8().toDouble()),  // 헤더 패딩 줄이기
+                  headerPadding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),  // 헤더 패딩 줄이기
                   titleTextStyle: TextStyle(
-                    fontSize: getSize16().toDouble(),
-                    fontWeight: getText600(),
+                    fontSize: AppSizes.s16.toDouble(),
+                    fontWeight: FontWeights.w600,
                   ),
                   leftChevronIcon: Icon(
                     Icons.chevron_left,
-                    size: getSize20().toDouble(),
+                    size: AppSizes.s20.toDouble(),
                   ),
                   rightChevronIcon: Icon(
                     Icons.chevron_right,
-                    size: getSize20().toDouble(),
+                    size: AppSizes.s20.toDouble(),
                   ),
                 ),
                 calendarBuilders: CalendarBuilders(
@@ -276,9 +276,9 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       child: Text(
                         text,
                         style: TextStyle(
-                          color: isWeekend ? Colors.red : getColorGrayType3(),
-                          fontSize: getSize12().toDouble(),
-                          fontWeight: getText500(),
+                          color: isWeekend ? Colors.red : AppColors.grayType3,
+                          fontSize: AppSizes.s12.toDouble(),
+                          fontWeight: FontWeights.w500,
                         ),
                       ),
                     );
@@ -291,7 +291,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     return Container(
                       margin: const EdgeInsets.all(1),  // 더 줄이기
                       decoration: BoxDecoration(
-                        color: isInRange ? getColorSkyType2().withOpacity(0.2) : null,
+                        color: isInRange ? AppColors.skyType2.withOpacity(0.2) : null,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -302,8 +302,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                               '${day.day}',
                               style: TextStyle(
                                 color: Colors.red,
-                                fontSize: getSize12().toDouble(),  // 더 작게
-                                fontWeight: getText500(),
+                                fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                                fontWeight: FontWeights.w500,
                               ),
                             ),
                             if (holidayName.isNotEmpty)
@@ -311,8 +311,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                                 holidayName,
                                 style: TextStyle(
                                   color: Colors.red,
-                                  fontSize: getSize6().toDouble(),  // 더 작게
-                                  fontWeight: getText400(),
+                                  fontSize: AppSizes.s6.toDouble(),  // 더 작게
+                                  fontWeight: FontWeights.w400,
                                 ),
                               ),
                           ],
@@ -327,12 +327,12 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
             // 버튼 영역 (패딩 축소)
             Container(
               padding: EdgeInsets.symmetric(
-                horizontal: getSize16().toDouble(),
-                vertical: getSize12().toDouble(),
+                horizontal: AppSizes.s16.toDouble(),
+                vertical: AppSizes.s12.toDouble(),
               ),
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: getColorGrayType7(), width: 1),
+                  top: BorderSide(color: AppColors.grayType7, width: 1),
                 ),
               ),
               child: Row(
@@ -349,23 +349,23 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                        horizontal: getSize12().toDouble(),
-                        vertical: getSize10().toDouble(),
+                        horizontal: AppSizes.s12.toDouble(),
+                        vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: getColorGrayType7()),
+                      side: BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(getSize6().toDouble()),
+                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
                       '오늘',
-                      getTextcenter(),
-                      getSizeInt13(),
-                      getText500(),
-                      getColorGrayType3(),
+                      TextAligns.center,
+                      AppSizes.i13,
+                      FontWeights.w500,
+                      AppColors.grayType3,
                     ),
                   ),
-                  SizedBox(width: getSize8().toDouble()),
+                  SizedBox(width: AppSizes.s8.toDouble()),
                   OutlinedButton(
                     onPressed: () {
                       // 최근 7일
@@ -378,23 +378,23 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                        horizontal: getSize12().toDouble(),
-                        vertical: getSize10().toDouble(),
+                        horizontal: AppSizes.s12.toDouble(),
+                        vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: getColorGrayType7()),
+                      side: BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(getSize6().toDouble()),
+                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
                       '7일',
-                      getTextcenter(),
-                      getSizeInt13(),
-                      getText500(),
-                      getColorGrayType3(),
+                      TextAligns.center,
+                      AppSizes.i13,
+                      FontWeights.w500,
+                      AppColors.grayType3,
                     ),
                   ),
-                  SizedBox(width: getSize8().toDouble()),
+                  SizedBox(width: AppSizes.s8.toDouble()),
                   OutlinedButton(
                     onPressed: () {
                       // 최근 30일
@@ -407,20 +407,20 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(
-                        horizontal: getSize12().toDouble(),
-                        vertical: getSize10().toDouble(),
+                        horizontal: AppSizes.s12.toDouble(),
+                        vertical: AppSizes.s10.toDouble(),
                       ),
-                      side: BorderSide(color: getColorGrayType7()),
+                      side: BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(getSize6().toDouble()),
+                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
                       '30일',
-                      getTextcenter(),
-                      getSizeInt13(),
-                      getText500(),
-                      getColorGrayType3(),
+                      TextAligns.center,
+                      AppSizes.i13,
+                      FontWeights.w500,
+                      AppColors.grayType3,
                     ),
                   ),
                   const Spacer(),
@@ -428,21 +428,21 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                   ElevatedButton(
                     onPressed: _confirmSelection,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: getColorSkyType2(),
+                      backgroundColor: AppColors.skyType2,
                       padding: EdgeInsets.symmetric(
-                        horizontal: getSize20().toDouble(),
-                        vertical: getSize10().toDouble(),
+                        horizontal: AppSizes.s20.toDouble(),
+                        vertical: AppSizes.s10.toDouble(),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(getSize6().toDouble()),
+                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
                       '선택 완료',
-                      getTextcenter(),
-                      getSizeInt14(),
-                      getText600(),
-                      getColorWhiteType1(),
+                      TextAligns.center,
+                      AppSizes.i14,
+                      FontWeights.w600,
+                      AppColors.whiteType1,
                     ),
                   ),
                 ],

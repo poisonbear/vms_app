@@ -68,7 +68,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
         alignment: Alignment.bottomCenter,
         child: Container(
           constraints: BoxConstraints(
-            minHeight: getSize350(),
+            minHeight: AppSizes.s350,
             maxHeight: MediaQuery.of(context).size.height * 0.61,
           ),
           width: double.infinity,
@@ -85,7 +85,7 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
               _buildHeader(),
               Flexible(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(getSize20()),
+                  padding: EdgeInsets.all(AppSizes.s20),
                   child: _buildContent(context),
                 ),
               ),
@@ -99,38 +99,38 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
   Widget _buildHeader() {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: getSize14()),
+      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
       decoration: BoxDecoration(
         color: const Color(0xFF1E3A5F), // 어두운 푸른색
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(getSize20()),
-          topRight: Radius.circular(getSize20()),
+          topLeft: Radius.circular(AppSizes.s20),
+          topRight: Radius.circular(AppSizes.s20),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.cloud,
-            color: getColorWhiteType1(),
+            color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: getSize6()),
+          SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '기상정보',
-            getTextleft(),
-            getSizeInt18(),
-            getText700(),
-            getColorWhiteType1(),
+            TextAligns.left,
+            AppSizes.i18,
+            FontWeights.w700,
+            AppColors.whiteType1,
           ),
           const Spacer(),
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(getSize8()),
+              padding: EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
               child: Icon(
                 Icons.close,
-                color: getColorWhiteType1(),
+                color: AppColors.whiteType1,
                 size: 24,
               ),
             ),
@@ -187,41 +187,41 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       children: [
         // 날짜 (빈칸)
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[0],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
 
         // 시간
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[1],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
 
         // 풍향 (특별 처리)
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: SizedBox(
-            height: getSize36() + getSize4() + getSize9(), // 아이콘 + 간격 + 방향텍스트 높이
+            height: AppSizes.s36 + AppSizes.s4 + AppSizes.s9, // 아이콘 + 간격 + 방향텍스트 높이
             child: Align(
               alignment: Alignment.centerLeft,
               child: TextWidgetString(
                 labels[2],
-                getTextleft(),
-                getSizeInt14(),
-                getText700(),
-                getColorBlackType2(),
+                TextAligns.left,
+                AppSizes.i14,
+                FontWeights.w700,
+                AppColors.blackType2,
               ),
             ),
           ),
@@ -229,49 +229,49 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
 
         // 풍속
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[3],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
 
         // 파고
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[4],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
 
         // 돌풍
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[5],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
 
         // 온도
         Padding(
-          padding: EdgeInsets.all(getSize8()),
+          padding: EdgeInsets.all(AppSizes.s8),
           child: TextWidgetString(
             labels[6],
-            getTextleft(),
-            getSizeInt14(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.left,
+            AppSizes.i14,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
         ),
       ],
@@ -325,23 +325,23 @@ class _WeatherDataColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFirst = index == 0;
-    final textColor = isFirst ? getColorSkyType2() : getColorBlackType2();
+    final textColor = isFirst ? AppColors.skyType2 : AppColors.blackType2;
 
     return Column(
       children: [
         _buildDate(textColor),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: getSize6()),
+          padding: EdgeInsets.symmetric(horizontal: AppSizes.s6),
           child: DottedBorder(
             borderType: BorderType.RRect,
-            radius: Radius.circular(getSize5()),
+            radius: Radius.circular(AppSizes.s5),
             dashPattern: const [5, 2],
-            color: getColorGrayType7(),
-            strokeWidth: getSize1(),
+            color: AppColors.grayType7,
+            strokeWidth: AppSizes.s1,
             child: Container(
               decoration: BoxDecoration(
-                color: getColorGrayType12(),
-                borderRadius: BorderRadius.circular(getSize5()),
+                color: AppColors.grayType12,
+                borderRadius: BorderRadius.circular(AppSizes.s5),
               ),
               child: _buildDataContent(textColor),
             ),
@@ -366,12 +366,12 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(getSize8()),
+      padding: EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         dateText,
-        getTextleft(),
-        getSizeInt11(),
-        getText700(),
+        TextAligns.left,
+        AppSizes.i11,
+        FontWeights.w700,
         textColor,
       ),
     );
@@ -414,12 +414,12 @@ class _WeatherDataColumn extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.all(getSize8()),
+      padding: EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         timeText,
-        getTextleft(),
-        getSizeInt14(),
-        getText700(),
+        TextAligns.left,
+        AppSizes.i14,
+        FontWeights.w700,
         textColor,
       ),
     );
@@ -427,14 +427,14 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildWindDirection(Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(getSize8()),
+      padding: EdgeInsets.all(AppSizes.s8),
       child: Column(
         children: [
           FutureBuilder<Widget>(
             future: svgload(
               'assets/kdn/wid/img/gray_point_rotation0.svg',
-              getSize36(),
-              getSize36(),
+              AppSizes.s36,
+              AppSizes.s36,
               _safeGetWindIcon(),
               _safeGetWindSpeed(),
             ),
@@ -443,17 +443,17 @@ class _WeatherDataColumn extends StatelessWidget {
                 return snapshot.data!;
               }
               return SizedBox(
-                width: getSize36(),
-                height: getSize36(),
+                width: AppSizes.s36,
+                height: AppSizes.s36,
               );
             },
           ),
-          SizedBox(height: getSize4()),
+          SizedBox(height: AppSizes.s4),
           TextWidgetString(
             _safeGetWindDirection(),
-            getTextleft(),
-            getSizeInt9(),
-            getText700(),
+            TextAligns.left,
+            AppSizes.i9,
+            FontWeights.w700,
             textColor,
           ),
         ],
@@ -463,12 +463,12 @@ class _WeatherDataColumn extends StatelessWidget {
 
   Widget _buildDataText(String text, Color textColor) {
     return Padding(
-      padding: EdgeInsets.all(getSize8()),
+      padding: EdgeInsets.all(AppSizes.s8),
       child: TextWidgetString(
         text,
-        getTextleft(),
-        getSizeInt14(),
-        getText700(),
+        TextAligns.left,
+        AppSizes.i14,
+        FontWeights.w700,
         textColor,
       ),
     );

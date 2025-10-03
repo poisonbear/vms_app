@@ -190,7 +190,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               child: SafeArea(
                 child: Container(
                   constraints: BoxConstraints(
-                    minHeight: getSize350(),
+                    minHeight: AppSizes.s350,
                     maxHeight: MediaQuery.of(context).size.height * 0.61,
                   ),
                   width: double.infinity,
@@ -213,7 +213,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              SizedBox(height: getSize10()),
+                              SizedBox(height: AppSizes.s10),
 
                               // 날짜 빠른 선택 버튼들
                               SingleChildScrollView(
@@ -221,13 +221,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 child: Row(
                                   children: [
                                     _buildQuickDateButton('오늘', () => _quickSelectDate(0)),
-                                    SizedBox(width: getSize8()),
+                                    SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('어제', () => _quickSelectDate(1)),
-                                    SizedBox(width: getSize8()),
+                                    SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('최근 7일', () => _quickSelectDate(7)),
-                                    SizedBox(width: getSize8()),
+                                    SizedBox(width: AppSizes.s8),
                                     _buildQuickDateButton('최근 30일', () => _quickSelectDate(30)),
-                                    SizedBox(width: getSize8()),
+                                    SizedBox(width: AppSizes.s8),
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
@@ -247,21 +247,21 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         _performSearch();
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: getColorSkyType2(),
+                                        backgroundColor: AppColors.skyType2,
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: getSize12(),
-                                          vertical: getSize8(),
+                                          horizontal: AppSizes.s12,
+                                          vertical: AppSizes.s8,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(getSize4()),
+                                          borderRadius: BorderRadius.circular(AppSizes.s4),
                                         ),
                                       ),
-                                      child: Icon(Icons.refresh, size: getSize20(), color: getColorWhiteType1()),
+                                      child: Icon(Icons.refresh, size: AppSizes.s20, color: AppColors.whiteType1),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: getSize10()),
+                              SizedBox(height: AppSizes.s10),
 
                               // 선택된 날짜 표시 (클릭 가능)
                               InkWell(
@@ -288,58 +288,58 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     ),
                                   );
                                 },
-                                borderRadius: BorderRadius.circular(getSize4()),
+                                borderRadius: BorderRadius.circular(AppSizes.s4),
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: getSize12(),
-                                      vertical: getSize8()
+                                      horizontal: AppSizes.s12,
+                                      vertical: AppSizes.s8
                                   ),
                                   decoration: BoxDecoration(
-                                    color: getColorWhiteType1(),
-                                    borderRadius: BorderRadius.circular(getSize4()),
-                                    border: Border.all(color: getColorGrayType7(), width: getSize1()),
+                                    color: AppColors.whiteType1,
+                                    borderRadius: BorderRadius.circular(AppSizes.s4),
+                                    border: Border.all(color: AppColors.grayType7, width: AppSizes.s1),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.calendar_today, size: getSize16(), color: getColorGrayType3()),
-                                      SizedBox(width: getSize8()),
+                                      Icon(Icons.calendar_today, size: AppSizes.s16, color: AppColors.grayType3),
+                                      SizedBox(width: AppSizes.s8),
                                       TextWidgetString(
                                           '$selectedStartDate ~ $selectedEndDate',
-                                          getTextcenter(),
-                                          getSizeInt14(),
-                                          getText500(),
-                                          getColorBlackType2()
+                                          TextAligns.center,
+                                          AppSizes.i14,
+                                          FontWeights.w500,
+                                          AppColors.blackType2
                                       ),
-                                      SizedBox(width: getSize8()),
-                                      Icon(Icons.arrow_drop_down, size: getSize20(), color: getColorGrayType3()),
+                                      SizedBox(width: AppSizes.s8),
+                                      Icon(Icons.arrow_drop_down, size: AppSizes.s20, color: AppColors.grayType3),
                                     ],
                                   ),
                                 ),
                               ),
-                              SizedBox(height: getSize10()),
+                              SizedBox(height: AppSizes.s10),
 
                               // 검색 입력 필드들
                               Row(
                                 children: [
                                   Expanded(
                                     child: SizedBox(
-                                      height: getSize40(),
+                                      height: AppSizes.s40,
                                       child: TextFormField(
                                         controller: mmsiController,
                                         style: TextStyle(
-                                          fontSize: getSize12(),
-                                          color: getColorBlackType2(),
+                                          fontSize: AppSizes.s12,
+                                          color: AppColors.blackType2,
                                         ),
                                         decoration: InputDecoration(
                                           hintText: 'MMSI 입력',
                                           hintStyle: TextStyle(
-                                              color: getColorGrayType8(),
-                                              fontSize: getSize12(),
+                                              color: AppColors.grayType8,
+                                              fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
                                           suffixIcon: mmsiController.text.isNotEmpty
                                               ? IconButton(
-                                            icon: Icon(Icons.clear, size: getSize18(), color: getColorGrayType3()),
+                                            icon: Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
                                             onPressed: () {
                                               setState(() {
                                                 mmsiController.clear();
@@ -348,22 +348,22 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           )
                                               : null,
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorSkyType2(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
                                           ),
                                           contentPadding: EdgeInsets.symmetric(
-                                              horizontal: getSize12(),
-                                              vertical: getSize12()),
+                                              horizontal: AppSizes.s12,
+                                              vertical: AppSizes.s12),
                                           isDense: true,
-                                          fillColor: getColorWhiteType1(),
+                                          fillColor: AppColors.whiteType1,
                                           filled: true,
                                         ),
                                         keyboardType: TextInputType.number,
@@ -373,26 +373,26 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: getSize12()),
+                                  SizedBox(width: AppSizes.s12),
 
                                   Expanded(
                                     child: SizedBox(
-                                      height: getSize40(),
+                                      height: AppSizes.s40,
                                       child: TextFormField(
                                         controller: shipNameController,
                                         style: TextStyle(
-                                          fontSize: getSize12(),
-                                          color: getColorBlackType2(),
+                                          fontSize: AppSizes.s12,
+                                          color: AppColors.blackType2,
                                         ),
                                         decoration: InputDecoration(
                                           hintText: '선박명 입력',
                                           hintStyle: TextStyle(
-                                              color: getColorGrayType8(),
-                                              fontSize: getSize12(),
+                                              color: AppColors.grayType8,
+                                              fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
                                           suffixIcon: shipNameController.text.isNotEmpty
                                               ? IconButton(
-                                            icon: Icon(Icons.clear, size: getSize18(), color: getColorGrayType3()),
+                                            icon: Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
                                             onPressed: () {
                                               setState(() {
                                                 shipNameController.clear();
@@ -401,22 +401,22 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           )
                                               : null,
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(getSize4()),
-                                            borderSide: BorderSide(color: getColorSkyType2(), width: getSize1()),
+                                            borderRadius: BorderRadius.circular(AppSizes.s4),
+                                            borderSide: BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
                                           ),
                                           contentPadding: EdgeInsets.symmetric(
-                                              horizontal: getSize12(),
-                                              vertical: getSize12()),
+                                              horizontal: AppSizes.s12,
+                                              vertical: AppSizes.s12),
                                           isDense: true,
-                                          fillColor: getColorWhiteType1(),
+                                          fillColor: AppColors.whiteType1,
                                           filled: true,
                                         ),
                                         onChanged: (value) {
@@ -425,37 +425,37 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: getSize12()),
+                                  SizedBox(width: AppSizes.s12),
 
                                   SizedBox(
-                                    height: getSize40(),
+                                    height: AppSizes.s40,
                                     child: Consumer<NavigationProvider>(
                                       builder: (context, provider, child) {
                                         return ElevatedButton(
                                           onPressed: provider.isLoading ? null : _performSearch,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: getColorSkyType2(),
+                                            backgroundColor: AppColors.skyType2,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(getSize4()),
+                                              borderRadius: BorderRadius.circular(AppSizes.s4),
                                             ),
-                                            fixedSize: Size(getSize65(), getSize40()),
+                                            fixedSize: Size(AppSizes.s65, AppSizes.s40),
                                             padding: EdgeInsets.zero,
                                           ),
                                           child: provider.isLoading
                                               ? SizedBox(
-                                            width: getSize16(),
-                                            height: getSize16(),
+                                            width: AppSizes.s16,
+                                            height: AppSizes.s16,
                                             child: CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(getColorWhiteType1()),
-                                              strokeWidth: getSize2(),
+                                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.whiteType1),
+                                              strokeWidth: AppSizes.s2,
                                             ),
                                           )
                                               : Text(
                                             '조회',
                                             style: TextStyle(
-                                              fontSize: getSize14(),
+                                              fontSize: AppSizes.s14,
                                               fontWeight: FontWeight.w600,
-                                              color: getColorWhiteType1(),
+                                              color: AppColors.whiteType1,
                                             ),
                                           ),
                                         );
@@ -464,7 +464,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: getSize20()),
+                              SizedBox(height: AppSizes.s20),
 
                               // 리스트 영역
                               Expanded(
@@ -485,26 +485,26 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           child: Container(
                                             height: MediaQuery.of(context).size.height * 0.4,
                                             width: double.infinity,
-                                            padding: EdgeInsets.all(getSize20()),
+                                            padding: EdgeInsets.all(AppSizes.s20),
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
-                                                Icon(Icons.info_outline, size: getSize48(), color: getColorGrayType8()),
-                                                SizedBox(height: getSize16()),
+                                                Icon(Icons.info_outline, size: AppSizes.s48, color: AppColors.grayType8),
+                                                SizedBox(height: AppSizes.s16),
                                                 TextWidgetString(
                                                   '검색 결과가 없습니다.',
-                                                  getTextcenter(),
-                                                  getSizeInt16(),
-                                                  getText600(),
-                                                  getColorGrayType2(),
+                                                  TextAligns.center,
+                                                  AppSizes.i16,
+                                                  FontWeights.w600,
+                                                  AppColors.grayType2,
                                                 ),
-                                                SizedBox(height: getSize8()),
+                                                SizedBox(height: AppSizes.s8),
                                                 TextWidgetString(
                                                   '아래로 당겨서 새로고침',
-                                                  getTextcenter(),
-                                                  getSizeInt12(),
-                                                  getText400(),
-                                                  getColorGrayType3(),
+                                                  TextAligns.center,
+                                                  AppSizes.i12,
+                                                  FontWeights.w400,
+                                                  AppColors.grayType3,
                                                 ),
                                               ],
                                             ),
@@ -522,17 +522,17 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           children: [
                                             Container(
                                               padding: EdgeInsets.symmetric(
-                                                horizontal: getSize12(),
-                                                vertical: getSize8(),
+                                                horizontal: AppSizes.s12,
+                                                vertical: AppSizes.s8,
                                               ),
                                               child: Row(
                                                 children: [
                                                   TextWidgetString(
                                                     '검색 결과: ${rosList.length}건',
-                                                    getTextleft(),
-                                                    getSizeInt12(),
-                                                    getText500(),
-                                                    getColorGrayType3(),
+                                                    TextAligns.left,
+                                                    AppSizes.i12,
+                                                    FontWeights.w500,
+                                                    AppColors.grayType3,
                                                   ),
                                                 ],
                                               ),
@@ -568,38 +568,38 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   Widget _buildHeader() {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: getSize14()),
+      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
       decoration: BoxDecoration(
         color: const Color(0xFF1E3A5F),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(getSize20()),
-          topRight: Radius.circular(getSize20()),
+          topLeft: Radius.circular(AppSizes.s20),
+          topRight: Radius.circular(AppSizes.s20),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.navigation,
-            color: getColorWhiteType1(),
+            color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: getSize6()),
+          SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '항행 이력 내역 조회',
-            getTextleft(),
-            getSizeInt18(),
-            getText700(),
-            getColorWhiteType1(),
+            TextAligns.left,
+            AppSizes.i18,
+            FontWeights.w700,
+            AppColors.whiteType1,
           ),
           const Spacer(),
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(getSize8()),
+              padding: EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
               child: Icon(
                 Icons.close,
-                color: getColorWhiteType1(),
+                color: AppColors.whiteType1,
                 size: 24,
               ),
             ),
@@ -641,20 +641,20 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(
-            horizontal: getSize12(),
-            vertical: getSize8()
+            horizontal: AppSizes.s12,
+            vertical: AppSizes.s8
         ),
-        side: BorderSide(color: getColorGrayType7()),
+        side: BorderSide(color: AppColors.grayType7),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(getSize4()),
+          borderRadius: BorderRadius.circular(AppSizes.s4),
         ),
       ),
       child: TextWidgetString(
         label,
-        getTextcenter(),
-        getSizeInt12(),
-        getText500(),
-        getColorGrayType3(),
+        TextAligns.center,
+        AppSizes.i12,
+        FontWeights.w500,
+        AppColors.grayType3,
       ),
     );
   }
@@ -669,16 +669,16 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   Widget _buildSkeletonItem() {
     return Container(
-      margin: EdgeInsets.only(bottom: getSize12()),
+      margin: EdgeInsets.only(bottom: AppSizes.s12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(getSize4()),
-        border: Border.all(color: getColorGrayType7(), width: getSize1()),
+        borderRadius: BorderRadius.circular(AppSizes.s4),
+        border: Border.all(color: AppColors.grayType7, width: AppSizes.s1),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
-            vertical: getSize16(),
-            horizontal: getSize12()),
+            vertical: AppSizes.s16,
+            horizontal: AppSizes.s12),
         child: Row(
           children: [
             Expanded(
@@ -686,31 +686,31 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: getSize16(),
-                    width: getSize100(),
+                    height: AppSizes.s16,
+                    width: AppSizes.s100,
                     decoration: BoxDecoration(
-                      color: getColorGrayType7(),
-                      borderRadius: BorderRadius.circular(getSize4()),
+                      color: AppColors.grayType7,
+                      borderRadius: BorderRadius.circular(AppSizes.s4),
                     ),
                   ),
-                  SizedBox(height: getSize8()),
+                  SizedBox(height: AppSizes.s8),
                   Row(
                     children: [
                       Container(
-                        height: getSize12(),
-                        width: getSize60(),
+                        height: AppSizes.s12,
+                        width: AppSizes.s60,
                         decoration: BoxDecoration(
-                          color: getColorGrayType7(),
-                          borderRadius: BorderRadius.circular(getSize4()),
+                          color: AppColors.grayType7,
+                          borderRadius: BorderRadius.circular(AppSizes.s4),
                         ),
                       ),
-                      SizedBox(width: getSize12()),
+                      SizedBox(width: AppSizes.s12),
                       Container(
-                        height: getSize12(),
-                        width: getSize80(),
+                        height: AppSizes.s12,
+                        width: AppSizes.s80,
                         decoration: BoxDecoration(
-                          color: getColorGrayType7(),
-                          borderRadius: BorderRadius.circular(getSize4()),
+                          color: AppColors.grayType7,
+                          borderRadius: BorderRadius.circular(AppSizes.s4),
                         ),
                       ),
                     ],
@@ -719,10 +719,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               ),
             ),
             Container(
-              width: getSize20(),
-              height: getSize20(),
+              width: AppSizes.s20,
+              height: AppSizes.s20,
               decoration: BoxDecoration(
-                color: getColorGrayType7(),
+                color: AppColors.grayType7,
                 shape: BoxShape.circle,
               ),
             ),
@@ -869,55 +869,55 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
             }
           },
           child: Container(
-            margin: EdgeInsets.only(bottom: getSize12()),
+            margin: EdgeInsets.only(bottom: AppSizes.s12),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(getSize4()),
-              border: Border.all(color: getColorGrayType4(), width: getSize1()),
+              borderRadius: BorderRadius.circular(AppSizes.s4),
+              border: Border.all(color: AppColors.grayType4, width: AppSizes.s1),
             ),
             child: Padding(
               padding: EdgeInsets.symmetric(
-                  vertical: getSize16(),
-                  horizontal: getSize12()),
+                  vertical: AppSizes.s16,
+                  horizontal: AppSizes.s12),
               child: Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextWidgetString(shipNm, getTextleft(), getSizeInt16(),
-                            getText700(), getColorBlackType2()),
-                        SizedBox(height: getSize4()),
+                        TextWidgetString(shipNm, TextAligns.left, AppSizes.i16,
+                            FontWeights.w700, AppColors.blackType2),
+                        SizedBox(height: AppSizes.s4),
                         Row(
                           children: [
                             TextWidgetString(
                                 'MMSI ',
-                                getTextleft(),
-                                getSizeInt12(),
-                                getText400(),
-                                getColorGrayType3()),
-                            TextWidgetString(mmsi, getTextleft(), getSizeInt12(),
-                                getText600(), getColorGrayType3()),
-                            SizedBox(width: getSize12()),
+                                TextAligns.left,
+                                AppSizes.i12,
+                                FontWeights.w400,
+                                AppColors.grayType3),
+                            TextWidgetString(mmsi, TextAligns.left, AppSizes.i12,
+                                FontWeights.w600, AppColors.grayType3),
+                            SizedBox(width: AppSizes.s12),
                             TextWidgetString(
                                 'DATE ',
-                                getTextleft(),
-                                getSizeInt12(),
-                                getText400(),
-                                getColorGrayType3()),
+                                TextAligns.left,
+                                AppSizes.i12,
+                                FontWeights.w400,
+                                AppColors.grayType3),
                             TextWidgetString(
                                 formattedTime,
-                                getTextleft(),
-                                getSizeInt12(),
-                                getText600(),
-                                getColorGrayType3()),
+                                TextAligns.left,
+                                AppSizes.i12,
+                                FontWeights.w600,
+                                AppColors.grayType3),
                           ],
                         ),
                       ],
                     ),
                   ),
                   Icon(Icons.chevron_right,
-                      color: getColorGrayType8(), size: getSize20()),
+                      color: AppColors.grayType8, size: AppSizes.s20),
                 ],
               ),
             ),
@@ -963,15 +963,15 @@ Widget _buildCollapsedBottomSheet(
   return Container(
     height: 135,
     decoration: BoxDecoration(
-      color: getColorWhiteType1(),
+      color: AppColors.whiteType1,
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(DesignConstants.radiusXL),
         topRight: Radius.circular(DesignConstants.radiusXL),
       ),
       boxShadow: [
         BoxShadow(
-          color: getColorBlackType1().withOpacity(0.15),
-          blurRadius: getSize20(),
+          color: AppColors.blackType1.withOpacity(0.15),
+          blurRadius: AppSizes.s20,
           offset: const Offset(0, -5),
         ),
       ],
@@ -979,19 +979,19 @@ Widget _buildCollapsedBottomSheet(
     child: Column(
       children: [
         Container(
-          width: getSize40(),
-          height: getSize4(),
-          margin: EdgeInsets.only(top: getSize6()),
+          width: AppSizes.s40,
+          height: AppSizes.s4,
+          margin: EdgeInsets.only(top: AppSizes.s6),
           decoration: BoxDecoration(
-            color: getColorGrayType7(),
-            borderRadius: BorderRadius.circular(getSize2()),
+            color: AppColors.grayType7,
+            borderRadius: BorderRadius.circular(AppSizes.s2),
           ),
         ),
 
         Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: getSize12(),
-            vertical: getSize8(),
+            horizontal: AppSizes.s12,
+            vertical: AppSizes.s8,
           ),
           child: Column(
             children: [
@@ -1000,22 +1000,22 @@ Widget _buildCollapsedBottomSheet(
                   Expanded(
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: getSize12(),
-                        vertical: getSize10(),
+                        horizontal: AppSizes.s12,
+                        vertical: AppSizes.s10,
                       ),
                       decoration: BoxDecoration(
-                        color: getColorGrayType14(),
-                        borderRadius: BorderRadius.circular(getSize8()),
+                        color: AppColors.grayType14,
+                        borderRadius: BorderRadius.circular(AppSizes.s8),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.only(right: getSize12()),
+                            padding: EdgeInsets.only(right: AppSizes.s12),
                             decoration: BoxDecoration(
                               border: Border(
                                 right: BorderSide(
-                                  color: getColorGrayType7(),
-                                  width: getSize1(),
+                                  color: AppColors.grayType7,
+                                  width: AppSizes.s1,
                                 ),
                               ),
                             ),
@@ -1023,31 +1023,31 @@ Widget _buildCollapsedBottomSheet(
                               children: [
                                 TextWidgetString(
                                   'MMSI : ',
-                                  getTextleft(),
-                                  getSizeInt14(),
-                                  getText400(),
-                                  getColorGrayType3(),
+                                  TextAligns.left,
+                                  AppSizes.i14,
+                                  FontWeights.w400,
+                                  AppColors.grayType3,
                                 ),
                                 TextWidgetString(
                                   mmsi,
-                                  getTextleft(),
-                                  getSizeInt14(),
-                                  getText600(),
-                                  getColorBlackType2(),
+                                  TextAligns.left,
+                                  AppSizes.i14,
+                                  FontWeights.w600,
+                                  AppColors.blackType2,
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(width: getSize12()),
+                          SizedBox(width: AppSizes.s12),
                           Expanded(
                             child: Row(
                               children: [
                                 TextWidgetString(
                                   '선명 : ',
-                                  getTextleft(),
-                                  getSizeInt14(),
-                                  getText400(),
-                                  getColorGrayType3(),
+                                  TextAligns.left,
+                                  AppSizes.i14,
+                                  FontWeights.w400,
+                                  AppColors.grayType3,
                                 ),
                                 Expanded(
                                   child: LayoutBuilder(
@@ -1056,8 +1056,8 @@ Widget _buildCollapsedBottomSheet(
                                         text: TextSpan(
                                           text: shipNm.isEmpty ? 'Unknown' : shipNm,
                                           style: TextStyle(
-                                            fontSize: getSize14(),
-                                            fontWeight: getText600(),
+                                            fontSize: AppSizes.s14,
+                                            fontWeight: FontWeights.w600,
                                           ),
                                         ),
                                         maxLines: 1,
@@ -1077,16 +1077,16 @@ Widget _buildCollapsedBottomSheet(
                                                   children: [
                                                     Icon(
                                                       Icons.directions_boat,
-                                                      size: getSize20(),
-                                                      color: getColorSkyType2(),
+                                                      size: AppSizes.s20,
+                                                      color: AppColors.skyType2,
                                                     ),
-                                                    SizedBox(width: getSize8()),
+                                                    SizedBox(width: AppSizes.s8),
                                                     TextWidgetString(
                                                       '선박 정보',
-                                                      getTextleft(),
-                                                      getSizeInt16(),
-                                                      getText600(),
-                                                      getColorBlackType2(),
+                                                      TextAligns.left,
+                                                      AppSizes.i16,
+                                                      FontWeights.w600,
+                                                      AppColors.blackType2,
                                                     ),
                                                   ],
                                                 ),
@@ -1098,38 +1098,38 @@ Widget _buildCollapsedBottomSheet(
                                                       children: [
                                                         TextWidgetString(
                                                           'MMSI : ',
-                                                          getTextleft(),
-                                                          getSizeInt14(),
-                                                          getText400(),
-                                                          getColorGrayType3(),
+                                                          TextAligns.left,
+                                                          AppSizes.i14,
+                                                          FontWeights.w400,
+                                                          AppColors.grayType3,
                                                         ),
                                                         TextWidgetString(
                                                           mmsi,
-                                                          getTextleft(),
-                                                          getSizeInt14(),
-                                                          getText600(),
-                                                          getColorBlackType2(),
+                                                          TextAligns.left,
+                                                          AppSizes.i14,
+                                                          FontWeights.w600,
+                                                          AppColors.blackType2,
                                                         ),
                                                       ],
                                                     ),
-                                                    SizedBox(height: getSize8()),
+                                                    SizedBox(height: AppSizes.s8),
                                                     Row(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
                                                         TextWidgetString(
                                                           '선명 : ',
-                                                          getTextleft(),
-                                                          getSizeInt14(),
-                                                          getText400(),
-                                                          getColorGrayType3(),
+                                                          TextAligns.left,
+                                                          AppSizes.i14,
+                                                          FontWeights.w400,
+                                                          AppColors.grayType3,
                                                         ),
                                                         Expanded(
                                                           child: TextWidgetString(
                                                             shipNm,
-                                                            getTextleft(),
-                                                            getSizeInt14(),
-                                                            getText600(),
-                                                            getColorSkyType2(),
+                                                            TextAligns.left,
+                                                            AppSizes.i14,
+                                                            FontWeights.w600,
+                                                            AppColors.skyType2,
                                                           ),
                                                         ),
                                                       ],
@@ -1143,15 +1143,15 @@ Widget _buildCollapsedBottomSheet(
                                                     },
                                                     child: TextWidgetString(
                                                       '확인',
-                                                      getTextcenter(),
-                                                      getSizeInt14(),
-                                                      getText600(),
-                                                      getColorSkyType2(),
+                                                      TextAligns.center,
+                                                      AppSizes.i14,
+                                                      FontWeights.w600,
+                                                      AppColors.skyType2,
                                                     ),
                                                   ),
                                                 ],
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(getSize12()),
+                                                  borderRadius: BorderRadius.circular(AppSizes.s12),
                                                 ),
                                               );
                                             },
@@ -1166,15 +1166,15 @@ Widget _buildCollapsedBottomSheet(
                                                 child: Text(
                                                   shipNm.isEmpty ? 'Unknown' : shipNm,
                                                   style: TextStyle(
-                                                    fontSize: getSize14(),
-                                                    fontWeight: getText600(),
+                                                    fontSize: AppSizes.s14,
+                                                    fontWeight: FontWeights.w600,
                                                     color: isOverflowing
-                                                        ? getColorSkyType2()
-                                                        : getColorBlackType2(),
+                                                        ? AppColors.skyType2
+                                                        : AppColors.blackType2,
                                                     decoration: isOverflowing
                                                         ? TextDecoration.underline
                                                         : TextDecoration.none,
-                                                    decorationColor: getColorSkyType2(),
+                                                    decorationColor: AppColors.skyType2,
                                                     decorationStyle: TextDecorationStyle.dotted,
                                                   ),
                                                   overflow: TextOverflow.ellipsis,
@@ -1182,11 +1182,11 @@ Widget _buildCollapsedBottomSheet(
                                                 ),
                                               ),
                                               if (isOverflowing) ...[
-                                                SizedBox(width: getSize4()),
+                                                SizedBox(width: AppSizes.s4),
                                                 Icon(
                                                   Icons.info_outlined,
-                                                  size: getSize16(),
-                                                  color: getColorSkyType2(),
+                                                  size: AppSizes.s16,
+                                                  color: AppColors.skyType2,
                                                 ),
                                               ],
                                             ],
@@ -1203,20 +1203,20 @@ Widget _buildCollapsedBottomSheet(
                       ),
                     ),
                   ),
-                  SizedBox(width: getSize8()),
+                  SizedBox(width: AppSizes.s8),
                   Row(
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: getColorGrayType14(),
-                          borderRadius: BorderRadius.circular(getSize8()),
+                          color: AppColors.grayType14,
+                          borderRadius: BorderRadius.circular(AppSizes.s8),
                         ),
                         child: IconButton(
                           icon: SvgPicture.asset('assets/kdn/home/img/down_select_img.svg',
-                              width: getSize20(),
-                              height: getSize20(),
+                              width: AppSizes.s20,
+                              height: AppSizes.s20,
                               colorFilter: ColorFilter.mode(
-                                  getColorGrayType3(), BlendMode.srcIn)),
+                                  AppColors.grayType3, BlendMode.srcIn)),
                           onPressed: () {
                             Navigator.of(context).pop();
                             Scaffold.of(context).showBottomSheet(
@@ -1233,22 +1233,22 @@ Widget _buildCollapsedBottomSheet(
                               ),
                             );
                           },
-                          padding: EdgeInsets.all(getSize8()),
+                          padding: EdgeInsets.all(AppSizes.s8),
                           constraints: const BoxConstraints(),
                         ),
                       ),
-                      SizedBox(width: getSize4()),
+                      SizedBox(width: AppSizes.s4),
                       Container(
                         decoration: BoxDecoration(
-                          color: getColorGrayType14(),
-                          borderRadius: BorderRadius.circular(getSize8()),
+                          color: AppColors.grayType14,
+                          borderRadius: BorderRadius.circular(AppSizes.s8),
                         ),
                         child: IconButton(
                           icon: SvgPicture.asset('assets/kdn/home/img/close.svg',
-                              width: getSize20(),
-                              height: getSize20(),
+                              width: AppSizes.s20,
+                              height: AppSizes.s20,
                               colorFilter: ColorFilter.mode(
-                                  getColorGrayType3(), BlendMode.srcIn)),
+                                  AppColors.grayType3, BlendMode.srcIn)),
                           onPressed: () {
                             final MainScreenState =
                             context.findAncestorStateOfType<State<MainScreen>>();
@@ -1260,7 +1260,7 @@ Widget _buildCollapsedBottomSheet(
                             viewModel.setNavigationHistoryMode(false);
                             Navigator.of(context).pop();
                           },
-                          padding: EdgeInsets.all(getSize8()),
+                          padding: EdgeInsets.all(AppSizes.s8),
                           constraints: const BoxConstraints(),
                         ),
                       ),
@@ -1268,49 +1268,49 @@ Widget _buildCollapsedBottomSheet(
                   ),
                 ],
               ),
-              SizedBox(height: getSize6()),
+              SizedBox(height: AppSizes.s6),
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: getSize12(),
-                  vertical: getSize10(),
+                  horizontal: AppSizes.s12,
+                  vertical: AppSizes.s10,
                 ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      getColorSkyType2().withOpacity(0.1),
-                      getColorSkyType2().withOpacity(0.05),
+                      AppColors.skyType2.withOpacity(0.1),
+                      AppColors.skyType2.withOpacity(0.05),
                     ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
-                  borderRadius: BorderRadius.circular(getSize8()),
+                  borderRadius: BorderRadius.circular(AppSizes.s8),
                   border: Border.all(
-                    color: getColorSkyType2().withOpacity(0.2),
-                    width: getSize1(),
+                    color: AppColors.skyType2.withOpacity(0.2),
+                    width: AppSizes.s1,
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.access_time,
-                      size: getSize18(),
-                      color: getColorSkyType2(),
+                      size: AppSizes.s18,
+                      color: AppColors.skyType2,
                     ),
-                    SizedBox(width: getSize8()),
+                    SizedBox(width: AppSizes.s8),
                     TextWidgetString(
                       '항행시간 : ',
-                      getTextleft(),
-                      getSizeInt14(),
-                      getText400(),
-                      getColorGrayType3(),
+                      TextAligns.left,
+                      AppSizes.i14,
+                      FontWeights.w400,
+                      AppColors.grayType3,
                     ),
                     Expanded(
                       child: TextWidgetString(
                         timeRange,
-                        getTextleft(),
-                        getSizeInt14(),
-                        getText600(),
-                        getColorSkyType2(),
+                        TextAligns.left,
+                        AppSizes.i14,
+                        FontWeights.w600,
+                        AppColors.skyType2,
                       ),
                     ),
                   ],

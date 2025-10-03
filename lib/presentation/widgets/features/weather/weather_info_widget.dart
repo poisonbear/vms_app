@@ -22,10 +22,10 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
       builder: (context, viewModel, _) {
         return Padding(
           padding: EdgeInsets.only(
-            top: getSize56(),
-            bottom: getSize32(),
-            right: getSize20(),
-            left: getSize20(),
+            top: AppSizes.s56,
+            bottom: AppSizes.s32,
+            right: AppSizes.s20,
+            left: AppSizes.s20,
           ),
           child: Column(
             children: [
@@ -33,10 +33,10 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
               buildCircularButtonSlideOn(
                 'assets/kdn/home/img/top_pago_img.svg',
                 viewModel.getWaveColor(viewModel.wave),
-                getSizeInt56(),
-                getSizeInt56(),
+                AppSizes.i56,
+                AppSizes.i56,
                 '파고',
-                getSizeInt160(),
+                AppSizes.i160,
                 viewModel.getFormattedWaveThresholdText(viewModel.wave),
                 isSelected: isWaveSelected,
                 onTap: () => setState(() => isWaveSelected = !isWaveSelected),
@@ -46,10 +46,10 @@ class _WeatherInfoWidgetState extends State<WeatherInfoWidget> {
               buildCircularButtonSlideOn(
                 'assets/kdn/home/img/top_visibility_img.svg',
                 viewModel.getVisibilityColor(viewModel.visibility),
-                getSizeInt56(),
-                getSizeInt56(),
+                AppSizes.i56,
+                AppSizes.i56,
                 '시정',
-                getSizeInt160(),
+                AppSizes.i160,
                 viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
                 isSelected: isVisibilitySelected,
                 onTap: () => setState(() => isVisibilitySelected = !isVisibilitySelected),

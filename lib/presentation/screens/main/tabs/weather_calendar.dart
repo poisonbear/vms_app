@@ -67,7 +67,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
           (context) {
             return MainScreenWindy(context, onClose: widget.onClose);
           },
-          backgroundColor: getColorBlackType3(),
+          backgroundColor: AppColors.blackType3,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(0)),
           ),
@@ -77,7 +77,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Container(
-          height: getSize550(),
+          height: AppSizes.s550,
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
               vertical: DesignConstants.spacing20,
@@ -95,20 +95,20 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                 children: [
                   const Spacer(),
                   SizedBox(
-                    width: getSize24(),
-                    height: getSize24(),
+                    width: AppSizes.s24,
+                    height: AppSizes.s24,
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       icon: SvgPicture.asset('assets/kdn/usm/img/close.svg',
-                          width: getSize24(), height: getSize24()),
+                          width: AppSizes.s24, height: AppSizes.s24),
                       onPressed: () {
                         _bottomSheetController =
                             Scaffold.of(context).showBottomSheet(
                           (context) {
                             return MainScreenWindy(context, onClose: widget.onClose);
                           },
-                          backgroundColor: getColorBlackType3(),
+                          backgroundColor: AppColors.blackType3,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(
                                 top: Radius.circular(0)),
@@ -124,10 +124,10 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                 children: [
                   TextWidgetString(
                     '날짜 선택',
-                    getTextleft(),
-                    getSizeInt24(),
-                    getText700(),
-                    getColorBlackType2(),
+                    TextAligns.left,
+                    AppSizes.i24,
+                    FontWeights.w700,
+                    AppColors.blackType2,
                   ),
                 ],
               ),
@@ -158,7 +158,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   calendarStyle: CalendarStyle(
                     selectedDecoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: getColorGreenType1(),
+                      color: AppColors.greenType1,
                     ),
                     todayDecoration: const BoxDecoration(),
                     todayTextStyle: const TextStyle(
@@ -179,8 +179,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                               fontSize: DesignConstants.fontSizeM,
                             ),
                           ),
-                          TextWidgetString('오늘', getTextleft(), getSizeInt14(),
-                              getText700(), getColorGrayType3()),
+                          TextWidgetString('오늘', TextAligns.left, AppSizes.i14,
+                              FontWeights.w700, AppColors.grayType3),
                         ],
                       );
                     },
@@ -235,7 +235,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                     color: Colors.blue,
-                                    width: getSize2()),
+                                    width: AppSizes.s2),
                               )
                             : null,
                         alignment: Alignment.center,

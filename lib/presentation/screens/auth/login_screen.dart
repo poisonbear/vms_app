@@ -310,8 +310,8 @@ class _CmdViewState extends State<LoginView> {
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // 흐림 효과
                           child: Container(
-                            width: getSize330(),
-                            height: getSize550(),
+                            width: AppSizes.s330,
+                            height: AppSizes.s550,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
@@ -335,8 +335,8 @@ class _CmdViewState extends State<LoginView> {
                         // SVG 로고 제거하고 텍스트만 표시
                         Padding(
                           padding: const EdgeInsets.only(bottom: 40),
-                          child: TextWidgetString('K-VMS', getTextcenter(),
-                              getSizeInt50(), getTextbold(), getColorBlackType1()),
+                          child: TextWidgetString('K-VMS', TextAligns.center,
+                              AppSizes.i50, FontWeights.bold, AppColors.blackType1),
                         ),
                         // 아이디 입력
                         Padding(
@@ -347,7 +347,7 @@ class _CmdViewState extends State<LoginView> {
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
                             child: inputWidget(
-                                getSizeInt266(), getSizeInt48(), idController, '아이디 입력', getColorGrayType7()),
+                                AppSizes.i266, AppSizes.i48, idController, '아이디 입력', AppColors.grayType7),
                           ),
                         ),
                         // 비밀번호 입력
@@ -358,8 +358,8 @@ class _CmdViewState extends State<LoginView> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
-                            child: inputWidget(getSizeInt266(), getSizeInt48(), passwordController, '비밀번호 입력',
-                                getColorGrayType7(),
+                            child: inputWidget(AppSizes.i266, AppSizes.i48, passwordController, '비밀번호 입력',
+                                AppColors.grayType7,
                                 obscureText: true),
                           ),
                         ),
@@ -368,7 +368,7 @@ class _CmdViewState extends State<LoginView> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: SizedBox(
-                            width: getSize266(),
+                            width: AppSizes.s266,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
@@ -382,10 +382,10 @@ class _CmdViewState extends State<LoginView> {
                                         save_id = value ?? false;
                                       });
                                     },
-                                    activeColor: getColorSkyType2(),
+                                    activeColor: AppColors.skyType2,
                                     checkColor: Colors.white,
                                     side: BorderSide(
-                                      color: save_id ? getColorSkyType2() : getColorGrayType2(),
+                                      color: save_id ? AppColors.skyType2 : AppColors.grayType2,
                                       width: 1.5,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -402,10 +402,10 @@ class _CmdViewState extends State<LoginView> {
                                   },
                                   child: TextWidgetString(
                                     '아이디 저장',
-                                    getTextleft(),
-                                    getSizeInt14(),
-                                    getText400(),
-                                    getColorGrayType1(),
+                                    TextAligns.left,
+                                    AppSizes.i14,
+                                    FontWeights.w400,
+                                    AppColors.grayType1,
                                   ),
                                 ),
                               ],
@@ -421,15 +421,15 @@ class _CmdViewState extends State<LoginView> {
                               await submitForm();
                             },
                             child: Container(
-                              width: getSize266(),
-                              height: getSize48(),
+                              width: AppSizes.s266,
+                              height: AppSizes.s48,
                               decoration: BoxDecoration(
-                                color: getColorMainType1(),
+                                color: AppColors.mainType1,
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                               ),
                               child: Center(
-                                child: TextWidgetString('로그인', getTextcenter(), getSizeInt16(), getText700(),
-                                    getColorWhiteType1()),
+                                child: TextWidgetString('로그인', TextAligns.center, AppSizes.i16, FontWeights.w700,
+                                    AppColors.whiteType1),
                               ),
                             ),
                           ),
@@ -445,15 +445,15 @@ class _CmdViewState extends State<LoginView> {
                             );
                           },
                           child: Container(
-                            width: getSize266(),
-                            height: getSize48(),
+                            width: AppSizes.s266,
+                            height: AppSizes.s48,
                             decoration: BoxDecoration(
-                              color: getColorGrayType2(),
+                              color: AppColors.grayType2,
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
                             child: Center(
-                              child: TextWidgetString('회원가입', getTextcenter(), getSizeInt16(), getText700(),
-                                  getColorWhiteType1()),
+                              child: TextWidgetString('회원가입', TextAligns.center, AppSizes.i16, FontWeights.w700,
+                                  AppColors.whiteType1),
                             ),
                           ),
                         ),

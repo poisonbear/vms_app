@@ -80,7 +80,7 @@ class _TurbineSplashWidgetState extends State<TurbineSplashWidget>
               Text(
                 'K-VMS',
                 style: TextStyle(
-                  color: getColorWhiteType1(),
+                  color: AppColors.whiteType1,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 3,
@@ -101,7 +101,7 @@ class _TurbineSplashWidgetState extends State<TurbineSplashWidget>
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    getColorWhiteType1(),
+                    AppColors.whiteType1,
                   ),
                 ),
               ),
@@ -110,7 +110,7 @@ class _TurbineSplashWidgetState extends State<TurbineSplashWidget>
               Text(
                 '로딩 중...',
                 style: TextStyle(
-                  color: getColorWhiteType1().withValues(alpha: 0.8),
+                  color: AppColors.whiteType1.withValues(alpha: 0.8),
                   fontSize: 14,
                 ),
               ),

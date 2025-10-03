@@ -19,8 +19,8 @@ class _WeatherControlWidgetState extends State<WeatherControlWidget> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: getSize56(),
-      left: getSize20(),
+      top: AppSizes.s56,
+      left: AppSizes.s20,
       child: Consumer<NavigationProvider>(
         builder: (context, viewModel, _) {
           return Column(
@@ -31,10 +31,10 @@ class _WeatherControlWidgetState extends State<WeatherControlWidget> {
               buildCircularButtonSlideOn(
                 'assets/kdn/home/img/top_pago_img.svg',
                 viewModel.getWaveColor(viewModel.wave),
-                getSizeInt56(),
-                getSizeInt56(),
+                AppSizes.i56,
+                AppSizes.i56,
                 '파고',
-                getSizeInt160(),
+                AppSizes.i160,
                 viewModel.getFormattedWaveThresholdText(viewModel.wave),
                 isSelected: isWaveSelected,
                 onTap: () {
@@ -48,10 +48,10 @@ class _WeatherControlWidgetState extends State<WeatherControlWidget> {
               buildCircularButtonSlideOn(
                 'assets/kdn/home/img/top_visibility_img.svg',
                 viewModel.getVisibilityColor(viewModel.visibility),
-                getSizeInt56(),
-                getSizeInt56(),
+                AppSizes.i56,
+                AppSizes.i56,
                 '시정',
-                getSizeInt160(),
+                AppSizes.i160,
                 viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
                 isSelected: isVisibilitySelected,
                 onTap: () {

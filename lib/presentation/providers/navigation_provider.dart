@@ -199,11 +199,11 @@ class NavigationProvider extends BaseProvider {
   /// 양호: 0~0.5m (흰색), 주의: 0.5~1.5m (주황색), 심각: 1.5m 이상 (붉은색)
   Color getWaveColor(double waveValue) {
     if (waveValue <= 0.5) {
-      return getColorWhiteType1();
+      return AppColors.whiteType1;
     } else if (waveValue <= 1.5) {
-      return getColorEmergencyOrange();
+      return AppColors.emergencyOrange;
     } else {
-      return getColorRedType1();
+      return AppColors.redType1;
     }
   }
 
@@ -213,11 +213,11 @@ class NavigationProvider extends BaseProvider {
     double visibilityInKm = visibilityValue / 1000.0;
 
     if (visibilityInKm >= 10.0) {
-      return getColorWhiteType1();
+      return AppColors.whiteType1;
     } else if (visibilityInKm > 0.5) {
-      return getColorEmergencyOrange();
+      return AppColors.emergencyOrange;
     } else {
-      return getColorRedType1();
+      return AppColors.redType1;
     }
   }
 
@@ -226,9 +226,9 @@ class NavigationProvider extends BaseProvider {
     String status = StringConstants.emptyString;
     Color color = getWaveColor(waveValue);
 
-    if (color == getColorWhiteType1()) {
+    if (color == AppColors.whiteType1) {
       status = "양호";
-    } else if (color == getColorEmergencyOrange()) {
+    } else if (color == AppColors.emergencyOrange) {
       status = "주의";
     } else {
       status = "심각";
@@ -242,9 +242,9 @@ class NavigationProvider extends BaseProvider {
     String status = StringConstants.emptyString;
     Color color = getVisibilityColor(visibilityValue);
 
-    if (color == getColorWhiteType1()) {
+    if (color == AppColors.whiteType1) {
       status = "양호";
-    } else if (color == getColorEmergencyOrange()) {
+    } else if (color == AppColors.emergencyOrange) {
       status = "주의";
     } else {
       status = "심각";

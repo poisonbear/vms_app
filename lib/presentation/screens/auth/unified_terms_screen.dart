@@ -24,8 +24,8 @@ class UnifiedTermsScreen extends StatelessWidget {
         leading: IconButton(
           icon: svgload(
             'assets/kdn/usm/img/arrow-left.svg',
-            getSize24(),
-            getSize24(),
+            AppSizes.s24,
+            AppSizes.s24,
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -43,10 +43,10 @@ class UnifiedTermsScreen extends StatelessWidget {
             return Center(
               child: TextWidgetString(
                 '약관 정보를 불러올 수 없습니다.',
-                getTextcenter(),
-                getSizeInt16(),
-                getText400(),
-                getColorGrayType2(),
+                TextAligns.center,
+                AppSizes.i16,
+                FontWeights.w400,
+                AppColors.grayType2,
               ),
             );
           }
@@ -59,7 +59,7 @@ class UnifiedTermsScreen extends StatelessWidget {
 
   Widget _buildTermsContent(CmdModel terms) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(getSize20()),
+      padding: EdgeInsets.all(AppSizes.s20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -75,56 +75,56 @@ class UnifiedTermsScreen extends StatelessWidget {
             ],
           ),
 
-          SizedBox(height: getSize30()),
+          SizedBox(height: AppSizes.s30),
 
           // K-VMS 타이틀
           TextWidgetString(
             'K-VMS',
-            getTextcenter(),
-            getSizeInt32(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.center,
+            AppSizes.i32,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
           TextWidgetString(
             '약관동의',
-            getTextcenter(),
-            getSizeInt32(),
-            getText700(),
-            getColorBlackType2(),
+            TextAligns.center,
+            AppSizes.i32,
+            FontWeights.w700,
+            AppColors.blackType2,
           ),
 
           // 소제목
           Padding(
             padding: EdgeInsets.only(
-              top: getSize14(),
-              bottom: getSize40(),
+              top: AppSizes.s14,
+              bottom: AppSizes.s40,
             ),
             child: TextWidgetString(
               '회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
-              getTextcenter(),
-              getSizeInt14(),
-              getText400(),
-              getColorGrayType2(),
+              TextAligns.center,
+              AppSizes.i14,
+              FontWeights.w400,
+              AppColors.grayType2,
             ),
           ),
 
           // 약관 내용
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(getSize16()),
+            padding: EdgeInsets.all(AppSizes.s16),
             decoration: BoxDecoration(
               border: Border.all(
-                color: getColorGrayType4(),
+                color: AppColors.grayType4,
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(getSize4()),
+              borderRadius: BorderRadius.circular(AppSizes.s4),
             ),
             child: TextWidgetString(
               terms.terms_ctt ?? '약관 내용을 불러올 수 없습니다.',
               TextAlign.left,
-              getSizeInt14(),
-              getText400(),
-              getColorBlackType2(),
+              AppSizes.i14,
+              FontWeights.w400,
+              AppColors.blackType2,
             ),
           ),
         ],
@@ -141,15 +141,15 @@ class UnifiedTermsScreen extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? getColorSkyType2() : getColorGrayType3(),
+            color: isActive ? AppColors.skyType2 : AppColors.grayType3,
           ),
           child: Center(
             child: Text(
               '$step',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: getText600(),
-                color: getColorWhiteType1(),
+                fontWeight: FontWeights.w600,
+                color: AppColors.whiteType1,
               ),
             ),
           ),
@@ -157,10 +157,10 @@ class UnifiedTermsScreen extends StatelessWidget {
         const SizedBox(height: 4),
         TextWidgetString(
           label,
-          getTextcenter(),
-          getSizeInt12(),
-          getText400(),
-          isActive ? getColorBlackType2() : getColorGrayType2(),
+          TextAligns.center,
+          AppSizes.i12,
+          FontWeights.w400,
+          isActive ? AppColors.blackType2 : AppColors.grayType2,
         ),
       ],
     );
@@ -169,10 +169,10 @@ class UnifiedTermsScreen extends StatelessWidget {
   // 단계 연결선 - 회원정보 입력 화면과 동일한 스타일
   Widget _buildStepConnector() {
     return Container(
-      width: getSize40(),
-      height: getSize2(),
+      width: AppSizes.s40,
+      height: AppSizes.s2,
       margin: const EdgeInsets.only(bottom: 20),
-      color: getColorGrayType3(),
+      color: AppColors.grayType3,
     );
   }
 }

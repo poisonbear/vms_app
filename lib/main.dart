@@ -111,16 +111,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         splashFactory: NoSplash.splashFactory,
-        scaffoldBackgroundColor: getColorWhiteType1(),
+        scaffoldBackgroundColor: AppColors.whiteType1,
         appBarTheme: AppBarTheme(
-          backgroundColor: getColorWhiteType1(),
+          backgroundColor: AppColors.whiteType1,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
-          iconTheme: IconThemeData(color: getColorBlackType1()),
+          iconTheme: IconThemeData(color: AppColors.blackType1),
           titleTextStyle: TextStyle(
-            color: getColorBlackType1(),
-            fontSize: getSize20().toDouble(),
-            fontWeight: getTextbold(),
+            color: AppColors.blackType1,
+            fontSize: AppSizes.s20.toDouble(),
+            fontWeight: FontWeights.bold,
           ),
         ),
       ),
@@ -153,8 +153,8 @@ class _SplashScreenState extends State<SplashScreen>
   String fcmToken = StringConstants.emptyString;
   late AnimationController _rotationController;
 
-  final String apiUrl = dotenv.env[EnvKeys.loginUrl] ?? StringConstants.emptyString;
-  final String apiUrl2 = dotenv.env[EnvKeys.userRoleUrl] ?? StringConstants.emptyString;
+  final String apiUrl = dotenv.env[ApiConfig.loginUrl] ?? StringConstants.emptyString;
+  final String apiUrl2 = dotenv.env[ApiConfig.userRoleUrl] ?? StringConstants.emptyString;
   final dioRequest = DioRequest();
 
   @override
@@ -594,7 +594,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Text(
                     InfoMessages.loading,
                     style: TextStyle(
-                      color: getColorWhiteType1().withValues(
+                      color: AppColors.whiteType1.withValues(
                         alpha: SplashConstants.textOpacity,
                       ),
                       fontSize: SplashConstants.textSize,

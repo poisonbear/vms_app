@@ -20,7 +20,7 @@ class NavigationDataSource {
     String? shipName,
   }) async {
     try {
-      final String apiUrl = ApiEndpoints.navigationHistory;
+      final String apiUrl = ApiConfig.navigationHistory;
 
       if (apiUrl.isEmpty) {
         return const Failure(

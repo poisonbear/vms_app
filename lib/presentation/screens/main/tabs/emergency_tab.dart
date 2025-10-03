@@ -122,15 +122,15 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                     Flexible(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: getColorWhiteType1(),
+                          color: AppColors.whiteType1,
                           borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(getSize20()),
-                            bottomRight: Radius.circular(getSize20()),
+                            bottomLeft: Radius.circular(AppSizes.s20),
+                            bottomRight: Radius.circular(AppSizes.s20),
                           ),
                         ),
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: EdgeInsets.all(getSize16()),
+                            padding: EdgeInsets.all(AppSizes.s16),
                             child: Column(
                               children: [
                                 // 메인 컨텐츠 영역 - 좌우 배치
@@ -146,7 +146,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                                         shipNm,
                                       ),
                                     ),
-                                    SizedBox(width: getSize12()),
+                                    SizedBox(width: AppSizes.s12),
                                     // 오른쪽: 선박 및 위치정보 (60%)
                                     Expanded(
                                       flex: 6,
@@ -158,7 +158,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: getSize16()),
+                                SizedBox(height: AppSizes.s16),
                                 // 아래: 경고 문구
                                 _buildWarningSection(),
                               ],
@@ -180,28 +180,28 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
   Widget _buildHeader(EmergencyProvider emergencyProvider) {
     return Container(
       height: 43,
-      padding: EdgeInsets.symmetric(horizontal: getSize14()),
+      padding: EdgeInsets.symmetric(horizontal: AppSizes.s14),
       decoration: BoxDecoration(
-        color: getColorEmergencyRed600(),
+        color: AppColors.emergencyRed600,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(getSize20()),
-          topRight: Radius.circular(getSize20()),
+          topLeft: Radius.circular(AppSizes.s20),
+          topRight: Radius.circular(AppSizes.s20),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.emergency,
-            color: getColorWhiteType1(),
+            color: AppColors.whiteType1,
             size: 22,
           ),
-          SizedBox(width: getSize6()),
+          SizedBox(width: AppSizes.s6),
           TextWidgetString(
             '긴급신고',
-            getTextleft(),
-            getSizeInt18(),
-            getText700(),
-            getColorWhiteType1(),
+            TextAligns.left,
+            AppSizes.i18,
+            FontWeights.w700,
+            AppColors.whiteType1,
           ),
           const Spacer(),
           GestureDetector(
@@ -210,15 +210,15 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               HapticFeedback.lightImpact();
             },
             child: Container(
-              padding: EdgeInsets.all(getSize8()),
+              padding: EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
               child: Icon(
                 emergencyProvider.isLocationTracking
                     ? Icons.location_on
                     : Icons.location_off,
                 color: emergencyProvider.isLocationTracking
-                    ? getColorWhiteType1()
-                    : getColorWhiteType1().withOpacity(0.5),
+                    ? AppColors.whiteType1
+                    : AppColors.whiteType1.withOpacity(0.5),
                 size: 22,
               ),
             ),
@@ -226,11 +226,11 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           GestureDetector(
             onTap: () => _handleClose(context),
             child: Container(
-              padding: EdgeInsets.all(getSize8()),
+              padding: EdgeInsets.all(AppSizes.s8),
               color: Colors.transparent,
               child: Icon(
                 Icons.close,
-                color: getColorWhiteType1(),
+                color: AppColors.whiteType1,
                 size: 22,
               ),
             ),
@@ -285,14 +285,14 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                getColorEmergencyRed600(),
-                getColorEmergencyRed(),
+                AppColors.emergencyRed600,
+                AppColors.emergencyRed,
               ],
             ),
-            borderRadius: BorderRadius.circular(getSize12()),
+            borderRadius: BorderRadius.circular(AppSizes.s12),
             boxShadow: [
               BoxShadow(
-                color: getColorEmergencyRed().withOpacity(0.3),
+                color: AppColors.emergencyRed.withOpacity(0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -304,27 +304,27 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
               children: [
                 Icon(
                   Icons.phone,
-                  color: getColorWhiteType1(),
+                  color: AppColors.whiteType1,
                   size: 64,
                 ),
-                SizedBox(height: getSize12()),
+                SizedBox(height: AppSizes.s12),
                 Text(
                   '긴급신고',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: getSize16(),
-                    fontWeight: getText700(),
-                    color: getColorWhiteType1(),
+                    fontSize: AppSizes.s16,
+                    fontWeight: FontWeights.w700,
+                    color: AppColors.whiteType1,
                   ),
                 ),
-                SizedBox(height: getSize4()),
+                SizedBox(height: AppSizes.s4),
                 Text(
                   '3초간 길게 누르세요',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: getSize12(),
-                    fontWeight: getText400(),
-                    color: getColorWhiteType1().withOpacity(0.9),
+                    fontSize: AppSizes.s12,
+                    fontWeight: FontWeights.w400,
+                    color: AppColors.whiteType1.withOpacity(0.9),
                   ),
                 ),
               ],
@@ -343,14 +343,14 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            getColorEmergencyRed600(),
-            getColorEmergencyRed(),
+            AppColors.emergencyRed600,
+            AppColors.emergencyRed,
           ],
         ),
-        borderRadius: BorderRadius.circular(getSize12()),
+        borderRadius: BorderRadius.circular(AppSizes.s12),
         boxShadow: [
           BoxShadow(
-            color: getColorEmergencyRed().withOpacity(0.5),
+            color: AppColors.emergencyRed.withOpacity(0.5),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -364,50 +364,50 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: getColorWhiteType1().withOpacity(0.2),
+              color: AppColors.whiteType1.withOpacity(0.2),
             ),
             child: Center(
               child: Text(
                 '${provider.countdownSeconds}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: getSize32(),
-                  fontWeight: getText700(),
-                  color: getColorWhiteType1(),
+                  fontSize: AppSizes.s32,
+                  fontWeight: FontWeights.w700,
+                  color: AppColors.whiteType1,
                 ),
               ),
             ),
           ),
-          SizedBox(height: getSize12()),
+          SizedBox(height: AppSizes.s12),
           Text(
             '초 후 자동 연결됩니다',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: getSize14(),
-              fontWeight: getText600(),
-              color: getColorWhiteType1(),
+              fontSize: AppSizes.s14,
+              fontWeight: FontWeights.w600,
+              color: AppColors.whiteType1,
             ),
           ),
-          SizedBox(height: getSize16()),
+          SizedBox(height: AppSizes.s16),
           TextButton(
             onPressed: () {
               provider.cancelEmergency();
               HapticFeedback.lightImpact();
             },
             style: TextButton.styleFrom(
-              backgroundColor: getColorWhiteType1().withOpacity(0.2),
+              backgroundColor: AppColors.whiteType1.withOpacity(0.2),
               padding: EdgeInsets.symmetric(
-                horizontal: getSize20(),
-                vertical: getSize10(),
+                horizontal: AppSizes.s20,
+                vertical: AppSizes.s10,
               ),
             ),
             child: Text(
               '취소',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: getSize14(),
-                fontWeight: getText600(),
-                color: getColorWhiteType1(),
+                fontSize: AppSizes.s14,
+                fontWeight: FontWeights.w600,
+                color: AppColors.whiteType1,
               ),
             ),
           ),
@@ -423,12 +423,12 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
     return Container(
       height: 200,
-      padding: EdgeInsets.all(getSize16()),
+      padding: EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
-        color: getColorGrayType1().withOpacity(0.3),
-        borderRadius: BorderRadius.circular(getSize12()),
+        color: AppColors.grayType1.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(AppSizes.s12),
         border: Border.all(
-          color: getColorGrayType2(),
+          color: AppColors.grayType2,
           width: 1,
         ),
       ),
@@ -439,21 +439,21 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             '선박 및 위치정보',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: getSize16(),
-              fontWeight: getText700(),
-              color: getColorBlackType1(),
+              fontSize: AppSizes.s16,
+              fontWeight: FontWeights.w700,
+              color: AppColors.blackType1,
             ),
           ),
-          SizedBox(height: getSize16()),
+          SizedBox(height: AppSizes.s16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInfoRow('선박명', shipNm ?? '정보 없음'),
-              SizedBox(height: getSize10()),
+              SizedBox(height: AppSizes.s10),
               _buildInfoRow('MMSI', userState.mmsi?.toString() ?? '정보 없음'),
-              SizedBox(height: getSize10()),
+              SizedBox(height: AppSizes.s10),
               _buildInfoRow('위도', latitude),
-              SizedBox(height: getSize10()),
+              SizedBox(height: AppSizes.s10),
               _buildInfoRow('경도', longitude),
             ],
           ),
@@ -467,14 +467,14 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: getSize60(),
+          width: AppSizes.s60,
           child: Text(
             label,
             textAlign: TextAlign.left,
             style: TextStyle(
-              fontSize: getSize14(),
-              fontWeight: getText500(),
-              color: getColorGrayType3(),
+              fontSize: AppSizes.s14,
+              fontWeight: FontWeights.w500,
+              color: AppColors.grayType3,
             ),
           ),
         ),
@@ -483,9 +483,9 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             value,
             textAlign: TextAlign.left,
             style: TextStyle(
-              fontSize: getSize14(),
-              fontWeight: getText600(),
-              color: getColorBlackType2(),
+              fontSize: AppSizes.s14,
+              fontWeight: FontWeights.w600,
+              color: AppColors.blackType2,
             ),
           ),
         ),
@@ -495,12 +495,12 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
   Widget _buildWarningSection() {
     return Container(
-      padding: EdgeInsets.all(getSize16()),
+      padding: EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
-        color: getColorYellowType1().withOpacity(0.1),
-        borderRadius: BorderRadius.circular(getSize8()),
+        color: AppColors.yellowType1.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSizes.s8),
         border: Border.all(
-          color: getColorYellowType1(),
+          color: AppColors.yellowType1,
           width: 1,
         ),
       ),
@@ -508,18 +508,18 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
         children: [
           Icon(
             Icons.info_outline,
-            color: getColorYellowType2(),
+            color: AppColors.yellowType2,
             size: 24,
           ),
-          SizedBox(width: getSize12()),
+          SizedBox(width: AppSizes.s12),
           Expanded(
             child: Text(
               '긴급 상황 시 122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.',
               textAlign: TextAlign.left,
               style: TextStyle(
-                fontSize: getSize13(),
-                fontWeight: getText400(),
-                color: getColorYellowType2(),
+                fontSize: AppSizes.s13,
+                fontWeight: FontWeights.w400,
+                color: AppColors.yellowType2,
               ),
             ),
           ),

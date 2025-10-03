@@ -1,257 +1,183 @@
+// lib/core/constants/app_colors.dart
+
 import 'package:flutter/material.dart';
 
-// 색상
+/// 앱 전체에서 사용하는 색상 상수
+///
+/// 사용 예시:
+/// - Container(color: AppColors.primary)
+/// - Container(color: AppColors.primaryOpacity(0.5))
+class AppColors {
+  AppColors._();
 
-// 흰색
-Color getColorWhiteType1() {
-  return const Color(0xFFFFFFFF);
+  // ============================================
+  // Primary Colors
+  // ============================================
+  static const primary = Color(0xFF5CA1F6);
+  static const secondary = Color(0xFF2196F3);
+  static const accent = Color(0xFFFF9800);
+
+  // ============================================
+  // White Colors
+  // ============================================
+  static const whiteType1 = Color(0xFFFFFFFF);
+
+  // ============================================
+  // Black Colors
+  // ============================================
+  static const blackType1 = Colors.black;
+  static const blackType2 = Color(0xFF333333);
+  static const blackType3 = Color(0x00000000);
+  static const blackType4 = Color(0x99000000);
+
+  // ============================================
+  // Gray Colors
+  // ============================================
+  static const grayType1 = Color(0x66333333);
+  static const grayType2 = Color(0xFF999999);
+  static const grayType3 = Color(0xFF666666);
+  static const grayType4 = Color(0xFFDDDDDD);
+  static const grayType5 = Color(0xFFEDEDED);
+  static const grayType6 = Color(0xFF838383);
+  static const grayType7 = Color(0xFFCCCCCC);
+  static const grayType8 = Color(0xFF333333);
+  static const grayType9 = Color(0x33333333);
+  static const grayType10 = Color(0xFFEEEEEE);
+  static const grayType11 = Color(0xFFD9D9D9);
+  static const grayType12 = Color(0x33D9D9D9);
+  static const grayType13 = Color(0xFFAAAAAA);
+  static const grayType14 = Color(0xFFF5F5F5);
+
+  // ============================================
+  // Red Colors
+  // ============================================
+  static const redType1 = Color(0xFFDF2B2E);
+  static const redType2 = Color(0xFFCD0000);
+  static const redType3 = Color(0xFFDF2B2E);
+
+  // ============================================
+  // Sky Colors
+  // ============================================
+  static const skyType1 = Color(0xFFDDEDFF);
+  static const skyType2 = Color(0xFF5CA1F6);
+  static const skyType3 = Color(0xFF2196F3);
+
+  // ============================================
+  // Main Colors
+  // ============================================
+  static const mainType1 = Color(0xFF5CA1F6);
+
+  // ============================================
+  // Green Colors
+  // ============================================
+  static const greenType1 = Color(0xFF80BE35);
+
+  // ============================================
+  // Yellow Colors
+  // ============================================
+  static const yellowType1 = Color(0xFFF0CF3E);
+  static const yellowType2 = Color(0xFFC28100);
+
+  // ============================================
+  // Emergency Red Colors
+  // ============================================
+  static const emergencyRed = Colors.red;
+  static const emergencyRed50 = Color(0xFFFFEBEE);
+  static const emergencyRed100 = Color(0xFFFFCDD2);
+  static const emergencyRed200 = Color(0xFFEF9A9A);
+  static const emergencyRed400 = Color(0xFFEF5350);
+  static const emergencyRed500 = Color(0xFFF44336);
+  static const emergencyRed600 = Color(0xFFE53935);
+  static const emergencyRed700 = Color(0xFFD32F2F);
+
+  // ============================================
+  // Emergency Blue Colors
+  // ============================================
+  static const emergencyBlue50 = Color(0xFFE3F2FD);
+  static const emergencyBlue200 = Color(0xFF90CAF9);
+
+  // ============================================
+  // Emergency Other Colors
+  // ============================================
+  static const emergencyOrange = Colors.orange;
+  static const emergencyGreen = Colors.green;
+  static const emergencyGreenAccent = Colors.greenAccent;
+
+  // ============================================
+  // Flutter Material Colors (직접 참조)
+  // ============================================
+  static const white = Colors.white;
+  static const black = Colors.black;
+  static const grey = Colors.grey;
+  static const transparent = Colors.transparent;
+  static const red = Colors.red;
+  static const orange = Colors.orange;
+  static const green = Colors.green;
+  static const blue = Colors.blue;
+
+  // Material의 미리 정의된 opacity 색상
+  static const white70 = Colors.white70;
+
+  // ============================================
+  // Opacity Helper Methods
+  // ============================================
+
+  /// 색상에 투명도 적용 (일반)
+  static Color withOpacity(Color color, double opacity) => color.withOpacity(opacity);
+
+  /// White에 투명도 적용
+  static Color whiteOpacity(double opacity) => Colors.white.withOpacity(opacity);
+
+  /// Black에 투명도 적용
+  static Color blackOpacity(double opacity) => Colors.black.withOpacity(opacity);
+
+  /// Emergency Red에 투명도 적용
+  static Color emergencyRedOpacity(double opacity) => emergencyRed.withOpacity(opacity);
+
+  // ============================================
+  // 자주 사용하는 투명도 (편의 상수)
+  // ============================================
+  static final white80 = Colors.white.withOpacity(0.8);
+  static final black05 = Colors.black.withOpacity(0.05);
+  static final black30 = Colors.black.withOpacity(0.3);
+  static final emergencyRed30 = emergencyRed.withOpacity(0.3);
+  static final emergencyRed40 = emergencyRed.withOpacity(0.4);
 }
 
-// 검은색
-Color getColorBlackType1() {
-  return Colors.black;
+/// 폰트 굵기 상수
+class FontWeights {
+  FontWeights._();
+
+  static const normal = FontWeight.normal;
+  static const bold = FontWeight.bold;
+  static const w400 = FontWeight.w400;
+  static const w500 = FontWeight.w500;
+  static const w600 = FontWeight.w600;
+  static const w700 = FontWeight.w700;
 }
 
-Color getColorBlackType2() {
-  return const Color(0xFF333333);
+/// 텍스트 정렬 상수
+class TextAligns {
+  TextAligns._();
+
+  static const center = TextAlign.center;
+  static const left = TextAlign.left;
+  static const right = TextAlign.right;
+  static const justify = TextAlign.justify;
 }
 
-Color getColorBlackType3() {
-  return const Color(0x00000000);
-}
+/// Border 관련 상수
+class Borders {
+  Borders._();
 
-Color getColorBlackType4() {
-  return const Color(0x99000000);
-}
+  /// 기본 둥근 모서리 (radius 10)
+  static final rounded10 = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(10.0),
+  );
 
-//회색
-Color getColorGrayType1() {
-  return const Color(0x66333333);
-}
+  /// BorderRadius 직접 제공 (radius 10)
+  static final radius10 = BorderRadius.circular(10.0);
 
-Color getColorGrayType2() {
-  return const Color(0xFF999999);
-}
-
-Color getColorGrayType3() {
-  return const Color(0xFF666666);
-}
-
-Color getColorGrayType4() {
-  return const Color(0xFFDDDDDD);
-}
-
-Color getColorGrayType5() {
-  return const Color(0xFFEDEDED);
-}
-
-Color getColorGrayType6() {
-  return const Color(0xFF838383);
-}
-
-Color getColorGrayType7() {
-  return const Color(0xFFCCCCCC);
-}
-
-Color getColorGrayType8() {
-  return const Color(0xFF333333);
-}
-
-Color getColorGrayType9() {
-  return const Color(0x33333333);
-}
-
-Color getColorGrayType10() {
-  return const Color(0xFFEEEEEE);
-}
-
-Color getColorGrayType11() {
-  return const Color(0xFFD9D9D9);
-}
-
-Color getColorGrayType12() {
-  return const Color(0x33D9D9D9);
-}
-
-Color getColorGrayType13() {
-  return const Color(0xFFAAAAAA);
-}
-
-Color getColorGrayType14() {
-  return const Color(0xFFF5F5F5);
-}
-
-//레드
-Color getColorRedType1() {
-  return const Color(0xFFDF2B2E);
-}
-
-Color getColorRedType2() {
-  return const Color(0xFFCD0000);
-}
-
-Color getColorRedType3() {
-  return const Color(0xFFDF2B2E);
-}
-
-//하늘색
-Color getColorSkyType1() {
-  return const Color(0xFFDDEDFF);
-}
-
-Color getColorSkyType2() {
-  return const Color(0xFF5CA1F6);
-}
-
-Color getColorSkyType3() {
-  return const Color(0xFF2196F3);
-}
-
-// 메인 컬러 추가
-Color getColorMainType1() {
-  return const Color(0xFF5CA1F6); // getColorSkyType2와 동일한 색상 사용
-}
-
-// 초록색
-Color getColorGreenType1() {
-  return const Color(0xFF80BE35);
-}
-
-// 노란색
-Color getColorYellowType1() {
-  return const Color(0xFFF0CF3E);
-}
-
-Color getColorYellowType2() {
-  return const Color(0xFFC28100);
-}
-
-// ============ Emergency 탭 전용 색상 (새로 추가) ============
-
-// Emergency Red 계열
-Color getColorEmergencyRed50() {
-  return const Color(0xFFFFEBEE);  // Colors.red.shade50
-}
-
-Color getColorEmergencyRed100() {
-  return const Color(0xFFFFCDD2);  // Colors.red.shade100
-}
-
-Color getColorEmergencyRed200() {
-  return const Color(0xFFEF9A9A);  // Colors.red.shade200
-}
-
-Color getColorEmergencyRed400() {
-  return const Color(0xFFEF5350);  // Colors.red.shade400
-}
-
-Color getColorEmergencyRed500() {
-  return const Color(0xFFF44336);  // Colors.red.shade500
-}
-
-Color getColorEmergencyRed600() {
-  return const Color(0xFFE53935);  // Colors.red.shade600
-}
-
-Color getColorEmergencyRed700() {
-  return const Color(0xFFD32F2F);  // Colors.red.shade700
-}
-
-Color getColorEmergencyRed() {
-  return Colors.red;  // 기본 red
-}
-
-// Emergency Blue 계열 (기타 연락처 섹션)
-Color getColorEmergencyBlue50() {
-  return const Color(0xFFE3F2FD);  // Colors.blue.shade50
-}
-
-Color getColorEmergencyBlue200() {
-  return const Color(0xFF90CAF9);  // Colors.blue.shade200
-}
-
-// Emergency Green (위치 추적 활성화)
-Color getColorEmergencyGreenAccent() {
-  return Colors.greenAccent;
-}
-
-Color getColorEmergencyGreen() {
-  return Colors.green;  // 완료 상태
-}
-
-// Emergency Orange (취소 상태)
-Color getColorEmergencyOrange() {
-  return Colors.orange;
-}
-
-// Emergency 투명도 적용 색상
-Color getColorEmergencyWhite70() {
-  return Colors.white70;
-}
-
-Color getColorEmergencyWhite80() {
-  return Colors.white.withOpacity(0.8);
-}
-
-Color getColorEmergencyRedOpacity30() {
-  return Colors.red.withOpacity(0.3);
-}
-
-Color getColorEmergencyRedOpacity40() {
-  return Colors.red.withOpacity(0.4);
-}
-
-Color getColorEmergencyBlackOpacity05() {
-  return Colors.black.withOpacity(0.05);
-}
-
-Color getColorEmergencyBlackOpacity30() {
-  return Colors.black.withOpacity(0.3);
-}
-
-// 폰트굵기
-FontWeight getTextbold() {
-  return FontWeight.bold;
-}
-
-FontWeight getText400() {
-  return FontWeight.w400;
-}
-
-FontWeight getText500() {
-  return FontWeight.w500;
-}
-
-FontWeight getText600() {
-  return FontWeight.w600;
-}
-
-FontWeight getText700() {
-  return FontWeight.w700;
-}
-
-FontWeight getTextnormal() {
-  return FontWeight.normal;
-}
-
-//폰트정렬
-TextAlign getTextcenter() {
-  return TextAlign.center;
-}
-
-TextAlign getTextleft() {
-  return TextAlign.left;
-}
-
-TextAlign getTextright() {
-  return TextAlign.right;
-}
-
-//테두리
-RoundedRectangleBorder getTextradius6() {
-  return RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0));
-}
-
-BorderRadius getTextRadius6Direct() {
-  return BorderRadius.circular(10.0);
+  /// BorderRadius 직접 제공 (radius 6)
+  static final radius6 = BorderRadius.circular(6.0);
 }

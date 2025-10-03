@@ -23,7 +23,7 @@ class BottomNavigationWidget extends StatelessWidget {
         color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: getColorGrayType4(),
+            color: AppColors.grayType4,
             width: 1,
           ),
         ),
@@ -146,21 +146,21 @@ class BottomNavigationWidget extends StatelessWidget {
             children: [
               // 아이콘
               SizedBox(
-                width: getSize24().toDouble(),
-                height: getSize24().toDouble(),
+                width: AppSizes.s24.toDouble(),
+                height: AppSizes.s24.toDouble(),
                 child: _buildIcon(
                   iconPath: isSelected ? iconOn : iconOff,
                   iconColor: iconColor,
                   isEmergency: isEmergency,
                 ),
               ),
-              SizedBox(height: getSize4().toDouble()),
+              SizedBox(height: AppSizes.s4.toDouble()),
               // 라벨
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: getSize12().toDouble(),
-                  fontWeight: isSelected ? getText700() : getText500(),
+                  fontSize: AppSizes.s12.toDouble(),
+                  fontWeight: isSelected ? FontWeights.w700 : FontWeights.w500,
                   color: textColor,
                 ),
               ),
@@ -203,13 +203,13 @@ class BottomNavigationWidget extends StatelessWidget {
     if (isEmergency) {
       // 긴급신고 탭은 빨간색 계열
       return isSelected
-          ? getColorEmergencyRed()
-          : getColorEmergencyRed400();
+          ? AppColors.emergencyRed
+          : AppColors.emergencyRed400;
     } else {
       // 다른 탭들은 기존 색상
       return isSelected
-          ? getColorGrayType8()
-          : getColorGrayType2();
+          ? AppColors.grayType8
+          : AppColors.grayType2;
     }
   }
 }
@@ -233,7 +233,7 @@ class SimpleBottomNavigationWidget extends StatelessWidget {
         color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: getColorGrayType4(),
+            color: AppColors.grayType4,
             width: 1,
           ),
         ),
@@ -242,15 +242,15 @@ class SimpleBottomNavigationWidget extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        selectedItemColor: getColorGrayType8(),
-        unselectedItemColor: getColorGrayType2(),
+        selectedItemColor: AppColors.grayType8,
+        unselectedItemColor: AppColors.grayType2,
         selectedLabelStyle: TextStyle(
-          fontSize: getSize16().toDouble(),
-          fontWeight: getText700(),
+          fontSize: AppSizes.s16.toDouble(),
+          fontWeight: FontWeights.w700,
         ),
         unselectedLabelStyle: TextStyle(
-          fontSize: getSize16().toDouble(),
-          fontWeight: getText700(),
+          fontSize: AppSizes.s16.toDouble(),
+          fontWeight: FontWeights.w700,
         ),
         currentIndex: selectedIndex,
         onTap: onItemTapped,
@@ -274,13 +274,13 @@ class SimpleBottomNavigationWidget extends StatelessWidget {
 
     return BottomNavigationBarItem(
       icon: Padding(
-        padding: EdgeInsets.only(bottom: getSize8().toDouble()),
+        padding: EdgeInsets.only(bottom: AppSizes.s8.toDouble()),
         child: Column(
           children: [
-            SizedBox(height: getSize12().toDouble()),
+            SizedBox(height: AppSizes.s12.toDouble()),
             SizedBox(
-              width: getSize24().toDouble(),
-              height: getSize24().toDouble(),
+              width: AppSizes.s24.toDouble(),
+              height: AppSizes.s24.toDouble(),
               child: SvgPicture.asset(
                 iconPath,
                 fit: BoxFit.contain,

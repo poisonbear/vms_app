@@ -9,7 +9,7 @@ class RegisterCompleteView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: getColorWhiteType1(),
+      backgroundColor: AppColors.whiteType1,
       appBar: AppBar(
         title: const AppBarLayerView('회원가입'),
         centerTitle: true,
@@ -48,12 +48,12 @@ class RegisterCompleteView extends StatelessWidget {
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: getColorSkyType2().withValues(alpha: 0.1),
+                    color: AppColors.skyType2.withValues(alpha: 0.1),
                   ),
                   child: Icon(
                     Icons.check_circle,
                     size: 60,
-                    color: getColorSkyType2(),
+                    color: AppColors.skyType2,
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -61,28 +61,28 @@ class RegisterCompleteView extends StatelessWidget {
                 // 타이틀
                 TextWidgetString(
                   'K-VMS',
-                  getTextcenter(),
+                  TextAligns.center,
                   28,
-                  getText700(),
-                  getColorBlackType2(),
+                  FontWeights.w700,
+                  AppColors.blackType2,
                 ),
                 const SizedBox(height: 16),
 
                 // 완료 메시지
                 TextWidgetString(
                   '회원가입이 완료되었습니다',
-                  getTextcenter(),
+                  TextAligns.center,
                   20,
-                  getText700(),
-                  getColorBlackType2(),
+                  FontWeights.w700,
+                  AppColors.blackType2,
                 ),
                 const SizedBox(height: 12),
                 TextWidgetString(
                   '이제 K-VMS의 모든 서비스를\n이용하실 수 있습니다.',
-                  getTextcenter(),
+                  TextAligns.center,
                   14,
-                  getText400(),
-                  getColorGrayType2(),
+                  FontWeights.w400,
+                  AppColors.grayType2,
                 ),
                 const SizedBox(height: 50),
 
@@ -101,7 +101,7 @@ class RegisterCompleteView extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: getColorSkyType2(),
+                      backgroundColor: AppColors.skyType2,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -110,8 +110,8 @@ class RegisterCompleteView extends StatelessWidget {
                       '로그인하기',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: getText700(),
-                        color: getColorWhiteType1(),
+                        fontWeight: FontWeights.w700,
+                        color: AppColors.whiteType1,
                       ),
                     ),
                   ),
@@ -133,15 +133,15 @@ class RegisterCompleteView extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? getColorSkyType2() : getColorGrayType3(),
+            color: isActive ? AppColors.skyType2 : AppColors.grayType3,
           ),
           child: Center(
             child: Text(
               '$step',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: getText600(),
-                color: getColorWhiteType1(),
+                fontWeight: FontWeights.w600,
+                color: AppColors.whiteType1,
               ),
             ),
           ),
@@ -149,10 +149,10 @@ class RegisterCompleteView extends StatelessWidget {
         const SizedBox(height: 4),
         TextWidgetString(
           label,
-          getTextcenter(),
+          TextAligns.center,
           12,
-          getText400(),
-          isActive ? getColorBlackType2() : getColorGrayType2(),
+          FontWeights.w400,
+          isActive ? AppColors.blackType2 : AppColors.grayType2,
         ),
       ],
     );
@@ -164,7 +164,7 @@ class RegisterCompleteView extends StatelessWidget {
       width: 40,
       height: 2,
       margin: const EdgeInsets.only(bottom: 20),
-      color: getColorGrayType3(),
+      color: AppColors.grayType3,
     );
   }
 }

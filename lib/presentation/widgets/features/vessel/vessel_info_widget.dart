@@ -20,10 +20,10 @@ class VesselInfoTable extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(getSize16().toDouble()),
+      padding: EdgeInsets.all(AppSizes.s16.toDouble()),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(getSize12().toDouble()),
+        borderRadius: BorderRadius.circular(AppSizes.s12.toDouble()),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -63,24 +63,24 @@ class VesselInfoTable extends StatelessWidget {
     return TableRow(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+          padding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),
           child: Text(
             label,
             style: TextStyle(
-              fontSize: getSize14().toDouble(),
-              fontWeight: getText500(),
-              color: getColorGrayType6(),
+              fontSize: AppSizes.s14.toDouble(),
+              fontWeight: FontWeights.w500,
+              color: AppColors.grayType6,
             ),
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(vertical: getSize8().toDouble()),
+          padding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),
           child: Text(
             value,
             style: TextStyle(
-              fontSize: getSize14().toDouble(),
-              fontWeight: getText600(),
-              color: getColorBlackType2(),
+              fontSize: AppSizes.s14.toDouble(),
+              fontWeight: FontWeights.w600,
+              color: AppColors.blackType2,
             ),
           ),
         ),
@@ -132,13 +132,13 @@ class VesselListWidget extends StatelessWidget {
 
   Widget _buildSearchBar(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(getSize16().toDouble()),
+      padding: EdgeInsets.all(AppSizes.s16.toDouble()),
       child: TextField(
         decoration: InputDecoration(
           hintText: '선박명 또는 MMSI 검색',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(getSize8().toDouble()),
+            borderRadius: BorderRadius.circular(AppSizes.s8.toDouble()),
           ),
         ),
         onChanged: (value) {
@@ -153,8 +153,8 @@ class VesselListWidget extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.symmetric(
-        horizontal: getSize8().toDouble(),
-        vertical: getSize4().toDouble(),
+        horizontal: AppSizes.s8.toDouble(),
+        vertical: AppSizes.s4.toDouble(),
       ),
       elevation: isSelected ? 4 : 1,
       color: isSelected
@@ -165,12 +165,12 @@ class VesselListWidget extends StatelessWidget {
           Icons.directions_boat,
           color: isSelected
               ? Theme.of(context).primaryColor
-              : getColorGrayType6(),
+              : AppColors.grayType6,
         ),
         title: Text(
           vessel.ship_nm ?? 'Unknown',
           style: TextStyle(
-            fontWeight: isSelected ? getText700() : getText500(),
+            fontWeight: isSelected ? FontWeights.w700 : FontWeights.w500,
           ),
         ),
         subtitle: _buildVesselSubtitle(vessel),
@@ -199,11 +199,11 @@ class VesselListWidget extends StatelessWidget {
         children: [
           Text(
             '${vessel.lttd!.toStringAsFixed(4)}°',
-            style: TextStyle(fontSize: getSize11().toDouble()),
+            style: TextStyle(fontSize: AppSizes.s11.toDouble()),
           ),
           Text(
             '${vessel.lntd!.toStringAsFixed(4)}°',
-            style: TextStyle(fontSize: getSize11().toDouble()),
+            style: TextStyle(fontSize: AppSizes.s11.toDouble()),
           ),
         ],
       );

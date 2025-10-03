@@ -129,8 +129,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
     if (password.isEmpty) return true; // 빈 문자열은 입력 없음으로 처리
 
     bool hasMinLength = password.length >= 6 && password.length <= 12;
-    bool hasLetter = ValidationPatterns.letterRegExp.hasMatch(password);
-    bool hasNumber = ValidationPatterns.numberRegExp.hasMatch(password);
+    bool hasLetter = ValidationRules.letterRegExp.hasMatch(password);
+    bool hasNumber = ValidationRules.numberRegExp.hasMatch(password);
     bool hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
 
     return hasMinLength && hasLetter && hasNumber && hasSpecial;
@@ -139,7 +139,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
   void validateId() {
     if (!mounted) return;
     setState(() {
-      isIdValid = ValidationPatterns.isValidId(idController.text);
+      isIdValid = ValidationRules.isValidId(idController.text);
     });
   }
 
@@ -159,14 +159,14 @@ class _MembershipviewState extends State<MemberInformationChange> {
   void validatems() {
     if (!mounted) return;
     setState(() {
-      isValms = ValidationPatterns.isValidMmsi(mmsiController.text);
+      isValms = ValidationRules.isValidMmsi(mmsiController.text);
     });
   }
 
   void validatephone() {
     if (!mounted) return;
     setState(() {
-      isValphone = ValidationPatterns.isValidPhone(phoneController.text);
+      isValphone = ValidationRules.isValidPhone(phoneController.text);
     });
   }
 
@@ -557,143 +557,143 @@ class _MembershipviewState extends State<MemberInformationChange> {
         onTap: () => FocusScope.of(context).unfocus(),
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
-            left: getSize20(),
-            right: getSize20(),
-            top: getSize20(),
-            bottom: MediaQuery.of(context).viewInsets.bottom + getSize20(),
+            left: AppSizes.s20,
+            right: AppSizes.s20,
+            top: AppSizes.s20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + AppSizes.s20,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: getSize40(), bottom: getSize8()),
+                padding: EdgeInsets.only(top: AppSizes.s40, bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('아이디', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                    TextWidgetString('아이디', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                   ],
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize20()),
-                  child: inputWidget_deactivate(getSizeInt266(), getSizeInt48(), idController, '', getColorGrayType7(),
+                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  child: inputWidget_deactivate(AppSizes.i266, AppSizes.i48, idController, '', AppColors.grayType7,
                       isReadOnly: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('기존 비밀번호', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                    TextWidgetString('기존 비밀번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                   ],
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize13()),
-                  child: inputWidget(getSizeInt266(), getSizeInt48(), passwordController, '비밀번호', getColorGrayType7(),
+                  padding: EdgeInsets.only(bottom: AppSizes.s13),
+                  child: inputWidget(AppSizes.i266, AppSizes.i48, passwordController, '비밀번호', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               if (!isValpw && !isSubmitting)
                 Padding(
-                  padding: EdgeInsets.only(top: getSize0()),
+                  padding: EdgeInsets.only(top: AppSizes.s0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidgetString('비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.', getTextleft(),
-                          getSizeInt12(), getText700(), getColorRedType3()),
+                      TextWidgetString('비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.', TextAligns.left,
+                          AppSizes.i12, FontWeights.w700, AppColors.redType3),
                     ],
                   ),
                 ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                    TextWidgetString('새로운 비밀번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                   ],
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize20()),
-                  child: inputWidget(getSizeInt266(), getSizeInt48(), newPasswordController, '비밀번호', getColorGrayType7(),
+                  padding: EdgeInsets.only(bottom: AppSizes.s20),
+                  child: inputWidget(AppSizes.i266, AppSizes.i48, newPasswordController, '비밀번호', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('새로운 비밀번호 확인', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                    TextWidgetString('새로운 비밀번호 확인', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                   ],
                 ),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize20()),
+                  padding: EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget(
-                      getSizeInt266(), getSizeInt48(), confirmPasswordController, '비밀번호 확인', getColorGrayType7(),
+                      AppSizes.i266, AppSizes.i48, confirmPasswordController, '비밀번호 확인', AppColors.grayType7,
                       obscureText: true),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
-                child: TextWidgetString('선박 MMSI 번호', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                child: TextWidgetString('선박 MMSI 번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize20()),
+                  padding: EdgeInsets.only(bottom: AppSizes.s20),
                   child: inputWidget(
-                      getSizeInt266(), getSizeInt48(), mmsiController, 'MMSI 번호(숫자 9자리)를 입력해주세요', getColorGrayType7()),
+                      AppSizes.i266, AppSizes.i48, mmsiController, 'MMSI 번호(숫자 9자리)를 입력해주세요', AppColors.grayType7),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
-                child: TextWidgetString('휴대폰 번호', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
+                child: TextWidgetString('휴대폰 번호', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
               ),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: getSize20()),
+                  padding: EdgeInsets.only(bottom: AppSizes.s20),
                   child:
-                      inputWidget(getSizeInt266(), getSizeInt48(), phoneController, "'-' 구분없이 숫자만 입력", getColorGrayType7()),
+                      inputWidget(AppSizes.i266, AppSizes.i48, phoneController, "'-' 구분없이 숫자만 입력", AppColors.grayType7),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize8()),
+                padding: EdgeInsets.only(bottom: AppSizes.s8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidgetString('이메일', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                    TextWidgetString('이메일', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: getSize20()),
+                padding: EdgeInsets.only(bottom: AppSizes.s20),
                 child: Row(
                   children: [
                     Expanded(
                       child: inputWidget(
-                        getSizeInt133(),
-                        getSizeInt48(),
+                        AppSizes.i133,
+                        AppSizes.i48,
                         emailController,
                         '이메일 아이디 입력',
-                        getColorGrayType7(),
+                        AppColors.grayType7,
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: getSize4()),
-                      child: TextWidgetString('@', getTextcenter(), getSizeInt16(), getText700(), getColorGrayType8()),
+                      padding: EdgeInsets.symmetric(horizontal: AppSizes.s4),
+                      child: TextWidgetString('@', TextAligns.center, AppSizes.i16, FontWeights.w700, AppColors.grayType8),
                     ),
                     Expanded(
                       child: Stack(
@@ -704,18 +704,18 @@ class _MembershipviewState extends State<MemberInformationChange> {
                             focusNode: emailDomainFocusNode,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: getColorWhiteType1(),
+                              fillColor: AppColors.whiteType1,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-                                borderSide: BorderSide(color: getColorGrayType7(), width: getSize1()),
+                                borderSide: BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
@@ -724,8 +724,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
                           PopupMenuButton<String>(
                             icon: SvgPicture.asset(
                               'assets/kdn/usm/img/down_select_img.svg',
-                              width: getSize24(),
-                              height: getSize24(),
+                              width: AppSizes.s24,
+                              height: AppSizes.s24,
                             ),
                             color: Colors.white,
                             onSelected: (String value) {
@@ -754,23 +754,23 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: getSize20()),
+                padding: EdgeInsets.only(top: AppSizes.s20),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: getColorSkyType2(),
-                      shape: getTextradius6(),
+                      backgroundColor: AppColors.skyType2,
+                      shape: Borders.rounded10,
                       elevation: 0,
-                      padding: EdgeInsets.all(getSize18()),
+                      padding: EdgeInsets.all(AppSizes.s18),
                     ),
                     child: TextWidgetString(
                       '회원정보수정 완료하기',
-                      getTextcenter(),
-                      getSizeInt16(),
-                      getText700(),
-                      getColorWhiteType1(),
+                      TextAligns.center,
+                      AppSizes.i16,
+                      FontWeights.w700,
+                      AppColors.whiteType1,
                     ),
                   ),
                 ),

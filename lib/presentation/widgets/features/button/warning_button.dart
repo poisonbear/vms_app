@@ -83,7 +83,7 @@ class WarningPopButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: getSize12()),
+      padding: EdgeInsets.only(bottom: AppSizes.s12),
       child: GestureDetector(
         onTap: () => _handleTap(context),
         child: _buildButton(),
@@ -108,8 +108,8 @@ class WarningPopButton extends StatelessWidget {
           alignment: Alignment.center,
           child: SvgPicture.asset(
             svgPath,
-            width: getSize24(),
-            height: getSize24(),
+            width: AppSizes.s24,
+            height: AppSizes.s24,
           ),
         ),
       ),
@@ -197,10 +197,10 @@ extension WarningPopButtonFactory on WarningPopButton {
     return WarningPopButton(
       svgPath: 'assets/kdn/home/img/turbine_warning.svg',
       color: const Color(0xFFDF2B2E),
-      widthSize: getSize56(),
-      heightSize: getSize56(),
+      widthSize: AppSizes.s56,
+      heightSize: AppSizes.s56,
       labelText: '터빈 경고',
-      widthSizeLine: getSize160(),
+      widthSizeLine: AppSizes.s160,
       title: title,
       titleColor: const Color(0xFFDF2B2E),
       detail: detail,
@@ -219,10 +219,10 @@ extension WarningPopButtonFactory on WarningPopButton {
     return WarningPopButton(
       svgPath: 'assets/kdn/home/img/weather_warning.svg',
       color: Colors.orange,
-      widthSize: getSize56(),
-      heightSize: getSize56(),
+      widthSize: AppSizes.s56,
+      heightSize: AppSizes.s56,
       labelText: '날씨 경고',
-      widthSizeLine: getSize160(),
+      widthSizeLine: AppSizes.s160,
       title: title,
       titleColor: Colors.orange,
       detail: detail,
@@ -241,10 +241,10 @@ extension WarningPopButtonFactory on WarningPopButton {
     return WarningPopButton(
       svgPath: 'assets/kdn/home/img/cable_warning.svg',
       color: Colors.red,
-      widthSize: getSize56(),
-      heightSize: getSize56(),
+      widthSize: AppSizes.s56,
+      heightSize: AppSizes.s56,
       labelText: '케이블 경고',
-      widthSizeLine: getSize160(),
+      widthSizeLine: AppSizes.s160,
       title: title,
       titleColor: Colors.red,
       detail: detail,

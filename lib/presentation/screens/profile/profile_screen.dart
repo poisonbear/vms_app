@@ -107,47 +107,47 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.only(
-            right: getSize20(),
-            left: getSize20(),
-            bottom: getSize20(),
+            right: AppSizes.s20,
+            left: AppSizes.s20,
+            bottom: AppSizes.s20,
           ),
           child: Column(
             children: [
               // 프로필 이미지와 이름 (세로 배치로 변경)
               Padding(
-                padding: EdgeInsets.only(top: getSize40()),
+                padding: EdgeInsets.only(top: AppSizes.s40),
                 child: Column(
                   children: [
                     // 프로필 이미지
                     Center(
                       child: SizedBox(
-                        width: getSize96(),
-                        height: getSize96(),
+                        width: AppSizes.s96,
+                        height: AppSizes.s96,
                         child: SvgPicture.asset(
                           'assets/kdn/usm/img/defult_img.svg',
-                          height: getSize96(),
-                          width: getSize96(),
+                          height: AppSizes.s96,
+                          width: AppSizes.s96,
                         ),
                       ),
                     ),
                     // 이름과 환영 메시지 (세로 배치)
                     Padding(
-                      padding: EdgeInsets.only(top: getSize6()),
+                      padding: EdgeInsets.only(top: AppSizes.s6),
                       child: Column(
                         children: [
                           TextWidgetString(
                               '${widget.username}님',
-                              getTextcenter(),
-                              getSizeInt20(),
-                              getText700(),
-                              getColorBlackType2()),
-                          SizedBox(height: getSize8()),
+                              TextAligns.center,
+                              AppSizes.i20,
+                              FontWeights.w700,
+                              AppColors.blackType2),
+                          SizedBox(height: AppSizes.s8),
                           TextWidgetString(
                               '반갑습니다.',
-                              getTextcenter(),
-                              getSizeInt12(),
-                              getText700(),
-                              getColorGrayType3()),
+                              TextAligns.center,
+                              AppSizes.i12,
+                              FontWeights.w700,
+                              AppColors.grayType3),
                         ],
                       ),
                     ),
@@ -156,20 +156,20 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               // 프로필과 로그인/회원정보 섹션 사이 간격 추가
-              SizedBox(height: getSize20()),
+              SizedBox(height: AppSizes.s20),
 
               Padding(
                 padding: EdgeInsets.only(
-                    top: getSize20(),
-                    bottom: getSize20()),
+                    top: AppSizes.s20,
+                    bottom: AppSizes.s20),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextWidgetString(
                     '로그인/회원정보',
-                    getTextleft(),
-                    getSizeInt20(),
-                    getText700(),
-                    getColorBlackType2(),
+                    TextAligns.left,
+                    AppSizes.i20,
+                    FontWeights.w700,
+                    AppColors.blackType2,
                   ),
                 ),
               ),
@@ -177,20 +177,20 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               Container(
                 child: Padding(
                   padding: EdgeInsets.only(
-                      right: getSize12(),
-                      left: getSize12(),
-                      bottom: getSize8(),
-                      top: getSize8()),
+                      right: AppSizes.s12,
+                      left: AppSizes.s12,
+                      bottom: AppSizes.s8,
+                      top: AppSizes.s8),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
                       children: [
                         TextWidgetString(
                           '로그인 정보',
-                          getTextleft(),
-                          getSizeInt16(),
-                          getText700(),
-                          getColorGrayType3(),
+                          TextAligns.left,
+                          AppSizes.i16,
+                          FontWeights.w700,
+                          AppColors.grayType3,
                         ),
                         const Spacer(),
                         GestureDetector(
@@ -212,10 +212,10 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                           },
                           child: TextWidgetString(
                             '로그아웃',
-                            getTextleft(),
-                            getSizeInt16(),
-                            getText700(),
-                            getColorRedType3(),
+                            TextAligns.left,
+                            AppSizes.i16,
+                            FontWeights.w700,
+                            AppColors.redType3,
                           ),
                         )
                       ],
@@ -225,25 +225,25 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               Divider(
-                thickness: getSize1(),
-                height: getSize12(),
+                thickness: AppSizes.s1,
+                height: AppSizes.s12,
                 indent: 0,
                 endIndent: 0,
-                color: getColorGrayType10(),
+                color: AppColors.grayType10,
               ),
 
               Padding(
                 padding: EdgeInsets.only(
-                    right: getSize12(),
-                    left: getSize12()),
+                    right: AppSizes.s12,
+                    left: AppSizes.s12),
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(children: [
                       TextWidgetString('자동 로그인',
-                          getTextleft(),
-                          getSizeInt16(),
-                          getText700(),
-                          getColorGrayType3()),
+                          TextAligns.left,
+                          AppSizes.i16,
+                          FontWeights.w700,
+                          AppColors.grayType3),
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
@@ -255,30 +255,30 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                         },
                         child: AnimatedContainer(
                           duration: AppDurations.milliseconds200,
-                          width: getSize70(),
-                          height: getSize36(),
+                          width: AppSizes.s70,
+                          height: AppSizes.s36,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(DesignConstants.radiusXL),
                             border: Border.all(
-                              color: _isSwitched ? getColorSkyType2() : getColorGrayType11(),
+                              color: _isSwitched ? AppColors.skyType2 : AppColors.grayType11,
                             ),
-                            color: _isSwitched ? getColorSkyType2() : getColorGrayType11(),
+                            color: _isSwitched ? AppColors.skyType2 : AppColors.grayType11,
                           ),
                           child: Stack(
                             children: [
                               AnimatedPositioned(
                                 duration: AppDurations.milliseconds200 ,
                                 curve: Curves.easeInOut,
-                                left: _isSwitched ? getSize30() : getSize0(),
-                                right: _isSwitched ? getSize0() : getSize30(),
-                                top: getSize4(),
-                                bottom: getSize4(),
+                                left: _isSwitched ? AppSizes.s30 : AppSizes.s0,
+                                right: _isSwitched ? AppSizes.s0 : AppSizes.s30,
+                                top: AppSizes.s4,
+                                bottom: AppSizes.s4,
                                 child: Container(
-                                  width: getSize30(),
-                                  height: getSize30(),
+                                  width: AppSizes.s30,
+                                  height: AppSizes.s30,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: getColorWhiteType1(),
+                                    color: AppColors.whiteType1,
                                   ),
                                 ),
                               ),
@@ -290,20 +290,20 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               Divider(
-                thickness: getSize1(),
-                height: getSize12(),
+                thickness: AppSizes.s1,
+                height: AppSizes.s12,
                 indent: 0,
                 endIndent: 0,
-                color: getColorGrayType10(),
+                color: AppColors.grayType10,
               ),
 
               Container(
                 child: Padding(
                   padding: EdgeInsets.only(
-                      right: getSize12(),
-                      left: getSize12(),
-                      bottom: getSize8(),
-                      top: getSize8()),
+                      right: AppSizes.s12,
+                      left: AppSizes.s12,
+                      bottom: AppSizes.s8,
+                      top: AppSizes.s8),
                   child: GestureDetector(
                     onTap: () {
                       final now = DateTime.now();
@@ -322,16 +322,16 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                         children: [
                           TextWidgetString(
                             '회원정보 수정',
-                            getTextleft(),
-                            getSizeInt16(),
-                            getText700(),
-                            getColorGrayType3(),
+                            TextAligns.left,
+                            AppSizes.i16,
+                            FontWeights.w700,
+                            AppColors.grayType3,
                           ),
                           const Spacer(),
                           SvgPicture.asset(
                             'assets/kdn/usm/img/chevron-right_type1.svg',
-                            height: getSize24(),
-                            width: getSize24(),
+                            height: AppSizes.s24,
+                            width: AppSizes.s24,
                           ),
                         ],
                       ),
@@ -341,7 +341,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               // 키보드가 올라와도 충분한 여백 확보
-              SizedBox(height: MediaQuery.of(context).viewInsets.bottom + getSize50()),
+              SizedBox(height: MediaQuery.of(context).viewInsets.bottom + AppSizes.s50),
             ],
           ),
         ),

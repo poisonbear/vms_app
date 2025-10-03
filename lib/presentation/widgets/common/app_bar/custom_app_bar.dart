@@ -20,12 +20,12 @@ class _AppBarState extends State<AppBarLayerView> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        top: getSize16(),
-        bottom: getSize16(),
+        top: AppSizes.s16,
+        bottom: AppSizes.s16,
       ),
       child: TextWidgetString(
-        widget.title, getTextcenter(), getSizeInt20(), getText700(),
-        getColorBlackType1(), // 받은값은 widget.title로 기재 가능
+        widget.title, TextAligns.center, AppSizes.i20, FontWeights.w700,
+        AppColors.blackType1, // 받은값은 widget.title로 기재 가능
       ),
     );
   }

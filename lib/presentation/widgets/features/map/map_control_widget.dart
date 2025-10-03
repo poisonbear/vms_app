@@ -43,8 +43,8 @@ class MapControlWidget extends StatelessWidget {
     final routeViewModel = context.watch<RouteProvider?>();
 
     return Positioned(
-      right: getSize20(),
-      bottom: getSize100(),
+      right: AppSizes.s20,
+      bottom: AppSizes.s100,
       child: Column(
         children: [
           // ✨ NEW: 항적초기화(Refresh) 버튼 - 최상단에 위치
@@ -56,10 +56,10 @@ class MapControlWidget extends StatelessWidget {
               if (useCustomStyle)
                 CircularButton(
                   svgPath: 'assets/kdn/home/img/refresh.svg',
-                  colorOn: getColorGrayType8(),
-                  colorOff: getColorGrayType8(),
-                  widthSize: getSizeInt56(),
-                  heightSize: getSizeInt56(),
+                  colorOn: AppColors.grayType8,
+                  colorOff: AppColors.grayType8,
+                  widthSize: AppSizes.i56,
+                  heightSize: AppSizes.i56,
                   onTap: () {
                     controller.stopTracking();
                     if (context.mounted) {
@@ -90,7 +90,7 @@ class MapControlWidget extends StatelessWidget {
                   isActive: false,
                   tooltip: '항적 초기화',
                 ),
-              SizedBox(height: getSize12()),
+              SizedBox(height: AppSizes.s12),
             ],
 
           // 관리자용 다른 선박 표시 버튼
@@ -98,10 +98,10 @@ class MapControlWidget extends StatelessWidget {
             if (useCustomStyle)
               CircularButton(
                 svgPath: 'assets/kdn/home/img/bouttom_ship_img.svg',
-                colorOn: isOtherVesselsVisible ? getColorGrayType9() : getColorGrayType8(),
-                colorOff: getColorGrayType8(),
-                widthSize: getSizeInt56(),
-                heightSize: getSizeInt56(),
+                colorOn: isOtherVesselsVisible ? AppColors.grayType9 : AppColors.grayType8,
+                colorOff: AppColors.grayType8,
+                widthSize: AppSizes.i56,
+                heightSize: AppSizes.i56,
                 onTap: onOtherVesselsToggle,
               )
             else
@@ -112,7 +112,7 @@ class MapControlWidget extends StatelessWidget {
                 isActive: isOtherVesselsVisible,
                 tooltip: '다른 선박',
               ),
-            SizedBox(height: getSize12()),
+            SizedBox(height: AppSizes.s12),
           ],
 
           // 현재 위치 버튼
@@ -120,10 +120,10 @@ class MapControlWidget extends StatelessWidget {
             if (useCustomStyle)
               CircularButton(
                 svgPath: 'assets/kdn/home/img/bouttom_location_img.svg',
-                colorOn: getColorGrayType8(),
-                colorOff: getColorGrayType8(),
-                widthSize: getSizeInt56(),
-                heightSize: getSizeInt56(),
+                colorOn: AppColors.grayType8,
+                colorOff: AppColors.grayType8,
+                widthSize: AppSizes.i56,
+                heightSize: AppSizes.i56,
                 onTap: () => _focusOnUserLocation(vessels, mmsi),
               )
             else
@@ -136,17 +136,17 @@ class MapControlWidget extends StatelessWidget {
               ),
 
           if (vessels.any((vessel) => vessel.mmsi == mmsi))
-            SizedBox(height: getSize12()),
+            SizedBox(height: AppSizes.s12),
 
           // 항적 표시 버튼 (옵션)
           if (onTrackingToggle != null) ...[
             if (useCustomStyle)
               CircularButton(
                 svgPath: 'assets/kdn/home/img/ico_timeline.svg',  // 아이콘 경로 확인 필요
-                colorOn: isTrackingEnabled ? getColorGrayType9() : getColorGrayType8(),
-                colorOff: getColorGrayType8(),
-                widthSize: getSizeInt56(),
-                heightSize: getSizeInt56(),
+                colorOn: isTrackingEnabled ? AppColors.grayType9 : AppColors.grayType8,
+                colorOff: AppColors.grayType8,
+                widthSize: AppSizes.i56,
+                heightSize: AppSizes.i56,
                 onTap: onTrackingToggle!,
               )
             else
@@ -157,7 +157,7 @@ class MapControlWidget extends StatelessWidget {
                 isActive: isTrackingEnabled,
                 tooltip: '항적 표시',
               ),
-            SizedBox(height: getSize12()),
+            SizedBox(height: AppSizes.s12),
           ],
 
           // 홈 버튼 (옵션)
@@ -165,10 +165,10 @@ class MapControlWidget extends StatelessWidget {
             if (useCustomStyle)
               CircularButton(
                 svgPath: 'assets/kdn/home/img/ico_home.svg',
-                colorOn: getColorGrayType8(),
-                colorOff: getColorGrayType8(),
-                widthSize: getSizeInt56(),
-                heightSize: getSizeInt56(),
+                colorOn: AppColors.grayType8,
+                colorOff: AppColors.grayType8,
+                widthSize: AppSizes.i56,
+                heightSize: AppSizes.i56,
                 onTap: () => onHomeButtonTap!(context),
               )
             else
@@ -195,11 +195,11 @@ class MapControlWidget extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Container(
-        width: getSize56(),
-        height: getSize56(),
+        width: AppSizes.s56,
+        height: AppSizes.s56,
         decoration: BoxDecoration(
           color: isActive ? Theme.of(context).primaryColor : Colors.white,
-          borderRadius: BorderRadius.circular(getSize28()),
+          borderRadius: BorderRadius.circular(AppSizes.s28),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
@@ -211,8 +211,8 @@ class MapControlWidget extends StatelessWidget {
         child: IconButton(
           icon: Icon(
             icon,
-            color: isActive ? Colors.white : getColorGrayType7(),
-            size: getSize24(),
+            color: isActive ? Colors.white : AppColors.grayType7,
+            size: AppSizes.s24,
           ),
           onPressed: onTap,
         ),

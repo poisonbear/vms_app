@@ -14,8 +14,7 @@ export 'format_constants.dart';
 export 'app_messages.dart';
 
 // 검증 관련
-export 'validation_constants.dart';
-export 'validation_patterns.dart';
+export 'validation_rules.dart';
 
 // 데이터 관련
 export 'numeric_constants.dart';
@@ -23,8 +22,7 @@ export 'string_constants.dart';
 
 // 네트워크/환경 관련
 export 'network_constants.dart';
-export 'env_keys.dart';
-export 'api_endpoints.dart';
+export 'api_config.dart';
 
 // 지도 관련
 export 'map_constants.dart';

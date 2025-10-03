@@ -122,7 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return false;
     }
 
-    if (_isIdAvailable != ValidationConstants.idAvailable) {
+    if (_isIdAvailable != ValidationRules.idAvailable) {
       showTopSnackBar(context, '아이디 중복확인을 해주세요.');
       return false;
     }
@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return false;
     }
 
-    if (!ValidationPatterns.isValidPassword(_passwordController.text)) {
+    if (!ValidationRules.isValidPassword(_passwordController.text)) {
       showTopSnackBar(context, '비밀번호는 6-12자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
       return false;
     }
@@ -154,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return false;
     }
 
-    if (!ValidationPatterns.isValidMmsi(_mmsiController.text)) {
+    if (!ValidationRules.isValidMmsi(_mmsiController.text)) {
       showTopSnackBar(context, 'MMSI는 9자리 숫자여야 합니다.');
       return false;
     }
@@ -165,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return false;
     }
 
-    if (!ValidationPatterns.isValidPhone(_phoneController.text)) {
+    if (!ValidationRules.isValidPhone(_phoneController.text)) {
       showTopSnackBar(context, '올바른 전화번호 형식이 아닙니다.');
       return false;
     }
@@ -192,7 +192,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (!ValidationPatterns.isValidId(id)) {
+    if (!ValidationRules.isValidId(id)) {
       showTopSnackBar(context, '아이디는 영문과 숫자만 사용 가능합니다.');
       return;
     }
@@ -217,11 +217,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         } else if (response.data is Map) {
           _isIdAvailable = response.data['result'] ?? response.data['available'] ?? response.data['code'] ?? 1;
         } else {
-          _isIdAvailable = ValidationConstants.idAvailable;
+          _isIdAvailable = ValidationRules.idAvailable;
         }
       });
 
-      final message = _isIdAvailable == ValidationConstants.idAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.';
+      final message = _isIdAvailable == ValidationRules.idAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.';
       showTopSnackBar(context, message);
     } catch (e) {
       AppLogger.e('ID 중복 확인 실패: $e');
@@ -354,10 +354,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: getColorWhiteType1(),
+      backgroundColor: AppColors.whiteType1,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: getColorWhiteType1(),
+        backgroundColor: AppColors.whiteType1,
         title: const AppBarLayerView('회원가입'),
         centerTitle: true,
       ),
@@ -415,15 +415,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? getColorSkyType2() : getColorGrayType3(),
+            color: isActive ? AppColors.skyType2 : AppColors.grayType3,
           ),
           child: Center(
             child: Text(
               '$step',
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: getText600(),
-                color: getColorWhiteType1(),
+                fontWeight: FontWeights.w600,
+                color: AppColors.whiteType1,
               ),
             ),
           ),
@@ -431,10 +431,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 4),
         TextWidgetString(
           label,
-          getTextcenter(),
+          TextAligns.center,
           12,
-          getText400(),
-          isActive ? getColorBlackType2() : getColorGrayType2(),
+          FontWeights.w400,
+          isActive ? AppColors.blackType2 : AppColors.grayType2,
         ),
       ],
     );
@@ -445,7 +445,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       width: 40,
       height: 2,
       margin: const EdgeInsets.only(bottom: 20),
-      color: getColorGrayType3(),
+      color: AppColors.grayType3,
     );
   }
 
@@ -484,17 +484,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: ElevatedButton(
         onPressed: !_isLoading ? _checkIdDuplicate : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: getColorSkyType2(),
+          backgroundColor: AppColors.skyType2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
         ),
         child: Text(
-          _isIdAvailable == ValidationConstants.idAvailable ? '재확인' : '중복확인',
+          _isIdAvailable == ValidationRules.idAvailable ? '재확인' : '중복확인',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: getText600(),
-            color: getColorWhiteType1(),
+            fontWeight: FontWeights.w600,
+            color: AppColors.whiteType1,
           ),
         ),
       ),
@@ -511,10 +511,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (_isIdAvailable != null) {
-      final isAvailable = _isIdAvailable == ValidationConstants.idAvailable;
+      final isAvailable = _isIdAvailable == ValidationRules.idAvailable;
       return _buildStatusRow(
         icon: isAvailable ? Icons.check_circle : Icons.error,
-        color: isAvailable ? Colors.green : getColorRedType1(),
+        color: isAvailable ? Colors.green : AppColors.redType1,
         message: isAvailable ? '사용 가능한 아이디입니다' : '이미 사용 중인 아이디입니다',
       );
     }
@@ -535,9 +535,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(width: 4),
           TextWidgetString(
             message,
-            getTextleft(),
+            TextAligns.left,
             12,
-            getText400(),
+            FontWeights.w400,
             color,
           ),
         ],
@@ -556,7 +556,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         suffixIcon: IconButton(
           icon: Icon(
             _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: getColorGrayType2(),
+            color: AppColors.grayType2,
           ),
           onPressed: () => setState(() {
             _isPasswordVisible = !_isPasswordVisible;
@@ -577,7 +577,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         suffixIcon: IconButton(
           icon: Icon(
             _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: getColorGrayType2(),
+            color: AppColors.grayType2,
           ),
           onPressed: () => setState(() {
             _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
@@ -631,7 +631,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               '@',
               style: TextStyle(
                 fontSize: 16,
-                color: getColorGrayType2(),
+                color: AppColors.grayType2,
               ),
             ),
           ),
@@ -657,15 +657,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: getColorGrayType3()),
+        border: Border.all(color: AppColors.grayType3),
         borderRadius: BorderRadius.circular(8),
-        color: getColorWhiteType1(),
+        color: AppColors.whiteType1,
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedEmailDomain,
           isExpanded: true,
-          icon: Icon(Icons.arrow_drop_down, color: getColorGrayType2()),
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.grayType2),
           items: _emailDomains.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
@@ -673,7 +673,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: value == '직접입력' ? getColorGrayType2() : getColorBlackType2(),
+                  color: value == '직접입력' ? AppColors.grayType2 : AppColors.blackType2,
                 ),
               ),
             );
@@ -691,7 +691,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       child: ElevatedButton(
         onPressed: !_isLoading ? _register : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: getColorSkyType2(),
+          backgroundColor: AppColors.skyType2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -702,8 +702,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 '회원가입',
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: getText700(),
-                  color: getColorWhiteType1(),
+                  fontWeight: FontWeights.w700,
+                  color: AppColors.whiteType1,
                 ),
               ),
       ),
@@ -725,18 +725,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             TextWidgetString(
               label,
-              getTextleft(),
+              TextAligns.left,
               14,
-              getText700(),
-              getColorBlackType2(),
+              FontWeights.w700,
+              AppColors.blackType2,
             ),
             const SizedBox(width: 4),
             TextWidgetString(
               isRequired ? '(필수)' : '(선택)',
-              getTextleft(),
+              TextAligns.left,
               12,
-              getText400(),
-              isRequired ? getColorRedType1() : getColorGrayType2(),
+              FontWeights.w400,
+              isRequired ? AppColors.redType1 : AppColors.grayType2,
             ),
           ],
         ),
@@ -763,36 +763,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
       onChanged: onChanged,
       style: TextStyle(
         fontSize: 14,
-        color: getColorBlackType2(),
+        color: AppColors.blackType2,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
           fontSize: 14,
-          color: getColorGrayType2(),
+          color: AppColors.grayType2,
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: enabled ? getColorWhiteType1() : getColorGrayType3().withValues(alpha: 0.5),
+        fillColor: enabled ? AppColors.whiteType1 : AppColors.grayType3.withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: getColorGrayType3()),
+          borderSide: BorderSide(color: AppColors.grayType3),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: getColorGrayType3()),
+          borderSide: BorderSide(color: AppColors.grayType3),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: getColorSkyType2(), width: 2),
+          borderSide: BorderSide(color: AppColors.skyType2, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: getColorGrayType3()),
+          borderSide: BorderSide(color: AppColors.grayType3),
         ),
       ),
     );

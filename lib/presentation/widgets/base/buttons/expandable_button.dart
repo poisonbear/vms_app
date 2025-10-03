@@ -16,7 +16,7 @@ Widget buildCircularButtonSlideOn(
       bool isSelected = true,
     }) {
   return Padding(
-    padding: EdgeInsets.only(bottom: getSize12().toDouble()),
+    padding: EdgeInsets.only(bottom: AppSizes.s12.toDouble()),
     child: SizedBox(
       width: widthSizeline.toDouble(),
       height: heightsize.toDouble(),
@@ -34,8 +34,8 @@ Widget buildCircularButtonSlideOn(
                   : widthsize.toDouble(),
               height: heightsize.toDouble(),
               decoration: BoxDecoration(
-                color: getColorBlackType1(),
-                borderRadius: BorderRadius.circular(getSize30().toDouble()),
+                color: AppColors.blackType1,
+                borderRadius: BorderRadius.circular(AppSizes.s30.toDouble()),
               ),
             ),
           ),
@@ -53,17 +53,17 @@ Widget buildCircularButtonSlideOn(
                   children: [
                     TextWidgetString(
                       labelText,
-                      getTextleft(),
-                      getSizeInt14(),
-                      getText700(),
-                      getColorGrayType2(),
+                      TextAligns.left,
+                      AppSizes.i14,
+                      FontWeights.w700,
+                      AppColors.grayType2,
                     ),
                     TextWidgetString(
                       statusText,
-                      getTextleft(),
-                      getSizeInt14(),
-                      getText700(),
-                      getColorWhiteType1(),
+                      TextAligns.left,
+                      AppSizes.i14,
+                      FontWeights.w700,
+                      AppColors.whiteType1,
                     ),
                   ],
                 ),
@@ -86,8 +86,8 @@ Widget buildCircularButtonSlideOn(
                 alignment: Alignment.center,
                 child: SvgPicture.asset(
                   svgPath,
-                  width: getSize24().toDouble(),
-                  height: getSize24().toDouble(),
+                  width: AppSizes.s24.toDouble(),
+                  height: AppSizes.s24.toDouble(),
                 ),
               ),
             ),
@@ -142,8 +142,8 @@ class _ExpandableButtonState extends State<ExpandableButton>
     );
 
     _widthAnimation = Tween<double>(
-      begin: getSize50(),
-      end: getSize180(),
+      begin: AppSizes.s50,
+      end: AppSizes.s180,
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
@@ -179,19 +179,19 @@ class _ExpandableButtonState extends State<ExpandableButton>
       builder: (context, child) {
         return Container(
           width: _widthAnimation.value,
-          height: getSize50(),
+          height: AppSizes.s50,
           decoration: BoxDecoration(
             color: widget.backgroundColor,
-            borderRadius: BorderRadius.circular(getSize25()),
+            borderRadius: BorderRadius.circular(AppSizes.s25),
           ),
           child: InkWell(
             onTap: _toggleExpansion,
-            borderRadius: BorderRadius.circular(getSize25()),
+            borderRadius: BorderRadius.circular(AppSizes.s25),
             child: Row(
               children: [
                 Container(
-                  width: getSize50(),
-                  height: getSize50(),
+                  width: AppSizes.s50,
+                  height: AppSizes.s50,
                   decoration: BoxDecoration(
                     color: widget.buttonColor,
                     shape: BoxShape.circle,
@@ -199,8 +199,8 @@ class _ExpandableButtonState extends State<ExpandableButton>
                   child: Center(
                     child: SvgPicture.asset(
                       widget.svgPath,
-                      width: getSize24(),
-                      height: getSize24(),
+                      width: AppSizes.s24,
+                      height: AppSizes.s24,
                     ),
                   ),
                 ),
