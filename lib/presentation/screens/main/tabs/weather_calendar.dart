@@ -80,8 +80,8 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
           height: AppSizes.s550,
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
-              vertical: DesignConstants.spacing20,
-              horizontal: DesignConstants.spacing16),
+              vertical: AppSizes.spacing20,
+              horizontal: AppSizes.spacingM),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -119,7 +119,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   ),
                 ],
               ),
-              const SizedBox(height: DesignConstants.spacing10),
+              const SizedBox(height: AppSizes.spacing10),
               Row(
                 children: [
                   TextWidgetString(
@@ -131,7 +131,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                   ),
                 ],
               ),
-              const SizedBox(height: DesignConstants.spacing10),
+              const SizedBox(height: AppSizes.spacing10),
               Expanded(
                 child: TableCalendar(
                   locale: 'ko_KR',

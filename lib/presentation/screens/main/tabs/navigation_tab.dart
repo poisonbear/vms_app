@@ -209,7 +209,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: DesignConstants.spacing16),
+                              horizontal: AppSizes.spacingM),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -768,7 +768,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           CircularProgressIndicator(),
-                          SizedBox(height: DesignConstants.spacing16),
+                          SizedBox(height: AppSizes.spacingM),
                           Text('항행 경로 데이터를 불러오는 중...'),
                         ],
                       ),

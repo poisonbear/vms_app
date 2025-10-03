@@ -486,7 +486,7 @@ class _CmdViewState extends State<LoginView> {
                     ],
                   ),
                 ),
-                const SizedBox(height: DesignConstants.spacing8),
+                const SizedBox(height: AppSizes.spacing8),
                 SvgPicture.asset(
                   'assets/kdn/usm/img/login_footer_logo.svg',
                   height: 20.0,

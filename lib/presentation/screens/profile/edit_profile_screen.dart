@@ -717,7 +717,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                                 borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
                               ),
                               contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: DesignConstants.spacing20, vertical: DesignConstants.spacing12),
+                                  horizontal: AppSizes.spacing20, vertical: AppSizes.spacing12),
                             ),
                           ),
                           PopupMenuButton<String>(

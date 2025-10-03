@@ -4,6 +4,7 @@
 ///
 /// 사용 예시:
 /// - padding: EdgeInsets.all(AppSizes.s16)
+/// - padding: EdgeInsets.all(AppSizes.spacingM)
 /// - width: AppSizes.s100
 /// - maxLines: AppSizes.i2
 class AppSizes {
@@ -152,28 +153,42 @@ class AppSizes {
   // 의미있는 별칭 (Semantic Aliases)
   // ============================================
 
-  // Spacing
+  // ========== Spacing (DesignConstants 호환) ==========
+  static const double spacing0 = s0;
+  static const double spacing4 = s4;
+  static const double spacing8 = s8;
+  static const double spacing10 = s10;
+  static const double spacing12 = s12;
+  static const double spacing16 = s16;
+  static const double spacing20 = s20;
+  static const double spacing24 = s24;
+  static const double spacing30 = s30;
+  static const double spacing37 = s37;
+  static const double spacing50 = s50;
+  static const double spacing65 = s65;
+
+  // ========== Spacing (권장 사용 - 시맨틱) ==========
   static const double spacingXS = s4;
   static const double spacingS = s8;
   static const double spacingM = s16;
   static const double spacingL = s24;
   static const double spacingXL = s32;
 
-  // Padding
+  // ========== Padding ==========
   static const double paddingXS = s4;
   static const double paddingS = s8;
   static const double paddingM = s16;
   static const double paddingL = s24;
   static const double paddingXL = s32;
 
-  // Icon Sizes
+  // ========== Icon Sizes ==========
   static const double iconXS = s16;
   static const double iconS = s20;
   static const double iconM = s24;
   static const double iconL = s32;
   static const double iconXL = s40;
 
-  // Button Heights
+  // ========== Button Heights ==========
   static const double buttonS = s32;
   static const double buttonM = s40;
   static const double buttonL = s48;

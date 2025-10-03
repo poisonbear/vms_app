@@ -118,7 +118,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
             children: [
               // TabBar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 child: TabBar(
                   controller: _tabController,
                   indicator: const UnderlineTabIndicator(
@@ -140,7 +140,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   ],
                 ),
               ),
-              const SizedBox(height: DesignConstants.spacing16),
+              const SizedBox(height: AppSizes.spacingM),
 
               // 콘텐츠 영역 - 스크롤 가능
               Expanded(
@@ -202,7 +202,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               height: 1.0,
             ),
           ),
-          const SizedBox(height: DesignConstants.spacing4),
+          const SizedBox(height: AppSizes.spacing4),
           const Text(
             '가입 시 이메일을 입력하여 주시기 바랍니다.',
             style: TextStyle(
@@ -213,7 +213,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               height: 1.0,
             ),
           ),
-          const SizedBox(height: DesignConstants.spacing16),
+          const SizedBox(height: AppSizes.spacingM),
           SizedBox(
             height: 48,
             child: TextField(
@@ -226,7 +226,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
@@ -271,7 +271,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               ),
             ],
           ),
-          const SizedBox(height: DesignConstants.spacing8),
+          const SizedBox(height: AppSizes.spacing8),
           SizedBox(
             height: 48,
             child: TextField(
@@ -285,7 +285,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   fontFamily: 'Pretendard',
                 ),
                 // suffixIcon 제거함
-                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
@@ -297,7 +297,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               ),
             ),
           ),
-          const SizedBox(height: DesignConstants.spacing20),
+          const SizedBox(height: AppSizes.spacing20),
           const Text(
             '이메일 입력',
             style: TextStyle(
@@ -308,7 +308,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               height: 1.0,
             ),
           ),
-          const SizedBox(height: DesignConstants.spacing4),
+          const SizedBox(height: AppSizes.spacing4),
           const Text(
             '가입 시 이메일을 입력하여 주시기 바랍니다.',
             style: TextStyle(
@@ -319,7 +319,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
               height: 1.0,
             ),
           ),
-          const SizedBox(height: DesignConstants.spacing16),
+          const SizedBox(height: AppSizes.spacingM),
           SizedBox(
             height: 48,
             child: TextField(
@@ -332,7 +332,7 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: DesignConstants.spacing16),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),

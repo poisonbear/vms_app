@@ -47,7 +47,7 @@ class MainScreenPopups {
                     width: 60,
                     height: 60,
                   ),
-                  const SizedBox(height: DesignConstants.spacing8),
+                  const SizedBox(height: AppSizes.spacing8),
                   Text(
                     title,
                     style: const TextStyle(
@@ -60,7 +60,7 @@ class MainScreenPopups {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: DesignConstants.spacing8),
+                  const SizedBox(height: AppSizes.spacing8),
                   SizedBox(
                     width: 300,
                     child: Text(
@@ -92,8 +92,8 @@ class MainScreenPopups {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          vertical: DesignConstants.spacing10,
-                          horizontal: DesignConstants.spacing10,
+                          vertical: AppSizes.spacing10,
+                          horizontal: AppSizes.spacing10,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius:
