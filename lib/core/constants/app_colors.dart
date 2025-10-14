@@ -47,6 +47,9 @@ class AppColors {
   static const grayType12 = Color(0x33D9D9D9);
   static const grayType13 = Color(0xFFAAAAAA);
   static const grayType14 = Color(0xFFF5F5F5);
+  static const grayType15 = Color(0xFFF8F9FA);
+  static const grayType16 = Color(0xFFE9ECEF);
+
 
   // ============================================
   // Red Colors
@@ -71,6 +74,11 @@ class AppColors {
   // Green Colors
   // ============================================
   static const greenType1 = Color(0xFF80BE35);
+
+  // ============================================
+  // blue Colors
+  // ============================================
+  static const blueNavy = Color(0xFF1E3A5F);
 
   // ============================================
   // Yellow Colors

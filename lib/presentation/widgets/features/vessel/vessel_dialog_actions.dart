@@ -16,17 +16,17 @@ class VesselDialogActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.s16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(AppSizes.s20),
           bottomRight: Radius.circular(AppSizes.s20),
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0D000000),
+            color: AppColors.black05,
             blurRadius: 8,
-            offset: Offset(0, -2),
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -45,7 +45,7 @@ class VesselDialogActions extends StatelessWidget {
             child: _ActionButton(
               label: '항적 보기',
               onTap: onTracking,
-              backgroundColor: const Color(0xFF1E3A5F),
+              backgroundColor: AppColors.blueNavy,  // 변경: 하드코딩 → 상수 사용
               textColor: AppColors.whiteType1,
             ),
           ),

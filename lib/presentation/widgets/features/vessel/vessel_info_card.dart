@@ -21,10 +21,10 @@ class VesselInfoCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(isCompact ? AppSizes.s12 : AppSizes.s16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
+        color: AppColors.grayType15,
         borderRadius: BorderRadius.circular(AppSizes.s12),
         border: Border.all(
-          color: const Color(0xFFE9ECEF),
+          color: AppColors.grayType16,
           width: 1,
         ),
       ),
@@ -33,12 +33,12 @@ class VesselInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSizes.s8),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E3A5F).withOpacity(0.1),
+              color: AppColors.blueNavy.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppSizes.s8),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF1E3A5F),
+              color: AppColors.blueNavy,
               size: isCompact ? AppSizes.s18 : AppSizes.s20,
             ),
           ),

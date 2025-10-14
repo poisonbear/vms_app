@@ -122,29 +122,24 @@ class VesselDialog extends StatelessWidget {
   }
 
   String _formatShipType(VesselSearchModel vessel) {
-    final shiptype = vessel.shiptype;
 
-    if (shiptype != null && shiptype.isNotEmpty) {
-      final koreanName = ShipType.getKoreanName(shiptype);
+    final shipCode = vessel.shiptype ?? vessel.ship_knd ?? vessel.ship_kdn;
+
+    if (shipCode != null && shipCode.isNotEmpty) {
+      final koreanName = ShipType.getKoreanName(shipCode);
 
       if (koreanName != '알 수 없음' && !koreanName.startsWith('알 수 없음')) {
-        return '$shiptype($koreanName)';
+        return '$shipCode($koreanName)';
       }
 
       if (vessel.shiptype_nm?.isNotEmpty == true) {
-        return '$shiptype(${vessel.shiptype_nm})';
-      }
-      if (vessel.ship_knd?.isNotEmpty == true) {
-        return '$shiptype(${vessel.ship_knd})';
-      }
-      if (vessel.ship_kdn?.isNotEmpty == true) {
-        return '$shiptype(${vessel.ship_kdn})';
+        return '$shipCode(${vessel.shiptype_nm})';
       }
 
-      return shiptype;
+      return shipCode;
     }
 
-    return vessel.shiptype_nm ?? vessel.ship_knd ?? vessel.ship_kdn ?? '-';
+    return vessel.shiptype_nm ?? '-';
   }
 }
 
@@ -159,7 +154,7 @@ class _VesselDialogHeader extends StatelessWidget {
       height: AppSizes.s50,
       padding: const EdgeInsets.symmetric(horizontal: AppSizes.s16),
       decoration: const BoxDecoration(
-        color: Color(0xFF1E3A5F),
+        color: AppColors.blueNavy,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(AppSizes.s20),
           topRight: Radius.circular(AppSizes.s20),

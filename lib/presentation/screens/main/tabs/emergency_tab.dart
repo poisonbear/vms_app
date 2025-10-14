@@ -425,7 +425,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       height: 200,
       padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
-        color: AppColors.grayType1.withOpacity(0.3),
+        color: AppColors.grayType15,
         borderRadius: BorderRadius.circular(AppSizes.s12),
         border: Border.all(
           color: AppColors.grayType2,
