@@ -1,3 +1,5 @@
+// lib/presentation/widgets/features/vessel/vessel_dialog.dart
+
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
@@ -55,19 +57,25 @@ class VesselDialog extends StatelessWidget {
   Widget _buildContent() {
     return Column(
       children: [
+        // MMSI - 복사 가능
         VesselInfoCard(
           icon: Icons.confirmation_number,
           label: 'MMSI',
           value: vessel.mmsi?.toString() ?? '-',
+          enableCopy: true,  // 복사 기능 활성화
         ),
         const SizedBox(height: AppSizes.s12),
+
+        // 현재 위치 - 복사 가능
         VesselInfoCard(
           icon: Icons.location_on,
           label: '현재 위치',
           value: '${vessel.lttd?.toStringAsFixed(6) ?? '-'}\n'
               '${vessel.lntd?.toStringAsFixed(6) ?? '-'}',
+          enableCopy: true,  // 복사 기능 활성화
         ),
         const SizedBox(height: AppSizes.s12),
+
         Row(
           children: [
             Expanded(
@@ -94,6 +102,7 @@ class VesselDialog extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSizes.s12),
+
         Row(
           children: [
             Expanded(
@@ -122,7 +131,6 @@ class VesselDialog extends StatelessWidget {
   }
 
   String _formatShipType(VesselSearchModel vessel) {
-
     final shipCode = vessel.shiptype ?? vessel.ship_knd ?? vessel.ship_kdn;
 
     if (shipCode != null && shipCode.isNotEmpty) {

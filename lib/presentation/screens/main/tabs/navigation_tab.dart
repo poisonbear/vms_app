@@ -11,6 +11,7 @@ import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import '../controllers/main_screen_controller.dart';
 import '../utils/navigation_debug.dart';
+import 'package:flutter/services.dart';
 
 String selectedStartDate =
     "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
@@ -753,175 +754,241 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
     return Builder(builder: (innerContext) {
       return InkWell(
-          onTap: () async {
-            final navigationContext = Navigator.of(context);
+        onTap: () async {
+          final navigationContext = Navigator.of(context);
 
-            if (mounted) {
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext dialogContext) {
-                  return const Dialog(
-                    child: Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: AppSizes.spacingM),
-                          Text('항행 경로 데이터를 불러오는 중...'),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
-
-            NavigationDebugHelper.debugPrint('항행이력 조회 시작 - mmsi: $mmsi', location: 'nav_tab.onTap');
-
-            try {
-              viewModel.setNavigationHistoryMode(true);
-
-              NavigationDebugHelper.debugPrint('API 호출 전', location: 'nav_tab.beforeAPI');
-
-              await viewModel.getVesselRoute(
-                  regDt: dateTime != null
-                      ? "${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}"
-                      : null,
-                  mmsi: int.tryParse(mmsi));
-
-              NavigationDebugHelper.debugPrint(
-                  'API 호출 후 - past: ${viewModel.pastRoutes.length}, pred: ${viewModel.predRoutes.length}',
-                  location: 'nav_tab.afterAPI'
-              );
-
-              if (viewModel.pastRoutes.isNotEmpty) {
-                LatLng firstPoint = LatLng(
-                    viewModel.pastRoutes.last.lttd ?? 35.3790988,
-                    viewModel.pastRoutes.last.lntd ?? 126.167763);
-
-                try {
-                  final mainController = Provider.of<MainScreenController>(context, listen: false);
-                  mainController.mapController.move(firstPoint, 12.0);
-                } catch (e) {
-                  NavigationDebugHelper.debugPrint("지도 이동 실패: $e", location: "nav_tab.mapError");
-                }
-              }
-
-              navigationContext.pop();
-
-              Scaffold.of(context).showBottomSheet(
-                    (context) => GestureDetector(
-                  onVerticalDragEnd: (details) {
-                    if (details.primaryVelocity != null &&
-                        details.primaryVelocity! > 0) {
-                      viewModel.clearRoutes();
-                      viewModel.setNavigationHistoryMode(false);
-
-                      final MainScreenState =
-                      context.findAncestorStateOfType<State<MainScreen>>();
-                      if (MainScreenState != null) {
-                        try {
-                          (MainScreenState as dynamic).selectedIndex = 0;
-                        } catch (e) {}
-                      }
-
-                      if (mounted) Navigator.pop(context);
-                    }
-                  },
-                  child: PopScope(
-                    canPop: false,
-                    onPopInvokedWithResult: (bool didPop, dynamic result) {
-                      if (didPop) return;
-
-                      final MainScreenState =
-                      context.findAncestorStateOfType<State<MainScreen>>();
-                      if (MainScreenState != null) {
-                        try {
-                          (MainScreenState as dynamic).selectedIndex = 0;
-                        } catch (e) {}
-                      }
-
-                      viewModel.clearRoutes();
-                      viewModel.setNavigationHistoryMode(false);
-                      Navigator.of(context).pop();
-                    },
-                    child: _buildCollapsedBottomSheet(
-                        context, shipNm, mmsi, formattedTime, viewModel),
-                  ),
-                ),
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(DesignConstants.radiusXL)),
-                ),
-              );
-            } catch (e) {
-              NavigationDebugHelper.debugPrint('에러 발생: $e', location: 'nav_tab.error');
-
-              Navigator.of(context).pop();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
-                );
-              }
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: AppSizes.s12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppSizes.s4),
-              border: Border.all(color: AppColors.grayType4, width: AppSizes.s1),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  vertical: AppSizes.s16,
-                  horizontal: AppSizes.s12),
-              child: Row(
-                children: [
-                  Expanded(
+          if (mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext dialogContext) {
+                return const Dialog(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextWidgetString(shipNm, TextAligns.left, AppSizes.i16,
-                            FontWeights.w700, AppColors.blackType2),
-                        const SizedBox(height: AppSizes.s4),
-                        Row(
-                          children: [
-                            TextWidgetString(
-                                'MMSI ',
-                                TextAligns.left,
-                                AppSizes.i12,
-                                FontWeights.w400,
-                                AppColors.grayType3),
-                            TextWidgetString(mmsi, TextAligns.left, AppSizes.i12,
-                                FontWeights.w600, AppColors.grayType3),
-                            const SizedBox(width: AppSizes.s12),
-                            TextWidgetString(
-                                'DATE ',
-                                TextAligns.left,
-                                AppSizes.i12,
-                                FontWeights.w400,
-                                AppColors.grayType3),
-                            TextWidgetString(
-                                formattedTime,
-                                TextAligns.left,
-                                AppSizes.i12,
-                                FontWeights.w600,
-                                AppColors.grayType3),
-                          ],
-                        ),
+                        CircularProgressIndicator(),
+                        SizedBox(height: AppSizes.spacingM),
+                        Text('항행 경로 데이터를 불러오는 중...'),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right,
-                      color: AppColors.grayType8, size: AppSizes.s20),
-                ],
+                );
+              },
+            );
+          }
+
+          NavigationDebugHelper.debugPrint('항행이력 조회 시작 - mmsi: $mmsi',
+              location: 'nav_tab.onTap');
+
+          try {
+            viewModel.setNavigationHistoryMode(true);
+            NavigationDebugHelper.debugPrint('API 호출 전', location: 'nav_tab.beforeAPI');
+
+            await viewModel.getVesselRoute(
+              regDt: dateTime != null
+                  ? "${dateTime.year}${dateTime.month.toString().padLeft(2, '0')}${dateTime.day.toString().padLeft(2, '0')}"
+                  : startTime,
+              mmsi: int.tryParse(mmsi),
+            );
+
+            NavigationDebugHelper.debugPrint(
+                'API 호출 후 - past: ${viewModel.pastRoutes.length}, pred: ${viewModel.predRoutes.length}',
+                location: 'nav_tab.afterAPI');
+
+            if (viewModel.pastRoutes.isNotEmpty) {
+              LatLng firstPoint = LatLng(
+                  viewModel.pastRoutes.last.lttd ?? 35.3790988,
+                  viewModel.pastRoutes.last.lntd ?? 126.167763);
+
+              try {
+                final mainController =
+                Provider.of<MainScreenController>(context, listen: false);
+                mainController.mapController.move(firstPoint, 12.0);
+              } catch (e) {
+                NavigationDebugHelper.debugPrint("지도 이동 실패: $e",
+                    location: "nav_tab.mapError");
+              }
+            }
+
+            navigationContext.pop();
+
+            // 🆕 항적조회 결과 바텀시트 표시
+            Scaffold.of(context).showBottomSheet(
+                  (context) => GestureDetector(
+                onVerticalDragEnd: (details) {
+                  if (details.primaryVelocity != null &&
+                      details.primaryVelocity! > 0) {
+                    viewModel.clearRoutes();
+                    viewModel.setNavigationHistoryMode(false);
+
+                    final MainScreenState =
+                    context.findAncestorStateOfType<State<MainScreen>>();
+                    if (MainScreenState != null) {
+                      try {
+                        (MainScreenState as dynamic).selectedIndex = 0;
+                      } catch (e) {}
+                    }
+
+                    if (mounted) Navigator.pop(context);
+                  }
+                },
+                child: PopScope(
+                  canPop: false,
+                  onPopInvokedWithResult: (bool didPop, dynamic result) {
+                    if (didPop) return;
+
+                    final MainScreenState =
+                    context.findAncestorStateOfType<State<MainScreen>>();
+                    if (MainScreenState != null) {
+                      try {
+                        (MainScreenState as dynamic).selectedIndex = 0;
+                      } catch (e) {}
+                    }
+
+                    viewModel.clearRoutes();
+                    viewModel.setNavigationHistoryMode(false);
+                    Navigator.of(context).pop();
+                  },
+                  child: _buildCollapsedBottomSheet(
+                      context, shipNm, mmsi, formattedTime, viewModel),
+                ),
               ),
-            ),
-          ));
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(DesignConstants.radiusXL)),
+              ),
+            );
+          } catch (e) {
+            NavigationDebugHelper.debugPrint('에러 발생: $e', location: 'nav_tab.error');
+
+            Navigator.of(context).pop();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('데이터를 불러오는 중 오류가 발생했습니다.')),
+              );
+            }
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.s16,
+            vertical: AppSizes.s14,
+          ),
+          margin: const EdgeInsets.only(bottom: AppSizes.s8),
+          decoration: BoxDecoration(
+            color: AppColors.whiteType1,
+            border: Border.all(color: AppColors.grayType16),
+            borderRadius: BorderRadius.circular(AppSizes.s12),
+          ),
+          child: Row(
+            children: [
+              // 선박 아이콘
+              Container(
+                padding: const EdgeInsets.all(AppSizes.s10),
+                decoration: BoxDecoration(
+                  color: AppColors.blueNavy.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppSizes.s8),
+                ),
+                child: const Icon(
+                  Icons.directions_boat,
+                  color: AppColors.blueNavy,
+                  size: AppSizes.s20,
+                ),
+              ),
+              const SizedBox(width: AppSizes.s12),
+
+              // 선박 정보 (확장)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // MMSI + 복사 버튼
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'MMSI: $mmsi',
+                            style: const TextStyle(
+                              fontSize: AppSizes.s14,
+                              fontWeight: FontWeights.w600,
+                              color: AppColors.blackType2,
+                            ),
+                          ),
+                        ),
+                        // 🆕 복사 버튼
+                        InkWell(
+                          onTap: () => _copyToClipboard(context, 'MMSI', mmsi),
+                          borderRadius: BorderRadius.circular(AppSizes.s4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSizes.s4),
+                            child: Icon(
+                              Icons.content_copy,
+                              size: AppSizes.s16,
+                              color: AppColors.grayType6,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSizes.s4),
+
+                    // 선박명 + 복사 버튼
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            shipNm,
+                            style: TextStyle(
+                              fontSize: AppSizes.s13,
+                              fontWeight: FontWeights.w500,
+                              color: AppColors.grayType3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // 🆕 복사 버튼
+                        InkWell(
+                          onTap: () => _copyToClipboard(context, '선박명', shipNm),
+                          borderRadius: BorderRadius.circular(AppSizes.s4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSizes.s4),
+                            child: Icon(
+                              Icons.content_copy,
+                              size: AppSizes.s16,
+                              color: AppColors.grayType6,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSizes.s4),
+
+                    // 날짜
+                    Text(
+                      formattedTime,
+                      style: TextStyle(
+                        fontSize: AppSizes.s12,
+                        color: AppColors.grayType3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 화살표 아이콘
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.grayType6,
+                size: AppSizes.s20,
+              ),
+            ],
+          ),
+        ),
+      );
     });
   }
 }
@@ -1320,6 +1387,23 @@ Widget _buildCollapsedBottomSheet(
           ),
         ),
       ],
+    ),
+  );
+}
+
+void _copyToClipboard(BuildContext context, String label, String value) {
+  Clipboard.setData(ClipboardData(text: value));
+  HapticFeedback.lightImpact();
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('$label이(가) 복사되었습니다'),
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
     ),
   );
 }

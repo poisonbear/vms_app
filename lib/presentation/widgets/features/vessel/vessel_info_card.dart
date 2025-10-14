@@ -1,4 +1,7 @@
+// lib/presentation/widgets/features/vessel/vessel_info_card.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vms_app/core/constants/constants.dart';
 
 /// 선박 정보 카드 위젯
@@ -7,6 +10,7 @@ class VesselInfoCard extends StatelessWidget {
   final String label;
   final String value;
   final bool isCompact;
+  final bool enableCopy;  // 복사 기능 활성화
 
   const VesselInfoCard({
     super.key,
@@ -14,6 +18,7 @@ class VesselInfoCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.isCompact = false,
+    this.enableCopy = false,  // 기본값: 비활성화
   });
 
   @override
@@ -68,7 +73,41 @@ class VesselInfoCard extends StatelessWidget {
               ],
             ),
           ),
+          // 🆕 복사 버튼
+          if (enableCopy) ...[
+            const SizedBox(width: AppSizes.s8),
+            InkWell(
+              onTap: () => _copyToClipboard(context),
+              borderRadius: BorderRadius.circular(AppSizes.s6),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSizes.s6),
+                child: Icon(
+                  Icons.content_copy,
+                  size: isCompact ? AppSizes.s16 : AppSizes.s18,
+                  color: AppColors.grayType6,
+                ),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  // 🆕 클립보드에 복사
+  void _copyToClipboard(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: value));
+    HapticFeedback.lightImpact();  // 햅틱 피드백
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label이(가) 복사되었습니다'),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
     );
   }
