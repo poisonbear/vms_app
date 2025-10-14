@@ -1,3 +1,5 @@
+// lib/presentation/screens/main/main_screen.dart
+
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -252,6 +254,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _showVesselInfoDialog(context, vessel);
   }
 
+  // ==========================================
+  // 선박 정보 다이얼로그 표시 (재디자인)
+  // ==========================================
   void _showVesselInfoDialog(BuildContext context, VesselSearchModel vessel) {
     showDialog(
       context: context,
@@ -259,61 +264,71 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignConstants.radiusXL),
+            borderRadius: BorderRadius.circular(AppSizes.s20),
           ),
-          backgroundColor: const Color(0xFFF5F5F5),
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: AppSizes.s20),
           child: Container(
             constraints: BoxConstraints(
               maxWidth: MediaQuery.of(context).size.width * 0.9,
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppSizes.s20),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 헤더 영역
+                // 헤더 영역 - 항행이력 스타일과 동일
                 Container(
-                  padding: const EdgeInsets.all(AppSizes.s20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(DesignConstants.radiusXL),
+                  height: AppSizes.s50,
+                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.s16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1E3A5F),  // 항행이력과 동일한 색상
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(AppSizes.s20),
+                      topRight: Radius.circular(AppSizes.s20),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
                   ),
                   child: Row(
                     children: [
                       const Icon(
                         Icons.directions_boat,
-                        color: AppColors.skyType2,
-                        size: AppSizes.s28,
+                        color: AppColors.whiteType1,
+                        size: AppSizes.s24,
                       ),
-                      const SizedBox(width: AppSizes.s12),
+                      const SizedBox(width: AppSizes.s8),
                       Expanded(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               vessel.ship_nm ?? '선박명 없음',
                               style: const TextStyle(
-                                fontSize: AppSizes.s18,
+                                fontSize: AppSizes.s16,
                                 fontWeight: FontWeights.w700,
-                                color: AppColors.blackType2,
+                                color: AppColors.whiteType1,
                               ),
-                            ),
-                            Text(
-                              'MMSI: ${vessel.mmsi ?? 0}',
-                              style: const TextStyle(
-                                fontSize: AppSizes.s14,
-                                color: AppColors.grayType3,
-                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          if (Navigator.of(dialogContext).canPop()) {
+                            Navigator.of(dialogContext).pop();
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSizes.s4),
+                          child: const Icon(
+                            Icons.close,
+                            color: AppColors.whiteType1,
+                            size: AppSizes.s24,
+                          ),
                         ),
                       ),
                     ],
@@ -321,32 +336,100 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ),
 
                 // 본문 영역
-                Expanded(
+                Flexible(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(AppSizes.s20),
                     child: Column(
                       children: [
-                        _buildInfoRow('위치', '${vessel.lttd?.toStringAsFixed(6) ?? '-'}, ${vessel.lntd?.toStringAsFixed(6) ?? '-'}'),
-                        _buildInfoRow('속도', vessel.sog != null ? '${vessel.sog!.toStringAsFixed(1)} knots' : '-'),
-                        _buildInfoRow('침로', vessel.cog != null ? '${vessel.cog!.toStringAsFixed(1)}°' : '-'),
-                        _buildInfoRow('선종', vessel.ship_knd ?? '-'),
-                        _buildInfoRow('흘수', vessel.draft != null ? '${vessel.draft!.toStringAsFixed(1)} m' : '-'),
+                        // MMSI 정보
+                        _buildInfoCard(
+                          icon: Icons.confirmation_number,
+                          label: 'MMSI',
+                          value: vessel.mmsi?.toString() ?? '-',
+                        ),
+                        const SizedBox(height: AppSizes.s12),
+
+                        // 위치 정보
+                        _buildInfoCard(
+                          icon: Icons.location_on,
+                          label: '현재 위치',
+                          value: '${vessel.lttd?.toStringAsFixed(6) ?? '-'}\n${vessel.lntd?.toStringAsFixed(6) ?? '-'}',
+                        ),
+                        const SizedBox(height: AppSizes.s12),
+
+                        // 항해 정보
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildInfoCard(
+                                icon: Icons.speed,
+                                label: '속도',
+                                value: vessel.sog != null
+                                    ? '${vessel.sog!.toStringAsFixed(1)} kn'
+                                    : '-',
+                                isCompact: true,
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.s12),
+                            Expanded(
+                              child: _buildInfoCard(
+                                icon: Icons.explore,
+                                label: '침로',
+                                value: vessel.cog != null
+                                    ? '${vessel.cog!.toStringAsFixed(1)}°'
+                                    : '-',
+                                isCompact: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSizes.s12),
+
+                        // 선박 상세 정보
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildInfoCard(
+                                icon: Icons.category,
+                                label: '선종',
+                                value: vessel.ship_knd ?? '-',
+                                isCompact: true,
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.s12),
+                            Expanded(
+                              child: _buildInfoCard(
+                                icon: Icons.waves,
+                                label: '흘수',
+                                value: vessel.draft != null
+                                    ? '${vessel.draft!.toStringAsFixed(1)} m'
+                                    : '-',
+                                isCompact: true,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
                 ),
 
-                // 버튼 영역 - 하단 고정
+                // 버튼 영역
                 Container(
                   padding: const EdgeInsets.all(AppSizes.s16),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F5),
-                    border: Border(
-                      top: BorderSide(
-                        color: AppColors.grayType4,
-                        width: 1,
-                      ),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(AppSizes.s20),
+                      bottomRight: Radius.circular(AppSizes.s20),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x0D000000),
+                        blurRadius: 8,
+                        offset: Offset(0, -2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -358,18 +441,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             }
                           },
                           child: Container(
-                            height: AppSizes.s44,
+                            height: AppSizes.s48,
                             decoration: BoxDecoration(
-                              color: AppColors.grayType4,
+                              color: AppColors.grayType10,
                               borderRadius: BorderRadius.circular(AppSizes.s8),
                             ),
-                            child: Center(
-                              child: TextWidgetString(
+                            child: const Center(
+                              child: Text(
                                 '닫기',
-                                TextAligns.center,
-                                AppSizes.i14,
-                                FontWeights.w600,
-                                AppColors.grayType7,
+                                style: TextStyle(
+                                  fontSize: AppSizes.s15,
+                                  fontWeight: FontWeights.w600,
+                                  color: AppColors.grayType3,
+                                ),
                               ),
                             ),
                           ),
@@ -394,25 +478,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                             _loadTodayRoute(vessel.mmsi ?? 0);
                           },
                           child: Container(
-                            height: AppSizes.s44,
+                            height: AppSizes.s48,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.skyType2,
-                                  AppColors.skyType1,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                              color: const Color(0xFF1E3A5F),  // 항행이력과 동일한 색상
                               borderRadius: BorderRadius.circular(AppSizes.s8),
                             ),
-                            child: Center(
-                              child: TextWidgetString(
-                                '항적보기',
-                                TextAligns.center,
-                                AppSizes.i14,
-                                FontWeights.w600,
-                                Colors.white,
+                            child: const Center(
+                              child: Text(
+                                '항적 보기',
+                                style: TextStyle(
+                                  fontSize: AppSizes.s15,
+                                  fontWeight: FontWeights.w700,
+                                  color: AppColors.whiteType1,
+                                ),
                               ),
                             ),
                           ),
@@ -429,30 +507,63 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
+  // ==========================================
+  // 정보 카드 위젯 (헬퍼 메서드)
+  // ==========================================
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isCompact = false,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(isCompact ? AppSizes.s12 : AppSizes.s16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(AppSizes.s12),
+        border: Border.all(
+          color: const Color(0xFFE9ECEF),
+          width: 1,
+        ),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: AppSizes.s80,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: AppSizes.s14,
-                color: AppColors.grayType3,
-              ),
+          Container(
+            padding: const EdgeInsets.all(AppSizes.s8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E3A5F).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppSizes.s8),
+            ),
+            child: Icon(
+              icon,
+              color: const Color(0xFF1E3A5F),
+              size: isCompact ? AppSizes.s18 : AppSizes.s20,
             ),
           ),
+          const SizedBox(width: AppSizes.s12),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: AppSizes.s14,
-                fontWeight: FontWeights.w600,
-                color: AppColors.blackType2,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: isCompact ? AppSizes.s11 : AppSizes.s12,
+                    fontWeight: FontWeights.w500,
+                    color: AppColors.grayType3,
+                  ),
+                ),
+                const SizedBox(height: AppSizes.s4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: isCompact ? AppSizes.s14 : AppSizes.s16,
+                    fontWeight: FontWeights.w700,
+                    color: AppColors.blackType2,
+                    height: 1.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -460,7 +571,61 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ==========================================
+  // 선종 포맷팅 헬퍼 메서드 (상수 테이블 우선)
+  // ==========================================
+  String _formatShipType(VesselSearchModel vessel) {
+    final shiptype = vessel.shiptype;        // 선종 코드 (예: "52")
+    final shiptypeNm = vessel.shiptype_nm;   // 선종 한글명 (API 제공)
+    final shipKnd = vessel.ship_knd;         // 또 다른 선종 필드
+    final shipKdn = vessel.ship_kdn;         // 또 다른 선종 필드
+
+    // 우선순위 1: 코드가 있으면 상수 테이블에서 한글명 찾기
+    if (shiptype != null && shiptype.isNotEmpty) {
+      final koreanName = ShipType.getKoreanName(shiptype);
+
+      // 상수 테이블에서 찾았으면 "코드(한글명)" 형식으로 반환
+      if (koreanName != '알 수 없음' && !koreanName.startsWith('알 수 없음')) {
+        return '$shiptype($koreanName)';
+      }
+
+      // 상수 테이블에 없으면 API 제공 한글명 사용
+      if (shiptypeNm != null && shiptypeNm.isNotEmpty) {
+        return '$shiptype($shiptypeNm)';
+      }
+
+      if (shipKnd != null && shipKnd.isNotEmpty) {
+        return '$shiptype($shipKnd)';
+      }
+
+      if (shipKdn != null && shipKdn.isNotEmpty) {
+        return '$shiptype($shipKdn)';
+      }
+
+      // 한글명이 전혀 없으면 코드만 반환
+      return shiptype;
+    }
+
+    // 우선순위 2: 코드는 없고 한글명만 있는 경우
+    if (shiptypeNm != null && shiptypeNm.isNotEmpty) {
+      return shiptypeNm;
+    }
+
+    if (shipKnd != null && shipKnd.isNotEmpty) {
+      return shipKnd;
+    }
+
+    if (shipKdn != null && shipKdn.isNotEmpty) {
+      return shipKdn;
+    }
+
+    // 모든 정보가 없는 경우
+    return '-';
+  }
+
+  // ==========================================
   // 당일 항적 조회
+  // ==========================================
   Future<void> _loadTodayRoute(int mmsi) async {
     if (_isLoadingRoute) return;
 
@@ -487,7 +652,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
   }
 
+  // ==========================================
   // 당일 항적보기 버튼 빌드
+  // ==========================================
   Widget _buildTodayRouteButton(BuildContext context) {
     final role = context.watch<UserState>().role;
     final userMmsi = context.watch<UserState>().mmsi ?? 0;
@@ -569,6 +736,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
+  // ==========================================
+  // 네비게이션 아이템 탭 핸들러
+  // ==========================================
   void _onNavItemTapped(int index, BuildContext context) {
     NavigationDebugHelper.debugPrint('Navigation item tapped: $index, current: $selectedIndex',
         location: 'main_screen');
@@ -842,7 +1012,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   child: _buildTodayRouteButton(context),
                 ),
 
-                // 7. ✨ 항행경보 표시 (새로 추가된 기능)
+                // 7. ✨ 항행경보 표시
                 Positioned(
                   bottom: 0,  // 하단 네비게이션 바 바로 위
                   left: 0,

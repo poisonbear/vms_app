@@ -27,5 +27,8 @@ export 'api_config.dart';
 // 지도 관련
 export 'map_constants.dart';
 
+// 선박 관련
+export 'ship_type.dart';
+
 // 기능별 상수
 export 'emergency_constants.dart';

@@ -12,7 +12,7 @@ class VesselModel {
   int? mmsi;
   String? ship_nm;
   String? ship_kdn;
-  String? ship_knd;  // 선박 종류 (추가)
+  String? ship_knd;
   String? psng_auth;
   String? psng_auth_cd;
   double? lntd;
