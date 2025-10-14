@@ -1,118 +1,63 @@
 import 'package:flutter/material.dart';
 
-/// 터빈 진입 경고 플래시 오버레이 위젯
-/// main_screen.dart의 AnimatedBuilder 부분만 분리
+/// 플래싱 오버레이 위젯 (터빈 진입 경고)
 class FlashOverlay extends StatelessWidget {
-  final AnimationController flashController;
-  final bool isFlashing;
+  final Animation<double> animation;
 
   const FlashOverlay({
     super.key,
-    required this.flashController,
-    required this.isFlashing,
+    required this.animation,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 기존 main_screen.dart의 코드 그대로
-    if (!isFlashing) {
-      return const SizedBox.shrink();
-    }
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) {
+            return Stack(
+              children: [
+                Container(color: Colors.transparent),
+                _buildGradient(Alignment.topCenter, 250, true),
+                _buildGradient(Alignment.bottomCenter, 250, false),
+                _buildGradient(Alignment.centerLeft, 100, true, isVertical: false),
+                _buildGradient(Alignment.centerRight, 100, false, isVertical: false),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-    return AnimatedBuilder(
-      animation: flashController,
-      builder: (context, child) {
-        return Stack(
-          children: [
-            // 전체 투명
-            Container(color: Colors.transparent),
-
-            // 상단
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 250,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color.fromRGBO(
-                          255, 0, 0, 0.6 * flashController.value),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // 하단 (navigation bar는 안 가리게)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 250,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Color.fromRGBO(
-                          255, 0, 0, 0.6 * flashController.value),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // 왼쪽
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: 100,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Color.fromRGBO(
-                          255, 0, 0, 0.6 * flashController.value),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // 오른쪽
-            Positioned(
-              top: 0,
-              bottom: 0,
-              right: 0,
-              width: 100,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: [
-                      Color.fromRGBO(
-                          255, 0, 0, 0.6 * flashController.value),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _buildGradient(
+      Alignment alignment,
+      double size,
+      bool isStart, {
+        bool isVertical = true,
+      }) {
+    return Positioned(
+      top: isVertical && alignment == Alignment.topCenter ? 0 : null,
+      bottom: isVertical && alignment == Alignment.bottomCenter ? 0 : null,
+      left: !isVertical && alignment == Alignment.centerLeft ? 0 : null,
+      right: !isVertical && alignment == Alignment.centerRight ? 0 : null,
+      width: isVertical ? null : size,
+      height: isVertical ? size : null,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: alignment,
+            end: isVertical
+                ? (isStart ? Alignment.bottomCenter : Alignment.topCenter)
+                : (isStart ? Alignment.centerRight : Alignment.centerLeft),
+            colors: [
+              Color.fromRGBO(255, 0, 0, 0.6 * animation.value),
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
