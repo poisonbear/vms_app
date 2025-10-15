@@ -97,6 +97,8 @@ class AppColors {
   static const emergencyRed500 = Color(0xFFF44336);
   static const emergencyRed600 = Color(0xFFE53935);
   static const emergencyRed700 = Color(0xFFD32F2F);
+  static const emergencyRed800 = Color(0xFFDC2626);
+  static const emergencyRed900 = Color(0xFFB91C1C);
 
   // ============================================
   // Emergency Blue Colors
@@ -110,6 +112,18 @@ class AppColors {
   static const emergencyOrange = Colors.orange;
   static const emergencyGreen = Colors.green;
   static const emergencyGreenAccent = Colors.greenAccent;
+
+  // ============================================
+  // 경고/알림 색상 (Warning Colors)
+  // ============================================
+  static const warningBg = Color(0xFFFFFBEB);          // 크림색 배경
+  static const warningBorder = Color(0xFFFDE68A);      // 부드러운 노란색 테두리
+  static const warningIconBg = Color(0xFFFBBF24);      // 골드 아이콘 배경
+  static const warningText = Color(0xFF92400E);        // 브라운 텍스트
+
+  // 투명도 헬퍼
+  static final warningBgLight = warningBg.withOpacity(0.8);
+  static final warningTextLight = warningText.withOpacity(0.8);
 
   // ============================================
   // Flutter Material Colors (직접 참조)

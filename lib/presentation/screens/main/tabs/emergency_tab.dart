@@ -194,7 +194,7 @@ class _EmergencyHeader extends StatelessWidget {
       height: 43,
       padding: const EdgeInsets.symmetric(horizontal: AppSizes.s14),
       decoration: const BoxDecoration(
-        color: AppColors.emergencyRed600,
+        color: AppColors.emergencyRed900,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppSizes.s20),
         ),
@@ -379,8 +379,8 @@ class _EmergencyButtonContent extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.emergencyRed600,
-            AppColors.emergencyRed,
+            AppColors.emergencyRed800,
+            AppColors.emergencyRed900,
           ],
         ),
         borderRadius: BorderRadius.circular(AppSizes.s12),
@@ -636,6 +636,22 @@ class _InfoRow extends StatelessWidget {
     required this.value,
   });
 
+  // ✅ 복사 기능 추가
+  void _copyToClipboard(BuildContext context, String label, String value) {
+    if (value == '정보 없음') return;
+
+    Clipboard.setData(ClipboardData(text: value));
+    HapticFeedback.lightImpact();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label이(가) 복사되었습니다'),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -664,13 +680,27 @@ class _InfoRow extends StatelessWidget {
             ),
           ),
         ),
+        // 복사 버튼
+        if (value != '정보 없음')
+          InkWell(
+            onTap: () => _copyToClipboard(context, label, value),
+            borderRadius: BorderRadius.circular(AppSizes.s4),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSizes.s4),
+              child: Icon(
+                Icons.content_copy,
+                size: AppSizes.s16,
+                color: AppColors.grayType6,
+              ),
+            ),
+          ),
       ],
     );
   }
 }
 
 // ============================================
-// 경고 섹션
+// 경고 섹션 (세련된 디자인)
 // ============================================
 class _WarningSection extends StatelessWidget {
   const _WarningSection();
@@ -678,35 +708,70 @@ class _WarningSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
-        color: AppColors.yellowType1.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppSizes.s8),
+        color: AppColors.warningBg,
+        borderRadius: BorderRadius.circular(AppSizes.s12),
         border: Border.all(
-          color: AppColors.yellowType1,
+          color: AppColors.warningBorder,
           width: 1,
         ),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: AppColors.yellowType2,
-            size: 24,
-          ),
-          SizedBox(width: AppSizes.s12),
-          Expanded(
-            child: Text(
-              '긴급 상황 시 122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.',
-              textAlign: TextAlign.left,
-              style: TextStyle(
-                fontSize: AppSizes.s13,
-                fontWeight: FontWeights.w400,
-                color: AppColors.yellowType2,
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.warningBorder.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.s16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // 아이콘 컨테이너
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.warningIconBg,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(
+                Icons.priority_high,
+                color: AppColors.whiteType1,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: AppSizes.s12),
+            // 텍스트 영역
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 제목
+                  const Text(
+                    '긴급신고 주의사항',
+                    style: TextStyle(
+                      fontSize: AppSizes.s14,
+                      fontWeight: FontWeights.w700,
+                      color: AppColors.warningText,
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.s4),
+                  // 본문
+                  Text(
+                    '122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.',
+                    style: TextStyle(
+                      fontSize: AppSizes.s12,
+                      fontWeight: FontWeights.w400,
+                      color: AppColors.warningTextLight,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
