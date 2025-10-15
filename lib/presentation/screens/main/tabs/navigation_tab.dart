@@ -174,7 +174,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
           final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
           if (mainScreenState != null) {
             try {
-              (mainScreenState as dynamic).selectedIndex = 0;
+              (mainScreenState as dynamic).selectedIndex = -1;
             } catch (e) {}
           }
 
@@ -619,7 +619,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
       if (mainScreenState != null) {
         try {
-          (mainScreenState as dynamic).selectedIndex = 0;
+          (mainScreenState as dynamic).selectedIndex = -1;
         } catch (e) {}
       }
 
@@ -827,7 +827,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     context.findAncestorStateOfType<State<MainScreen>>();
                     if (MainScreenState != null) {
                       try {
-                        (MainScreenState as dynamic).selectedIndex = 0;
+                        (MainScreenState as dynamic).selectedIndex = -1;
                       } catch (e) {}
                     }
 
@@ -843,7 +843,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     context.findAncestorStateOfType<State<MainScreen>>();
                     if (MainScreenState != null) {
                       try {
-                        (MainScreenState as dynamic).selectedIndex = 0;
+                        (MainScreenState as dynamic).selectedIndex = -1;
                       } catch (e) {}
                     }
 
@@ -1321,7 +1321,7 @@ Widget _buildCollapsedBottomSheet(
                             context.findAncestorStateOfType<State<MainScreen>>();
                             if (MainScreenState != null) {
                               try {
-                                (MainScreenState as dynamic).selectedIndex = 0;
+                                (MainScreenState as dynamic).selectedIndex = -1;
                               } catch (e) {}
                             }
                             viewModel.setNavigationHistoryMode(false);

@@ -295,6 +295,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           builder: (context, controller, child) {
             return Stack(
               children: [
+                // 지도
                 MainMapWidget(
                   mapController: controller.mapController,
                   currentPosition: controller.currentPosition,
@@ -305,8 +306,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   onVesselTap: (vessel) => _showVesselDialog(context, vessel),
                 ),
 
+                // 기상 버튼
                 const WeatherControlButtons(),
 
+                // 맵 컨트롤 버튼
                 MapControlButtons(
                   isOtherVesselsVisible: controller.isOtherVesselsVisible,
                   onOtherVesselsToggle: controller.toggleOtherVesselsVisibility,
@@ -314,21 +317,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   onHomeButtonTap: (context) => controller.moveToHome(),
                 ),
 
-                // 🆕 플래싱 오버레이 (분리된 위젯 사용)
+                // 플래싱 오버레이
                 if (controller.isFlashing)
                   FlashOverlay(animation: _flashController),
 
-                // 🆕 알림 배너 (분리된 위젯 사용)
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + AppSizes.s10,
-                  left: AppSizes.s20,
-                  right: AppSizes.s20,
-                  child: NavigationWarningBanner(
-                    isVisible: selectedIndex != 2,
-                  ),
-                ),
+                // ❌ 상단 배너 제거 (주석 처리 또는 삭제)
+                // Positioned(
+                //   top: MediaQuery.of(context).padding.top + AppSizes.s10,
+                //   left: AppSizes.s20,
+                //   right: AppSizes.s20,
+                //   child: NavigationWarningBanner(
+                //     isVisible: selectedIndex != 2,
+                //   ),
+                // ),
 
-                // 🆕 당일 항적 버튼 (분리된 위젯 사용)
+                // 당일 항적 버튼
                 Positioned(
                   top: MediaQuery.of(context).padding.top + AppSizes.s60,
                   right: AppSizes.s16,
@@ -342,10 +345,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           },
         ),
 
-        bottomNavigationBar: BottomNavigationWidget(
-          selectedIndex: selectedIndex,
-          onItemTapped: _onNavItemTapped,
-          showEmergencyTab: true,
+        // ✅ 하단에 배너 + 네비게이션 바 (간격 없이)
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 0,  // 간격 0
+          children: [
+            // 항행경보 배너
+            const NavigationWarningBanner(
+              isVisible: true,
+            ),
+
+            // 하단 네비게이션 바
+            BottomNavigationWidget(
+              selectedIndex: selectedIndex,
+              onItemTapped: _onNavItemTapped,
+              showEmergencyTab: true,
+            ),
+          ],
         ),
       ),
     );

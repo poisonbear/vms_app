@@ -1,24 +1,25 @@
+// lib/presentation/widgets/features/navigation/bottom_navigation_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_app/core/constants/constants.dart';
 
-/// 하단 네비게이션 바 위젯 (통합 버전)
-/// MainBottomNavigation과 BottomNavigationWidget을 통합
 class BottomNavigationWidget extends StatelessWidget {
   final int selectedIndex;
   final Function(int, BuildContext) onItemTapped;
-  final bool showEmergencyTab;  // 긴급신고 탭 표시 여부
+  final bool showEmergencyTab;
 
   const BottomNavigationWidget({
     super.key,
     required this.selectedIndex,
     required this.onItemTapped,
-    this.showEmergencyTab = true,  // 기본값: 긴급신고 탭 표시
+    this.showEmergencyTab = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.zero,  // ✅ 마진 제거
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -29,7 +30,7 @@ class BottomNavigationWidget extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        top: false,
+        top: false,  // ✅ 상단 SafeArea 비활성화
         child: SizedBox(
           height: 60,
           child: Row(
@@ -131,7 +132,6 @@ class BottomNavigationWidget extends StatelessWidget {
     required bool isEmergency,
     required Function(int, BuildContext) onTap,
   }) {
-    // 색상 결정
     final Color iconColor = _getItemColor(isSelected, isEmergency, true);
     final Color textColor = _getItemColor(isSelected, isEmergency, false);
 
@@ -144,7 +144,6 @@ class BottomNavigationWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 아이콘
               SizedBox(
                 width: AppSizes.s24.toDouble(),
                 height: AppSizes.s24.toDouble(),
@@ -155,7 +154,6 @@ class BottomNavigationWidget extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppSizes.s4.toDouble()),
-              // 라벨
               Text(
                 label,
                 style: TextStyle(
@@ -178,7 +176,6 @@ class BottomNavigationWidget extends StatelessWidget {
     required bool isEmergency,
   }) {
     if (isEmergency) {
-      // 긴급신고 아이콘은 색상 필터 적용
       return ColorFiltered(
         colorFilter: ColorFilter.mode(
           iconColor,
@@ -190,7 +187,6 @@ class BottomNavigationWidget extends StatelessWidget {
         ),
       );
     } else {
-      // 일반 아이콘
       return SvgPicture.asset(
         iconPath,
         fit: BoxFit.contain,
@@ -201,95 +197,13 @@ class BottomNavigationWidget extends StatelessWidget {
   /// 아이템 색상 결정
   Color _getItemColor(bool isSelected, bool isEmergency, bool isIcon) {
     if (isEmergency) {
-      // 긴급신고 탭은 빨간색 계열
       return isSelected
           ? AppColors.emergencyRed
           : AppColors.emergencyRed400;
     } else {
-      // 다른 탭들은 기존 색상
       return isSelected
           ? AppColors.grayType8
           : AppColors.grayType2;
     }
-  }
-}
-
-/// 간단한 버전의 하단 네비게이션 바 (기본 Flutter 위젯 사용)
-/// 필요시 사용할 수 있는 대체 구현
-class SimpleBottomNavigationWidget extends StatelessWidget {
-  final int selectedIndex;
-  final Function(int) onItemTapped;
-
-  const SimpleBottomNavigationWidget({
-    super.key,
-    required this.selectedIndex,
-    required this.onItemTapped,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.grayType4,
-            width: 1,
-          ),
-        ),
-      ),
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: AppColors.grayType8,
-        unselectedItemColor: AppColors.grayType2,
-        selectedLabelStyle: TextStyle(
-          fontSize: AppSizes.s16.toDouble(),
-          fontWeight: FontWeights.w700,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: AppSizes.s16.toDouble(),
-          fontWeight: FontWeights.w700,
-        ),
-        currentIndex: selectedIndex,
-        onTap: onItemTapped,
-        items: [
-          _buildNavItem(0, 'Home', '홈'),
-          _buildNavItem(1, 'cloud-sun', '기상정보'),
-          _buildNavItem(2, 'ship', '항행이력'),
-          _buildNavItem(3, 'user-alt-1', '마이'),
-        ],
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildNavItem(
-      int index,
-      String iconName,
-      String label,
-      ) {
-    final isSelected = selectedIndex == index;
-    final iconPath = 'assets/kdn/ros/img/${iconName}_${isSelected ? 'on' : 'off'}.svg';
-
-    return BottomNavigationBarItem(
-      icon: Padding(
-        padding: EdgeInsets.only(bottom: AppSizes.s8.toDouble()),
-        child: Column(
-          children: [
-            SizedBox(height: AppSizes.s12.toDouble()),
-            SizedBox(
-              width: AppSizes.s24.toDouble(),
-              height: AppSizes.s24.toDouble(),
-              child: SvgPicture.asset(
-                iconPath,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ],
-        ),
-      ),
-      label: label,
-    );
   }
 }
