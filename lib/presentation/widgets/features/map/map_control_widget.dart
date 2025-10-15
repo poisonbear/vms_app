@@ -44,7 +44,7 @@ class MapControlWidget extends StatelessWidget {
 
     return Positioned(
       right: AppSizes.s20,
-      bottom: AppSizes.s100,
+      bottom: AppSizes.s20,
       child: Column(
         children: [
           // ✨ NEW: 항적초기화(Refresh) 버튼 - 최상단에 위치

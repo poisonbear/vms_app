@@ -3,17 +3,44 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/emergency_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/emergency_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 
-// 메인 함수 - 다른 탭들과 동일한 구조
+// ============================================
+// 선박 정보 데이터 클래스
+// ============================================
+class _VesselInfo {
+  final String? shipName;
+  final double? latitude;
+  final double? longitude;
+
+  const _VesselInfo({
+    this.shipName,
+    this.latitude,
+    this.longitude,
+  });
+
+  String get formattedLatitude =>
+      latitude?.toStringAsFixed(6) ?? '정보 없음';
+
+  String get formattedLongitude =>
+      longitude?.toStringAsFixed(6) ?? '정보 없음';
+}
+
+// ============================================
+// 메인 함수
+// ============================================
 Widget MainViewEmergencySheet(BuildContext context, {Function? onClose}) {
   return _EmergencyBottomSheet(onClose: onClose);
 }
 
+// ============================================
+// 메인 위젯
+// ============================================
 class _EmergencyBottomSheet extends StatefulWidget {
   final Function? onClose;
 
@@ -32,7 +59,10 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
   @override
   void initState() {
     super.initState();
+    _initializeAnimation();
+  }
 
+  void _initializeAnimation() {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
@@ -45,10 +75,6 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeLocation();
-    });
   }
 
   @override
@@ -57,59 +83,46 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     super.dispose();
   }
 
-  Future<void> _initializeLocation() async {
-    if (!mounted) return;
+  void _handleClose() {
+    widget.onClose?.call();
 
-    final provider = context.read<EmergencyProvider>();
-    await provider.updateCurrentLocation();
+    final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+    if (mainScreenState != null) {
+      try {
+        (mainScreenState as dynamic).selectedIndex = -1;
+      } catch (_) {}
+    }
 
-    if (provider.errorMessage != null && provider.errorMessage!.isNotEmpty && mounted) {
-      showTopSnackBar(context, provider.errorMessage!);
+    if (Navigator.of(context).canPop()) {
+      Navigator.pop(context);
     }
   }
 
-  void _handleClose(BuildContext context) {
+  _VesselInfo _getVesselInfo(VesselProvider vesselProvider, int? mmsi) {
+    if (mmsi == null) return const _VesselInfo();
+
     try {
-      if (widget.onClose != null) {
-        widget.onClose!();
-      }
-
-      final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
-      if (mainScreenState != null) {
-        try {
-          (mainScreenState as dynamic).selectedIndex = -1;
-        } catch (e) {}
-      }
-
-      if (Navigator.of(context).canPop()) {
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      print('닫기 버튼 오류: $e');
+      final vessel = vesselProvider.vessels.firstWhere(
+            (v) => v.mmsi == mmsi,
+      );
+      return _VesselInfo(
+        shipName: vessel.ship_nm,
+        latitude: vessel.lttd,
+        longitude: vessel.lntd,
+      );
+    } catch (_) {
+      return const _VesselInfo();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer3<EmergencyProvider, UserState, VesselProvider>(
-      builder: (context, emergencyProvider, userState, vesselProvider, child) {
-        // 선박명 가져오기
-        String? shipNm;
-        if (userState.mmsi != null) {
-          try {
-            final userVessel = vesselProvider.vessels.firstWhere(
-                  (vessel) => vessel.mmsi == userState.mmsi,
-            );
-            shipNm = userVessel.ship_nm;
-          } catch (e) {
-            shipNm = null;
-          }
-        }
+      builder: (context, emergencyProvider, userState, vesselProvider, _) {
+        final vesselInfo = _getVesselInfo(vesselProvider, userState.mmsi);
 
         return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
+          onTap: () => FocusScope.of(context).unfocus(),
           child: AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle.dark,
             child: Container(
@@ -118,53 +131,17 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildHeader(emergencyProvider),
+                    _EmergencyHeader(onClose: _handleClose),
                     Flexible(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: AppColors.whiteType1,
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(AppSizes.s20),
-                            bottomRight: Radius.circular(AppSizes.s20),
-                          ),
-                        ),
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSizes.s16),
-                            child: Column(
-                              children: [
-                                // 메인 컨텐츠 영역 - 좌우 배치
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // 왼쪽: 긴급신고 버튼 (40%)
-                                    Expanded(
-                                      flex: 4,
-                                      child: _buildEmergencyButton(
-                                        emergencyProvider,
-                                        userState.mmsi,
-                                        shipNm,
-                                      ),
-                                    ),
-                                    const SizedBox(width: AppSizes.s12),
-                                    // 오른쪽: 선박 및 위치정보 (60%)
-                                    Expanded(
-                                      flex: 6,
-                                      child: _buildInfoSection(
-                                        emergencyProvider,
-                                        userState,
-                                        shipNm,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: AppSizes.s16),
-                                // 아래: 경고 문구
-                                _buildWarningSection(),
-                              ],
-                            ),
-                          ),
-                        ),
+                      child: _EmergencyContent(
+                        emergencyProvider: emergencyProvider,
+                        userState: userState,
+                        vesselInfo: vesselInfo,
+                        isEmergencyPressed: _isEmergencyPressed,
+                        scaleAnimation: _scaleAnimation,
+                        onLongPressStart: _handleLongPressStart,
+                        onLongPressEnd: _handleLongPressEnd,
+                        onLongPressCancel: _handleLongPressCancel,
                       ),
                     ),
                   ],
@@ -177,15 +154,49 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     );
   }
 
-  Widget _buildHeader(EmergencyProvider emergencyProvider) {
+  void _handleLongPressStart(EmergencyProvider provider, int? mmsi, String? shipName) {
+    if (_isEmergencyPressed) return;
+
+    setState(() => _isEmergencyPressed = true);
+    HapticFeedback.heavyImpact();
+    _animationController.forward();
+    provider.startEmergency(
+      mmsi: mmsi,
+      ship_nm: shipName,
+      countdownSeconds: 5,
+    );
+  }
+
+  void _handleLongPressEnd() {
+    if (!_isEmergencyPressed) return;
+
+    setState(() => _isEmergencyPressed = false);
+    HapticFeedback.lightImpact();
+    _animationController.reverse();
+  }
+
+  void _handleLongPressCancel() {
+    _handleLongPressEnd();
+  }
+}
+
+// ============================================
+// 헤더 위젯
+// ============================================
+class _EmergencyHeader extends StatelessWidget {
+  final VoidCallback onClose;
+
+  const _EmergencyHeader({required this.onClose});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: 43,
       padding: const EdgeInsets.symmetric(horizontal: AppSizes.s14),
       decoration: const BoxDecoration(
         color: AppColors.emergencyRed600,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppSizes.s20),
-          topRight: Radius.circular(AppSizes.s20),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.s20),
         ),
       ),
       child: Row(
@@ -196,146 +207,237 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             size: 22,
           ),
           const SizedBox(width: AppSizes.s6),
-          TextWidgetString(
-            '긴급신고',
-            TextAligns.left,
-            AppSizes.i18,
-            FontWeights.w700,
-            AppColors.whiteType1,
-          ),
-          const Spacer(),
-          GestureDetector(
-            onTap: () {
-              emergencyProvider.toggleLocationTracking();
-              HapticFeedback.lightImpact();
-            },
-            child: Container(
-              padding: const EdgeInsets.all(AppSizes.s8),
-              color: Colors.transparent,
-              child: Icon(
-                emergencyProvider.isLocationTracking
-                    ? Icons.location_on
-                    : Icons.location_off,
-                color: emergencyProvider.isLocationTracking
-                    ? AppColors.whiteType1
-                    : AppColors.whiteType1.withOpacity(0.5),
-                size: 22,
-              ),
+          Expanded(
+            child: TextWidgetString(
+              '긴급신고',
+              TextAligns.left,
+              AppSizes.i18,
+              FontWeights.w700,
+              AppColors.whiteType1,
             ),
           ),
-          GestureDetector(
-            onTap: () => _handleClose(context),
-            child: Container(
-              padding: const EdgeInsets.all(AppSizes.s8),
-              color: Colors.transparent,
-              child: const Icon(
-                Icons.close,
-                color: AppColors.whiteType1,
-                size: 22,
-              ),
-            ),
-          ),
+          _HeaderCloseButton(onClose: onClose),
         ],
       ),
     );
   }
+}
 
-  Widget _buildEmergencyButton(
-      EmergencyProvider provider,
-      int? mmsi,
-      String? shipNm,
-      ) {
-    if (provider.status == EmergencyStatus.preparing) {
-      return _buildCountdownOverlay(provider);
-    }
+class _HeaderCloseButton extends StatelessWidget {
+  final VoidCallback onClose;
 
+  const _HeaderCloseButton({required this.onClose});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPressStart: (_) {
-        if (!_isEmergencyPressed) {
-          setState(() => _isEmergencyPressed = true);
-          HapticFeedback.heavyImpact();
-          _animationController.forward();
-          provider.startEmergency(
-            mmsi: mmsi,
-            ship_nm: shipNm,
-            countdownSeconds: 5,
-          );
-        }
-      },
-      onLongPressEnd: (_) {
-        if (_isEmergencyPressed) {
-          setState(() => _isEmergencyPressed = false);
-          HapticFeedback.lightImpact();
-          _animationController.reverse();
-        }
-      },
-      onLongPressCancel: () {
-        if (_isEmergencyPressed) {
-          setState(() => _isEmergencyPressed = false);
-          HapticFeedback.lightImpact();
-          _animationController.reverse();
-        }
-      },
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: Container(
-          height: 200,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.emergencyRed600,
-                AppColors.emergencyRed,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(AppSizes.s12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.emergencyRed.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.phone,
-                  color: AppColors.whiteType1,
-                  size: 64,
-                ),
-                const SizedBox(height: AppSizes.s12),
-                const Text(
-                  '긴급신고',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: AppSizes.s16,
-                    fontWeight: FontWeights.w700,
-                    color: AppColors.whiteType1,
-                  ),
-                ),
-                const SizedBox(height: AppSizes.s4),
-                Text(
-                  '3초간 길게 누르세요',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: AppSizes.s12,
-                    fontWeight: FontWeights.w400,
-                    color: AppColors.whiteType1.withOpacity(0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      onTap: onClose,
+      child: Container(
+        padding: const EdgeInsets.all(AppSizes.s8),
+        color: Colors.transparent,
+        child: const Icon(
+          Icons.close,
+          color: AppColors.whiteType1,
+          size: 22,
         ),
       ),
     );
   }
+}
 
-  Widget _buildCountdownOverlay(EmergencyProvider provider) {
+// ============================================
+// 콘텐츠 위젯
+// ============================================
+class _EmergencyContent extends StatelessWidget {
+  final EmergencyProvider emergencyProvider;
+  final UserState userState;
+  final _VesselInfo vesselInfo;
+  final bool isEmergencyPressed;
+  final Animation<double> scaleAnimation;
+  final Function(EmergencyProvider, int?, String?) onLongPressStart;
+  final VoidCallback onLongPressEnd;
+  final VoidCallback onLongPressCancel;
+
+  const _EmergencyContent({
+    required this.emergencyProvider,
+    required this.userState,
+    required this.vesselInfo,
+    required this.isEmergencyPressed,
+    required this.scaleAnimation,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
+    required this.onLongPressCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.whiteType1,
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppSizes.s20),
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSizes.s16),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 긴급신고 버튼 (40%)
+                Expanded(
+                  flex: 4,
+                  child: _EmergencyButton(
+                    provider: emergencyProvider,
+                    mmsi: userState.mmsi,
+                    shipName: vesselInfo.shipName,
+                    isPressed: isEmergencyPressed,
+                    scaleAnimation: scaleAnimation,
+                    onLongPressStart: () => onLongPressStart(
+                      emergencyProvider,
+                      userState.mmsi,
+                      vesselInfo.shipName,
+                    ),
+                    onLongPressEnd: onLongPressEnd,
+                    onLongPressCancel: onLongPressCancel,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.s12),
+                // 선박 및 위치정보 (60%)
+                Expanded(
+                  flex: 6,
+                  child: _VesselInfoSection(
+                    userState: userState,
+                    vesselInfo: vesselInfo,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSizes.s16),
+            const _WarningSection(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================
+// 긴급신고 버튼
+// ============================================
+class _EmergencyButton extends StatelessWidget {
+  final EmergencyProvider provider;
+  final int? mmsi;
+  final String? shipName;
+  final bool isPressed;
+  final Animation<double> scaleAnimation;
+  final VoidCallback onLongPressStart;
+  final VoidCallback onLongPressEnd;
+  final VoidCallback onLongPressCancel;
+
+  const _EmergencyButton({
+    required this.provider,
+    required this.mmsi,
+    required this.shipName,
+    required this.isPressed,
+    required this.scaleAnimation,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
+    required this.onLongPressCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (provider.status == EmergencyStatus.preparing) {
+      return _CountdownOverlay(countdownSeconds: provider.countdownSeconds);
+    }
+
+    return RepaintBoundary(
+      child: GestureDetector(
+        onLongPressStart: (_) => onLongPressStart(),
+        onLongPressEnd: (_) => onLongPressEnd(),
+        onLongPressCancel: onLongPressCancel,
+        child: ScaleTransition(
+          scale: scaleAnimation,
+          child: const _EmergencyButtonContent(),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmergencyButtonContent extends StatelessWidget {
+  const _EmergencyButtonContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.emergencyRed600,
+            AppColors.emergencyRed,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppSizes.s12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.emergencyRed.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.phone,
+              color: AppColors.whiteType1,
+              size: 64,
+            ),
+            SizedBox(height: AppSizes.s12),
+            Text(
+              '긴급신고',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppSizes.s16,
+                fontWeight: FontWeights.w700,
+                color: AppColors.whiteType1,
+              ),
+            ),
+            SizedBox(height: AppSizes.s4),
+            Text(
+              '3초간 길게 누르세요',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppSizes.s12,
+                fontWeight: FontWeights.w400,
+                color: AppColors.whiteType1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================
+// 카운트다운 오버레이
+// ============================================
+class _CountdownOverlay extends StatelessWidget {
+  final int countdownSeconds;
+
+  const _CountdownOverlay({required this.countdownSeconds});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -359,25 +461,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.whiteType1.withOpacity(0.2),
-            ),
-            child: Center(
-              child: Text(
-                '${provider.countdownSeconds}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: AppSizes.s32,
-                  fontWeight: FontWeights.w700,
-                  color: AppColors.whiteType1,
-                ),
-              ),
-            ),
-          ),
+          _CountdownCircle(countdownSeconds: countdownSeconds),
           const SizedBox(height: AppSizes.s12),
           const Text(
             '초 후 자동 연결됩니다',
@@ -389,38 +473,88 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             ),
           ),
           const SizedBox(height: AppSizes.s16),
-          TextButton(
-            onPressed: () {
-              provider.cancelEmergency();
-              HapticFeedback.lightImpact();
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: AppColors.whiteType1.withOpacity(0.2),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.s20,
-                vertical: AppSizes.s10,
-              ),
-            ),
-            child: const Text(
-              '취소',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppSizes.s14,
-                fontWeight: FontWeights.w600,
-                color: AppColors.whiteType1,
-              ),
-            ),
-          ),
+          const _CancelButton(),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInfoSection(EmergencyProvider provider, UserState userState, String? shipNm) {
-    final position = provider.currentPosition;
-    final latitude = position?.latitude.toStringAsFixed(6) ?? '정보 없음';
-    final longitude = position?.longitude.toStringAsFixed(6) ?? '정보 없음';
+class _CountdownCircle extends StatelessWidget {
+  final int countdownSeconds;
 
+  const _CountdownCircle({required this.countdownSeconds});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.whiteType1.withOpacity(0.2),
+      ),
+      child: Center(
+        child: Text(
+          '$countdownSeconds',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: AppSizes.s32,
+            fontWeight: FontWeights.w700,
+            color: AppColors.whiteType1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CancelButton extends StatelessWidget {
+  const _CancelButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.read<EmergencyProvider>();
+
+    return TextButton(
+      onPressed: () {
+        provider.cancelEmergency();
+        HapticFeedback.lightImpact();
+      },
+      style: TextButton.styleFrom(
+        backgroundColor: AppColors.whiteType1.withOpacity(0.2),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.s20,
+          vertical: AppSizes.s10,
+        ),
+      ),
+      child: const Text(
+        '취소',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: AppSizes.s14,
+          fontWeight: FontWeights.w600,
+          color: AppColors.whiteType1,
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================
+// 선박 및 위치정보 섹션
+// ============================================
+class _VesselInfoSection extends StatelessWidget {
+  final UserState userState;
+  final _VesselInfo vesselInfo;
+
+  const _VesselInfoSection({
+    required this.userState,
+    required this.vesselInfo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       height: 200,
       padding: const EdgeInsets.all(AppSizes.s16),
@@ -445,24 +579,65 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
             ),
           ),
           const SizedBox(height: AppSizes.s16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildInfoRow('선박명', shipNm ?? '정보 없음'),
-              const SizedBox(height: AppSizes.s10),
-              _buildInfoRow('MMSI', userState.mmsi?.toString() ?? '정보 없음'),
-              const SizedBox(height: AppSizes.s10),
-              _buildInfoRow('위도', latitude),
-              const SizedBox(height: AppSizes.s10),
-              _buildInfoRow('경도', longitude),
-            ],
+          _VesselInfoList(
+            userState: userState,
+            vesselInfo: vesselInfo,
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInfoRow(String label, String value) {
+class _VesselInfoList extends StatelessWidget {
+  final UserState userState;
+  final _VesselInfo vesselInfo;
+
+  const _VesselInfoList({
+    required this.userState,
+    required this.vesselInfo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _InfoRow(
+          label: '선박명',
+          value: vesselInfo.shipName ?? '정보 없음',
+        ),
+        const SizedBox(height: AppSizes.s10),
+        _InfoRow(
+          label: 'MMSI',
+          value: userState.mmsi?.toString() ?? '정보 없음',
+        ),
+        const SizedBox(height: AppSizes.s10),
+        _InfoRow(
+          label: '위도',
+          value: vesselInfo.formattedLatitude,
+        ),
+        const SizedBox(height: AppSizes.s10),
+        _InfoRow(
+          label: '경도',
+          value: vesselInfo.formattedLongitude,
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -492,8 +667,16 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
       ],
     );
   }
+}
 
-  Widget _buildWarningSection() {
+// ============================================
+// 경고 섹션
+// ============================================
+class _WarningSection extends StatelessWidget {
+  const _WarningSection();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
