@@ -156,6 +156,7 @@ class _SplashScreenState extends State<SplashScreen>
   final String apiUrl = ApiConfig.authLogin;
   final String apiUrl2 = ApiConfig.authRole;
   final dioRequest = DioRequest();
+  final _secureStorage = SecureStorageService();
 
   @override
   void initState() {
@@ -185,13 +186,16 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    final isAutoLogin = widget.prefs.getBool(StringConstants.autoLoginKey);
-    final savedId = widget.prefs.getString(StringConstants.savedIdKey);
-    final savedPw = widget.prefs.getString(StringConstants.savedPwKey);
+    final isAutoLogin = widget.prefs.getBool(StringConstants.autoLoginKey) ?? false;
+
+    // ✅ SecureStorage에서 암호화된 데이터 읽기
+    final credentials = await _secureStorage.loadCredentials();
+    final savedId = credentials['id'];
+    final savedPw = credentials['password'];
 
     _logAutoLoginCheck(isAutoLogin, savedId, savedPw);
 
-    if (isAutoLogin == true && savedId != null && savedPw != null) {
+    if (isAutoLogin && savedId != null && savedPw != null) {
       await _performAutoLogin(savedId, savedPw);
     } else {
       _navigateToLogin();
@@ -497,8 +501,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   /// 자동 로그인 데이터 삭제
   Future<void> _clearAutoLoginData() async {
-    await widget.prefs.remove(StringConstants.savedIdKey);
-    await widget.prefs.remove(StringConstants.savedPwKey);
+    // ✅ SecureStorage 먼저 삭제 (가장 중요!)
+    await _secureStorage.clearAll();
+    // SharedPreferences 플래그 정리
     await widget.prefs.setBool(StringConstants.autoLoginKey, false);
     AppLogger.d(LogMessages.autoLoginDataCleared);
   }

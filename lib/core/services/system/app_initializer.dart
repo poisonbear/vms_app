@@ -31,16 +31,29 @@ class AppInitializer {
     }
   }
 
-  /// 보안 초기화 (간소화 버전)
+  /// ✅ 보안 초기화 (마이그레이션 추가)
   static Future<void> initializeSecurity() async {
     try {
-      AppLogger.d('Initializing security...');
-      // 보안 관련 초기화 로직을 여기에 추가
-      // 예: 인증서 검증, 루트 탐지 등
-      AppLogger.d('Security initialization completed');
-    } catch (e) {
-      AppLogger.e('Security initialization failed: $e');
-      // 보안 초기화 실패해도 앱은 계속 실행
+      AppLogger.i('========== 보안 초기화 시작 ==========');
+
+      // 1. SecureStorage 마이그레이션 실행
+      final secureStorage = SecureStorageService();
+      final migrationSuccess = await secureStorage.migrateFromSharedPreferences();
+
+      if (migrationSuccess) {
+        AppLogger.i('✅ 보안 스토리지 마이그레이션 완료');
+      } else {
+        AppLogger.w('⚠️ 보안 스토리지 마이그레이션 실패 (기존 데이터 없거나 오류)');
+      }
+
+      // 2. 추가 보안 초기화 로직을 여기에 추가 가능
+      // 예: 인증서 검증, 루트 탐지, 보안 정책 확인 등
+
+      AppLogger.i('========== 보안 초기화 완료 ==========');
+    } catch (e, stackTrace) {
+      AppLogger.e('Security initialization failed', e, stackTrace);
+      // ⚠️ 보안 초기화 실패해도 앱은 계속 실행
+      // 중요: 프로덕션에서는 보안 초기화 실패 시 추가 처리 고려
     }
   }
 

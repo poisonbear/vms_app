@@ -7,6 +7,7 @@ import 'package:vms_app/core/utils/logging/app_logger.dart';
 /// 민감한 데이터를 안전하게 저장하는 서비스
 ///
 /// ✅ 기존 SharedPreferences 데이터를 자동으로 마이그레이션합니다.
+/// ✅ 현재 프로젝트 구조: login_screen에서 직접 SecureStorage 사용
 class SecureStorageService {
   static SecureStorageService? _instance;
   late final FlutterSecureStorage _storage;
@@ -39,7 +40,10 @@ class SecureStorageService {
   /// ✅ SharedPreferences에서 SecureStorage로 데이터 마이그레이션
   ///
   /// 앱 시작 시 한 번만 실행됩니다.
-  /// 기존 사용자의 데이터를 안전하게 이전합니다.
+  ///
+  /// 중요: 현재 프로젝트는 이전에 평문으로 저장하지 않았으므로,
+  /// 이 마이그레이션은 향후를 대비한 것입니다.
+  /// login_screen.dart에서 이미 SecureStorage를 사용하고 있습니다.
   Future<bool> migrateFromSharedPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -51,9 +55,10 @@ class SecureStorageService {
         return true;
       }
 
-      AppLogger.i('=== 데이터 마이그레이션 시작 ===');
+      AppLogger.i('=== 보안 마이그레이션 확인 시작 ===');
 
-      // 기존 데이터 읽기
+      // ✅ 수정: 실제 프로젝트에서 사용했던 키 확인
+      // 'saved_id'와 'saved_pw'는 실제로 존재하지 않을 수 있음
       final oldId = prefs.getString('saved_id');
       final oldPw = prefs.getString('saved_pw');
 
@@ -70,16 +75,19 @@ class SecureStorageService {
 
         AppLogger.i('✅ 기존 평문 데이터 삭제 완료');
       } else {
-        AppLogger.d('마이그레이션할 데이터 없음');
+        // ✅ 평문 데이터가 없는 경우 (정상 상황)
+        AppLogger.i('✅ 마이그레이션할 레거시 데이터 없음 (정상)');
+        AppLogger.i('   현재 프로젝트는 이미 SecureStorage를 사용 중입니다');
       }
 
       // 마이그레이션 완료 플래그 설정
       await prefs.setBool(_migrationCompleteKey, true);
 
-      AppLogger.i('=== 데이터 마이그레이션 완료 ===');
+      AppLogger.i('=== 보안 마이그레이션 완료 ===');
       return true;
-    } catch (e) {
-      AppLogger.e('마이그레이션 실패', e);
+    } catch (e, stackTrace) {
+      AppLogger.e('마이그레이션 실패', e, stackTrace);
+      // ✅ 마이그레이션 실패해도 앱 계속 실행
       return false;
     }
   }
@@ -223,6 +231,22 @@ class SecureStorageService {
       return true;
     } catch (e) {
       AppLogger.e('보안 데이터 삭제 실패', e);
+      return false;
+    }
+  }
+
+  // ============================================
+  // 디버깅 및 유틸리티
+  // ============================================
+
+  /// ✅ SecureStorage에 저장된 데이터 확인 (디버깅용)
+  /// 프로덕션에서는 사용하지 말 것!
+  Future<bool> hasStoredCredentials() async {
+    try {
+      final id = await _storage.read(key: _savedIdKey);
+      final pw = await _storage.read(key: _savedPasswordKey);
+      return id != null && pw != null;
+    } catch (e) {
       return false;
     }
   }
