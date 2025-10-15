@@ -36,3 +36,8 @@ export 'state/memory_manager.dart';
 // ============================================
 export 'system/app_initializer.dart';
 export 'system/timer_service.dart';
+
+// ============================================
+// Security
+// ============================================
+export 'security/secure_storage_service.dart';

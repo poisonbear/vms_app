@@ -1,3 +1,5 @@
+// lib/presentation/screens/auth/login_screen.dart
+
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,8 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
-import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';  // CmdChoiceView import
+import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 
@@ -25,15 +28,17 @@ class LoginView extends StatefulWidget {
 }
 
 class _CmdViewState extends State<LoginView> {
-  final TextEditingController idController = TextEditingController(); // 아이디 입력값
-  final TextEditingController passwordController = TextEditingController(); // 비밀번호 입력값
-  final String apiUrl = ApiConfig.authLogin; // 로그인  url
-  final String apiUrl2 = ApiConfig.authRole; // 사용자 역할 권한  url
-  bool auto_login = false; // 자동 로그인
-  bool save_id = false; // ID 저장 체크박스 상태
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final String apiUrl = ApiConfig.authLogin;
+  final String apiUrl2 = ApiConfig.authRole;
+  bool auto_login = false;
+  bool save_id = false;
   late FirebaseMessaging messaging;
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  late String fcmToken; //FCM 토큰 저장 변수 추가
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  late String fcmToken;
+  final _secureStorage = SecureStorageService();
 
   @override
   void dispose() {
@@ -46,20 +51,20 @@ class _CmdViewState extends State<LoginView> {
   void initState() {
     super.initState();
     messaging = FirebaseMessaging.instance;
-    initFcmToken(); // FCM 토큰 초기화 함수 호출
-    loadSavedId(); // 저장된 ID 불러오기
+    initFcmToken();
+    loadSavedId();
   }
 
-  // FCM 토큰 초기화 함수
+  /// FCM 토큰 초기화 함수
   Future<void> initFcmToken() async {
     try {
       fcmToken = await messaging.getToken() ?? '';
     } catch (e) {
-      fcmToken = ''; // 오류 발생시 빈 문자열로 초기화
+      fcmToken = '';
     }
   }
 
-  // 저장된 ID 불러오기
+  /// 저장된 ID 불러오기
   Future<void> loadSavedId() async {
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -72,14 +77,14 @@ class _CmdViewState extends State<LoginView> {
           // @kdn.vms.com 제거하고 ID만 표시
           idController.text = savedId.replaceAll('@kdn.vms.com', '');
         });
-        AppLogger.d('저장된 ID 불러오기 성공: ${idController.text}');
+        AppLogger.d('저장된 ID 불러오기 성공');
       }
     } catch (e) {
-      AppLogger.e('저장된 ID 불러오기 실패: $e');
+      AppLogger.e('저장된 ID 불러오기 실패', e);
     }
   }
 
-  // ID 저장 처리
+  /// ID 저장 처리
   Future<void> saveUserId(String userId) async {
     try {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,7 +93,7 @@ class _CmdViewState extends State<LoginView> {
         // ID 저장 체크박스가 체크되어 있으면 저장
         await prefs.setBool('save_id_flag', true);
         await prefs.setString('saved_user_id', userId);
-        AppLogger.d('ID 저장 완료: $userId');
+        AppLogger.d('ID 저장 완료');
       } else {
         // 체크 해제되어 있으면 삭제
         await prefs.remove('save_id_flag');
@@ -96,13 +101,14 @@ class _CmdViewState extends State<LoginView> {
         AppLogger.d('저장된 ID 삭제 완료');
       }
     } catch (e) {
-      AppLogger.e('ID 저장 처리 실패: $e');
+      AppLogger.e('ID 저장 처리 실패', e);
     }
   }
 
+  /// 로그인 처리
   Future<void> submitForm() async {
-    final id = '${idController.text.trim()}@kdn.vms.com'; // 아이디
-    final password = passwordController.text.trim(); // 비밀번호
+    final id = '${idController.text.trim()}@kdn.vms.com';
+    final password = passwordController.text.trim();
 
     // 유효성 검사
     if (idController.text.trim().isEmpty || password.isEmpty) {
@@ -111,11 +117,10 @@ class _CmdViewState extends State<LoginView> {
     }
 
     try {
-      // 토큰 생성
-      UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: id, password: password);
+      // Firebase 인증
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: id, password: password);
 
-      // ✅ Firebase JWT 토큰 가져오기
       String? firebaseToken = await userCredential.user?.getIdToken();
       String? uuid = userCredential.user?.uid;
 
@@ -124,40 +129,38 @@ class _CmdViewState extends State<LoginView> {
         return;
       }
 
-      String? token = firebaseToken;
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('firebase_token', token); // firebase 토큰 디바이스에 저장
+      await prefs.setString('firebase_token', firebaseToken);
 
-      //✅ 서버에 JWT 토큰과 함께 로그인 요청
+      // ✅ 민감 정보 로그 개선: 실제 값 출력 안함
+      AppLogger.i('로그인 API 호출 시작');
+      AppLogger.d('API URL: $apiUrl');
+
+      // 서버 로그인 요청
       Response response = await Dio().post(
         apiUrl,
         data: {
-          'user_id': id, // 아이디
-          'user_pwd': password, // 비밀번호
-          'auto_login': auto_login, // 자동 로그인 false값
-          'fcm_tkn': fcmToken, // fcm 토큰
-          'uuid': uuid // uuid
+          'user_id': id,
+          'user_pwd': password,
+          'auto_login': auto_login,
+          'fcm_tkn': fcmToken,
+          'uuid': uuid
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer $firebaseToken', // 서버에 JWT 토큰 전달
+            'Authorization': 'Bearer $firebaseToken',
           },
         ),
       );
 
-      AppLogger.i('=== 로그인 응답 디버깅 시작 ===');
-      AppLogger.d('➡️ 로그인 요청 API URL: $apiUrl');
-      AppLogger.d('✅ Firebase JWT 토큰: $firebaseToken');
-      AppLogger.d('✅ Authorization 헤더: Bearer $firebaseToken');
-      AppLogger.d('Response data: ${response.data}');
-      AppLogger.d('Response status code: ${response.statusCode}');
+      // ✅ 민감 정보 로그 제거
+      AppLogger.d('로그인 응답 상태: ${response.statusCode}');
 
       if (response.statusCode == 200) {
-        // 요청 성공
         String username = response.data['username'];
-        await prefs.setString('username', username); //username을 디바이스에 저장
+        await prefs.setString('username', username);
 
-        // UUID 저장 코드 추가
+        // UUID 저장
         if (response.data.containsKey('uuid')) {
           String uuid = response.data['uuid'];
           await prefs.setString('uuid', uuid);
@@ -166,29 +169,32 @@ class _CmdViewState extends State<LoginView> {
         // ID 저장 처리
         await saveUserId(id);
 
-        //로그인 이후, 자동로그인 값 true로 설정
+        // 자동 로그인 설정
         auto_login = true;
-        await prefs.setBool('auto_login', auto_login); //자동로그인을 디바이스에 저장
+        await prefs.setBool('auto_login', auto_login);
 
-        // 자동 로그인용 비밀번호 저장 (자동 로그인 체크 시에만)
+        // ✅ 수정: 비밀번호를 SecureStorage에 저장
         if (auto_login) {
-          await prefs.setString('saved_id', id);
-          await prefs.setString('saved_pw', password);
+          await _secureStorage.saveCredentials(
+            id: id,
+            password: password,
+          );
+          AppLogger.i('로그인 정보가 안전하게 저장되었습니다');
         }
 
-        //[1] 역할(role) 요청 API 호출
+        // 역할 정보 조회
         Response roleResponse = await Dio().post(
           apiUrl2,
           data: {'user_id': username},
         );
 
         if (roleResponse.statusCode == 200) {
-          AppLogger.d('Role response: ${roleResponse.data}');
+          AppLogger.d('사용자 역할 정보 조회 성공');
           String role = roleResponse.data['role'];
           int? mmsi = roleResponse.data['mmsi'];
 
-          //[2] Provider에 역할 저장
-          context.read<UserState>().setRole(role); // 디바이스에 역할 상태 저장
+          // Provider에 역할 저장
+          context.read<UserState>().setRole(role);
 
           // MMSI 저장 또는 복구
           if (mmsi != null && mmsi != 0) {
@@ -198,30 +204,29 @@ class _CmdViewState extends State<LoginView> {
             try {
               final user = FirebaseAuth.instance.currentUser;
               if (user != null) {
-                final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+                final doc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
 
                 if (doc.exists) {
                   final firestoreMmsi = doc.data()?['mmsi'];
                   if (firestoreMmsi != null && mounted) {
                     context.read<UserState>().setMmsi(firestoreMmsi);
-                    AppLogger.d('Firestore에서 MMSI 복구: $firestoreMmsi');
+                    AppLogger.d('Firestore에서 MMSI 복구 성공');
                   }
                 }
               }
             } catch (e) {
-              AppLogger.e('Firestore MMSI 조회 실패: $e');
+              AppLogger.e('Firestore MMSI 조회 실패', e);
             }
           }
         }
 
-        // ✅ MainScreen으로 이동 - 올바른 생성자 호출
+        // MainScreen으로 이동
         if (!mounted) return;
 
-        AppLogger.d('========================================');
-        AppLogger.d('🚀 로그인 성공! MainScreen으로 이동');
-        AppLogger.d('👤 username: $username');
-        AppLogger.d('✅ autoFocusLocation: true 설정');
-        AppLogger.d('========================================');
+        AppLogger.i('로그인 성공 - MainScreen으로 이동');
 
         if (mounted) {
           Navigator.pushReplacement(
@@ -237,11 +242,18 @@ class _CmdViewState extends State<LoginView> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}')),
+            SnackBar(
+              content: Text(
+                  '로그인 실패: ${response.data['message'] ?? '잘못된 아이디 또는 비밀번호'}'
+              ),
+            ),
           );
         }
       }
     } on FirebaseAuthException catch (e) {
+      // ✅ 민감 정보 로그 제거: 에러 코드만 기록
+      AppLogger.w('Firebase 인증 실패: ${e.code}');
+
       if (e.code == 'invalid-credential') {
         if (e.message?.contains('password') ?? false) {
           showTopSnackBar(context, '비밀번호를 확인해주세요.');
@@ -251,10 +263,10 @@ class _CmdViewState extends State<LoginView> {
           showTopSnackBar(context, '아이디 또는 비밀번호를 확인해주세요.');
         }
       } else {
-        showTopSnackBar(context, '로그인 중 오류가 발생했습니다: ${e.message}');
+        showTopSnackBar(context, '로그인 중 오류가 발생했습니다.');
       }
     } catch (e) {
-      AppLogger.e('로그인 오류: $e');
+      AppLogger.e('로그인 오류', e);
       showTopSnackBar(context, '로그인 중 오류가 발생했습니다.');
     }
   }
@@ -263,15 +275,13 @@ class _CmdViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
-    // 키보드 높이 감지
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false, // 반드시 false
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 1. 배경 이미지를 SizedBox로 고정 크기 설정
+          // 1. 배경 이미지
           SizedBox(
             width: screenWidth,
             height: screenHeight,
@@ -281,7 +291,7 @@ class _CmdViewState extends State<LoginView> {
                   image: DecorationImage(
                     image: AssetImage('assets/kdn/usm/img/blue_sky2.png'),
                     fit: BoxFit.cover,
-                    alignment: Alignment.center, // 중앙 고정
+                    alignment: Alignment.center,
                   ),
                 ),
               ),
@@ -291,13 +301,12 @@ class _CmdViewState extends State<LoginView> {
           // 2. 로그인 콘텐츠
           GestureDetector(
             onTap: () {
-              FocusScope.of(context).unfocus(); // 키보드 닫기
+              FocusScope.of(context).unfocus();
             },
             child: Center(
               child: SingleChildScrollView(
-                // 키보드가 올라올 때만 스크롤
                 padding: EdgeInsets.only(
-                  bottom: keyboardHeight, // 키보드 높이만큼 패딩
+                  bottom: keyboardHeight,
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -307,7 +316,7 @@ class _CmdViewState extends State<LoginView> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(DesignConstants.radiusM),
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // 흐림 효과
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                           child: Container(
                             width: AppSizes.s330,
                             height: AppSizes.s550,
@@ -331,12 +340,18 @@ class _CmdViewState extends State<LoginView> {
                     ),
                     Column(
                       children: [
-                        // SVG 로고 제거하고 텍스트만 표시
+                        // 로고
                         Padding(
                           padding: const EdgeInsets.only(bottom: 40),
-                          child: TextWidgetString('K-VMS', TextAligns.center,
-                              AppSizes.i50, FontWeights.bold, AppColors.blackType1),
+                          child: TextWidgetString(
+                            'K-VMS',
+                            TextAligns.center,
+                            AppSizes.i50,
+                            FontWeights.bold,
+                            AppColors.blackType1,
+                          ),
                         ),
+
                         // 아이디 입력
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -346,9 +361,15 @@ class _CmdViewState extends State<LoginView> {
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
                             child: inputWidget(
-                                AppSizes.i266, AppSizes.i48, idController, '아이디 입력', AppColors.grayType7),
+                              AppSizes.i266,
+                              AppSizes.i48,
+                              idController,
+                              '아이디 입력',
+                              AppColors.grayType7,
+                            ),
                           ),
                         ),
+
                         // 비밀번호 입력
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -357,13 +378,18 @@ class _CmdViewState extends State<LoginView> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
-                            child: inputWidget(AppSizes.i266, AppSizes.i48, passwordController, '비밀번호 입력',
-                                AppColors.grayType7,
-                                obscureText: true),
+                            child: inputWidget(
+                              AppSizes.i266,
+                              AppSizes.i48,
+                              passwordController,
+                              '비밀번호 입력',
+                              AppColors.grayType7,
+                              obscureText: true,
+                            ),
                           ),
                         ),
 
-                        // ID 저장 체크박스 추가
+                        // ID 저장 체크박스
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: SizedBox(
@@ -384,7 +410,9 @@ class _CmdViewState extends State<LoginView> {
                                     activeColor: AppColors.skyType2,
                                     checkColor: Colors.white,
                                     side: BorderSide(
-                                      color: save_id ? AppColors.skyType2 : AppColors.grayType2,
+                                      color: save_id
+                                          ? AppColors.skyType2
+                                          : AppColors.grayType2,
                                       width: 1.5,
                                     ),
                                     shape: RoundedRectangleBorder(
@@ -427,18 +455,25 @@ class _CmdViewState extends State<LoginView> {
                                 borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                               ),
                               child: Center(
-                                child: TextWidgetString('로그인', TextAligns.center, AppSizes.i16, FontWeights.w700,
-                                    AppColors.whiteType1),
+                                child: TextWidgetString(
+                                  '로그인',
+                                  TextAligns.center,
+                                  AppSizes.i16,
+                                  FontWeights.w700,
+                                  AppColors.whiteType1,
+                                ),
                               ),
                             ),
                           ),
                         ),
+
+                        // 회원가입 버튼
                         GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (BuildContext context) {
-                                  return const CmdChoiceView();  // 수정: CmdChoiceView 사용
+                                  return const CmdChoiceView();
                                 },
                               ),
                             );
@@ -451,8 +486,13 @@ class _CmdViewState extends State<LoginView> {
                               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                             ),
                             child: Center(
-                              child: TextWidgetString('회원가입', TextAligns.center, AppSizes.i16, FontWeights.w700,
-                                  AppColors.whiteType1),
+                              child: TextWidgetString(
+                                '회원가입',
+                                TextAligns.center,
+                                AppSizes.i16,
+                                FontWeights.w700,
+                                AppColors.whiteType1,
+                              ),
                             ),
                           ),
                         ),
@@ -463,7 +503,8 @@ class _CmdViewState extends State<LoginView> {
               ),
             ),
           ),
-          // 하단 로고 (고정 위치) - 원본 코드 복구
+
+          // 3. 하단 로고 (고정 위치)
           Positioned(
             bottom: 20,
             left: 0,

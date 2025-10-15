@@ -209,7 +209,14 @@ class _SplashScreenState extends State<SplashScreen>
         fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
       }
 
-      AppLogger.d('Firebase Token: $fcmToken');
+      // ✅ 토큰 일부 + 길이값 함께 표시
+      if (fcmToken.isNotEmpty) {
+        final preview = fcmToken.substring(0, math.min(20, fcmToken.length));
+        AppLogger.d('FCM 토큰 초기화 완료: $preview... (길이: ${fcmToken.length})');
+      } else {
+        AppLogger.e('FCM 토큰 초기화 실패');
+      }
+
       widget.prefs.setString(StringConstants.firebaseTokenKey, fcmToken);
     } catch (e) {
       AppLogger.e('FCM 토큰 가져오기 실패: $e');
@@ -221,8 +228,8 @@ class _SplashScreenState extends State<SplashScreen>
   void _logAutoLoginCheck(bool? isAutoLogin, String? savedId, String? savedPw) {
     AppLogger.d(LogMessages.autoLoginCheck);
     AppLogger.d('자동 로그인 상태: $isAutoLogin');
-    AppLogger.d('저장된 ID: $savedId');
-    AppLogger.d('저장된 PW 존재: ${savedPw != null}');
+    // ✅ 보안: 계정 정보 존재 여부만 표시
+    AppLogger.d('저장된 계정 정보: ${savedId != null && savedPw != null ? "존재" : "없음"}');
     AppLogger.d(LogMessages.separator);
   }
 
@@ -233,10 +240,9 @@ class _SplashScreenState extends State<SplashScreen>
       if (retryCount > 0) {
         AppLogger.d('재시도 횟수: $retryCount/${_AutoLoginRetryConfig.maxRetries}');
       }
-      AppLogger.d('사용자 ID: $userId');
 
       final firebaseEmail = _buildFirebaseEmail(userId);
-      AppLogger.d('Firebase 인증 시도: $firebaseEmail');
+      AppLogger.d('Firebase 인증 시도 중...');
 
       final userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: firebaseEmail, password: password);
@@ -250,6 +256,12 @@ class _SplashScreenState extends State<SplashScreen>
 
       AppLogger.d(LogMessages.firebaseAuthSuccess);
 
+      // ✅ Firebase 토큰도 일부만 표시
+      if (firebaseToken.isNotEmpty) {
+        final tokenPreview = firebaseToken.substring(0, math.min(20, firebaseToken.length));
+        AppLogger.d('Firebase 토큰 획득: $tokenPreview... (길이: ${firebaseToken.length})');
+      }
+
       await widget.prefs.setString(StringConstants.firebaseTokenKey, firebaseToken);
 
       final pureUserId = _extractPureUserId(userId);
@@ -261,7 +273,9 @@ class _SplashScreenState extends State<SplashScreen>
       final mmsi = _extractMmsi(roleData);
       final role = roleData[StringConstants.roleKey]?.toString();
 
-      AppLogger.d('추출된 MMSI: $mmsi, Role: $role');
+      AppLogger.d('사용자 정보 조회 완료');
+      // ✅ MMSI는 공개 정보이므로 표시 가능
+      AppLogger.d('MMSI: $mmsi, Role: $role');
 
       await _updateUserState(role, mmsi);
       await _updateFirebaseToken(pureUserId);
@@ -365,7 +379,7 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    AppLogger.d('권한 정보 응답 타입: ${roleResponse.data.runtimeType}');
+    AppLogger.d('권한 정보 조회 완료');
 
     final roleData = _parseRoleResponse(roleResponse.data);
     if (roleData == null) {
@@ -400,8 +414,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _logSuccessAndNavigate(String userId) {
     AppLogger.d(LogMessages.separator);
     AppLogger.d('자동 로그인 성공! ${LogMessages.navigateToMain}');
-    AppLogger.d('userId: $userId');
-    AppLogger.d('autoFocusLocation: true 설정');
+    AppLogger.d('자동 위치 포커스: 활성화');
     AppLogger.d(LogMessages.separator);
 
     Navigator.pushReplacement(
@@ -420,7 +433,8 @@ class _SplashScreenState extends State<SplashScreen>
   /// Firebase 인증 에러 처리
   void _handleFirebaseAuthError(FirebaseAuthException e, int retryCount) {
     AppLogger.e(LogMessages.autoLoginFailed);
-    AppLogger.e('Firebase 인증 실패: ${e.code} - ${e.message}');
+    // ✅ 보안: 에러 코드만 표시, 메시지는 제외
+    AppLogger.e('Firebase 인증 실패 - 에러 코드: ${e.code}');
 
     // 재시도 횟수 정보 로그
     if (retryCount > 0) {
@@ -445,8 +459,10 @@ class _SplashScreenState extends State<SplashScreen>
   /// Dio 통신 에러 처리
   void _handleDioError(DioException e) {
     AppLogger.e(LogMessages.autoLoginFailed);
-    AppLogger.e('서버 통신 실패: ${e.type}');
-    AppLogger.e('응답 코드: ${e.response?.statusCode}');
+    AppLogger.e('서버 통신 실패 - 타입: ${e.type}');
+    if (e.response?.statusCode != null) {
+      AppLogger.e('응답 코드: ${e.response?.statusCode}');
+    }
     AppLogger.e(LogMessages.separator);
     _navigateToLogin();
   }
@@ -454,7 +470,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// 일반 에러 처리
   void _handleGeneralError(dynamic e) {
     AppLogger.e(LogMessages.autoLoginFailed);
-    AppLogger.e('에러: $e');
+    AppLogger.e('예상치 못한 에러가 발생했습니다');
     AppLogger.e(LogMessages.separator);
     _navigateToLogin();
   }
@@ -500,7 +516,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// Firestore에 FCM 토큰 업데이트
   Future<void> _updateFirebaseToken(String userId) async {
     try {
-      AppLogger.d('${LogMessages.firebaseTokenUpdate} 시작: $userId');
+      AppLogger.d('${LogMessages.firebaseTokenUpdate} 시작');
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {

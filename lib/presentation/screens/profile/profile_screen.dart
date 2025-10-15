@@ -1,9 +1,12 @@
+// lib/presentation/screens/profile/profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/profile/edit_profile_screen.dart';
@@ -21,6 +24,7 @@ class MemberInformationView extends StatefulWidget {
 
 class _RegisterCompleteViewState extends State<MemberInformationView> {
   bool _isSwitched = false;
+  final _secureStorage = SecureStorageService(); // ✅ SecureStorage 인스턴스
 
   @override
   void initState() {
@@ -43,23 +47,29 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
     AppLogger.d('자동 로그인 설정 변경: $value');
   }
 
-  // ✅ 수정된 _logout 메서드
+  /// SecureStorage도 정리하는 로그아웃
   Future<void> _logout() async {
     try {
       AppLogger.d('로그아웃 시작...');
 
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // 1. 비동기 작업을 먼저 수행 (setState 밖에서)
-      await prefs.remove('firebase_token');
-      await prefs.remove('auto_login');
-      await prefs.remove('username');
-      await prefs.remove('saved_id');  // ✅ 저장된 ID 제거
-      await prefs.remove('saved_pw');  // ✅ 저장된 PW 제거
+      // 1. SharedPreferences 데이터 삭제
+      await Future.wait([
+        prefs.remove('firebase_token'),
+        prefs.remove('auto_login'),
+        prefs.remove('username'),
+        prefs.remove('saved_id'),
+        prefs.remove('saved_pw'),
+      ]);
 
       AppLogger.d('SharedPreferences 데이터 삭제 완료');
 
-      // 2. UserState 초기화 (Provider 사용)
+      // 2. ✅ SecureStorage 데이터 삭제
+      await _secureStorage.clearAll();
+      AppLogger.d('SecureStorage 데이터 삭제 완료');
+
+      // 3. UserState 초기화 (Provider 사용)
       if (mounted) {
         try {
           final userState = context.read<UserState>();
@@ -70,28 +80,26 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
         }
       }
 
-      // 3. UI 업데이트가 필요한 경우만 setState 호출 (동기적으로)
+      // 4. UI 업데이트
       if (mounted) {
         setState(() {
           _isSwitched = false;  // 자동 로그인 스위치 끄기
         });
       }
 
-      AppLogger.d('✅ 로그아웃 완료');
+      AppLogger.i('로그아웃 완료');
 
     } catch (e) {
-      AppLogger.e('로그아웃 중 오류 발생: $e');
+      AppLogger.e('로그아웃 중 오류 발생', e);
 
-      // 에러가 발생해도 로그인 화면으로는 이동
+      // 에러가 발생해도 계속 진행
       if (mounted) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('로그아웃 중 일부 오류가 발생했습니다.'),
             duration: Duration(seconds: 2),
           ),
         );
-        }
       }
     }
   }
@@ -200,14 +208,12 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
                             // 로그인 화면으로 이동
                             if (mounted) {
-                              if (mounted) {
-                                Navigator.pushAndRemoveUntil(
+                              Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const LoginView()),
                                     (Route<dynamic> route) => false,
                               );
-                              }
                             }
                           },
                           child: TextWidgetString(
@@ -309,11 +315,11 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                       final now = DateTime.now();
                       if (mounted) {
                         Navigator.push(
-                        context,
-                        createSlideTransition(
-                          MemberInformationChange(nowTime: now),
-                        ),
-                      );
+                          context,
+                          createSlideTransition(
+                            MemberInformationChange(nowTime: now),
+                          ),
+                        );
                       }
                     },
                     child: Align(
