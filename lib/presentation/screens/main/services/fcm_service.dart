@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:vms_app/presentation/services/services.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/constants/constants.dart'; // ✅ 추가
 import 'package:vms_app/presentation/widgets/overlay/popup_dialog.dart';
 
 /// FCM 메시지 타입 정의
@@ -147,7 +148,7 @@ class FCMService {
   /// 메시지 처리 (포그라운드)
   void _handleMessage(BuildContext context, RemoteMessage message) {
     try {
-      AppLogger.d('📨 FCM Message received: ${message.messageId}');
+      AppLogger.d(' FCM Message received: ${message.messageId}');
       AppLogger.d('  - Type: ${message.data['type']}');
       AppLogger.d('  - Title: ${message.notification?.title}');
 
@@ -167,7 +168,7 @@ class FCMService {
 
   /// 백그라운드 메시지 처리
   void _handleBackgroundMessage(BuildContext context, RemoteMessage message) {
-    AppLogger.d('📬 Background message opened');
+    AppLogger.d('Background message opened');
     // 필요시 특정 화면으로 이동하는 로직 추가 가능
   }
 
@@ -177,8 +178,8 @@ class FCMService {
     RemoteMessage message,
   ) {
     final messageType = FCMMessageType.fromString(message.data['type']);
-    final title = message.notification?.title ?? '알림';
-    final body = message.notification?.body ?? '새로운 메시지';
+    final title = message.notification?.title ?? InfoMessages.notification;
+    final body = message.notification?.body ?? InfoMessages.newMessageArrived;
 
     // 메시지 타입별 처리
     switch (messageType) {
@@ -310,8 +311,8 @@ class FCMService {
 
     _notificationsPlugin.show(
       message.hashCode,
-      message.notification?.title ?? '알림',
-      message.notification?.body ?? '새로운 메시지가 도착했습니다.',
+      message.notification?.title ?? InfoMessages.notification,
+      message.notification?.body ?? InfoMessages.newMessageArrived,
       notificationDetails,
     );
 

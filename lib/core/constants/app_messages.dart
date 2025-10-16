@@ -30,6 +30,11 @@ class ErrorMessages {
   static const String unknownError = '알 수 없는 오류가 발생했습니다';
   static const String noServerResponse = '서버 응답이 없습니다';
 
+  // ============ 요청 관련 추가 ============
+  static const String requestCancelled = '요청이 취소되었습니다';
+  static const String initializationFailed = '초기화 중 오류가 발생했습니다';
+  static const String errorOccurred = '에러가 발생했습니다';
+
   // ============ 인증 관련 ============
   static const String authRequired = '로그인이 필요합니다';
   static const String authExpired = '로그인이 만료되었습니다. 다시 로그인해주세요.';
@@ -67,12 +72,21 @@ class ErrorMessages {
   static const String emailRequired = '이메일을 완전히 입력해주세요.';
   static const String emailInvalid = '올바른 이메일 형식이 아닙니다';
   static const String oldPasswordIncorrect = '기존 비밀번호가 일치하지 않습니다.';
+  static const String newPasswordRequired = '변경하실 새로운 비밀번호를 입력해주세요.';
 
   // ============ 회원 관련 ============
   static const String registerSuccess = '회원가입이 완료되었습니다.';
   static const String registerFailed = '회원가입에 실패했습니다. 다시 시도해주세요.';
   static const String profileUpdateSuccess = '회원정보가 성공적으로 수정되었습니다.';
   static const String profileUpdateFailed = '회원정보 수정에 실패했습니다.';
+
+  // ============ 저장 관련 추가 ============
+  static const String roleSaveFailed = '역할 저장 실패';
+  static const String mmsiSaveFailed = 'MMSI 저장 실패';
+  static const String roleSaveError = '사용자 역할 저장 중 오류가 발생했습니다';
+  static const String mmsiSaveError = 'MMSI 저장 중 오류가 발생했습니다';
+  static const String userInfoLoadError = '사용자 정보를 불러오는 중 오류가 발생했습니다';
+  static const String userInfoClearError = '사용자 정보 초기화 중 오류가 발생했습니다';
 
   // ============ 선박 관련 ============
   static const String vesselListLoadFailed = '선박 목록을 불러오는 중 오류가 발생했습니다';
@@ -142,4 +156,8 @@ class InfoMessages {
   static const String noData = '데이터가 없습니다';
   static const String noResult = '검색 결과가 없습니다';
   static const String noHistory = '이력이 없습니다';
+
+  static const String notification = '알림';
+  static const String newMessageArrived = '새로운 메시지가 도착했습니다';
+  static const String noNavigationWarningsToday = '금일 항행경보가 없습니다';
 }

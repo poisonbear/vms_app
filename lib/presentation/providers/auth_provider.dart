@@ -38,7 +38,7 @@ class AuthProvider extends BaseProvider {
             await prefs.setString(StringConstants.userRoleKey, newRole);
 
         if (!success) {
-          throw Exception('역할 저장 실패');
+          throw Exception(ErrorMessages.roleSaveFailed);
         }
 
         AppLogger.i('User role updated: $newRole');
@@ -47,7 +47,7 @@ class AuthProvider extends BaseProvider {
         _role = previousRole;
         rethrow;
       }
-    }, errorMessage: '사용자 역할 저장 중 오류가 발생했습니다', showLoading: false);
+    }, errorMessage: ErrorMessages.roleSaveError, showLoading: false);
   }
 
   /// MMSI 설정 (기존 메서드명 유지)
@@ -69,7 +69,7 @@ class AuthProvider extends BaseProvider {
         }
 
         if (!success) {
-          throw Exception('MMSI 저장 실패');
+          throw Exception(ErrorMessages.mmsiSaveFailed);
         }
 
         safeNotifyListeners();
@@ -77,7 +77,7 @@ class AuthProvider extends BaseProvider {
         _mmsi = previousMmsi;
         rethrow;
       }
-    }, errorMessage: 'MMSI 저장 중 오류가 발생했습니다', showLoading: false);
+    }, errorMessage: ErrorMessages.mmsiSaveError, showLoading: false);
   }
 
   /// 저장된 사용자 데이터 로드
@@ -92,7 +92,7 @@ class AuthProvider extends BaseProvider {
 
       AppLogger.d('User data loaded - Role: $_role, MMSI: $_mmsi');
       safeNotifyListeners();
-    }, errorMessage: '사용자 정보를 불러오는 중 오류가 발생했습니다', showLoading: false);
+    }, errorMessage: ErrorMessages.userInfoLoadError, showLoading: false);
   }
 
   /// 사용자 데이터 초기화 (로그아웃 시 사용)
@@ -111,7 +111,7 @@ class AuthProvider extends BaseProvider {
 
       AppLogger.i('User data cleared');
       safeNotifyListeners();
-    }, errorMessage: '사용자 정보 초기화 중 오류가 발생했습니다', showLoading: false);
+    }, errorMessage: ErrorMessages.userInfoClearError, showLoading: false);
   }
 
   /// 사용자 정보 새로고침

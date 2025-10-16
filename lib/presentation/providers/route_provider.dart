@@ -2,10 +2,10 @@
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart';
 import 'package:vms_app/presentation/providers/base_provider.dart';
-import 'package:vms_app/core/constants/constants.dart';
 
 class RouteProvider extends BaseProvider {
   late final VesselRepository _vesselRepository;
@@ -89,7 +89,7 @@ class RouteProvider extends BaseProvider {
           regDt: regDt,
           mmsi: mmsi,
         );
-      }, errorMessage: '항로 조회 중 오류 발생');
+      }, errorMessage: ErrorMessages.navigationLoadFailed);
 
       if (response != null) {
         _pastRouteList = response.past;
@@ -164,7 +164,7 @@ class RouteProvider extends BaseProvider {
       _pastRouteList = [];
       _predRouteList = [];
 
-      setError('항행이력 조회 실패: $e');
+      setError(ErrorMessages.navigationHistoryFailed);
       safeNotifyListeners();
     }
   }

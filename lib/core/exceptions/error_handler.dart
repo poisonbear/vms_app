@@ -55,7 +55,7 @@ class ErrorHandler {
 
       case DioExceptionType.cancel:
         return BusinessException(
-          '요청이 취소되었습니다',
+          ErrorMessages.requestCancelled, // ✅ 수정: 하드코딩 제거
           originalError: error,
         );
 
@@ -279,7 +279,6 @@ class ErrorHandler {
     return null;
   }
 
-  /// 재시도 가능한 에러인지 확인
   static bool isRetryable(AppException exception) {
     // 네트워크 타임아웃 에러는 재시도 가능
     if (exception is NetworkException) {
