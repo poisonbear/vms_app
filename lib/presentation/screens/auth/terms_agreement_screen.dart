@@ -14,7 +14,8 @@ class CmdChoiceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create: (_) => TermsProvider(), child: const _CmdChoiceViewBody());
+    return ChangeNotifierProvider(
+        create: (_) => TermsProvider(), child: const _CmdChoiceViewBody());
   }
 }
 
@@ -69,10 +70,13 @@ class _CmdChoiceViewBody extends StatelessWidget {
             ],
           ),
         ),
-        TextWidgetString('K-VMS', TextAligns.center, AppSizes.i32, FontWeights.w700, AppColors.blackType2),
-        TextWidgetString('약관동의', TextAligns.center, AppSizes.i32, FontWeights.w700, AppColors.blackType2),
+        TextWidgetString('K-VMS', TextAligns.center, AppSizes.i32,
+            FontWeights.w700, AppColors.blackType2),
+        TextWidgetString('약관동의', TextAligns.center, AppSizes.i32,
+            FontWeights.w700, AppColors.blackType2),
         Padding(
-          padding: const EdgeInsets.only(top: AppSizes.s12, bottom: AppSizes.s60),
+          padding:
+              const EdgeInsets.only(top: AppSizes.s12, bottom: AppSizes.s60),
           child: TextWidgetString(
             '회원가입을 위해 필수항목 및 선택항목 약관에 동의 해주시기 바랍니다.',
             TextAligns.center,
@@ -85,7 +89,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
     );
   }
 
-  Widget _buildAllAgreementSection(BuildContext context, TermsProvider provider) {
+  Widget _buildAllAgreementSection(
+      BuildContext context, TermsProvider provider) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSizes.s20),
       padding: const EdgeInsets.all(AppSizes.s14),
@@ -99,13 +104,15 @@ class _CmdChoiceViewBody extends StatelessWidget {
             scale: AppSizes.s1_333,
             child: Checkbox(
               value: provider.isAllAgreed,
-              onChanged: (value) => provider.updateAllAgreements(value ?? false),
+              onChanged: (value) =>
+                  provider.updateAllAgreements(value ?? false),
               activeColor: AppColors.skyType3,
               checkColor: AppColors.whiteType1,
               shape: const CircleBorder(),
             ),
           ),
-          TextWidgetString('약관에 모두 동의합니다', TextAlign.left, AppSizes.i14, FontWeights.w700, AppColors.blackType2),
+          TextWidgetString('약관에 모두 동의합니다', TextAlign.left, AppSizes.i14,
+              FontWeights.w700, AppColors.blackType2),
         ],
       ),
     );
@@ -183,7 +190,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
               scale: 1.333,
               child: Checkbox(
                 value: agreed,
-                onChanged: (value) => provider.updateAgreement(type, value ?? false),
+                onChanged: (value) =>
+                    provider.updateAgreement(type, value ?? false),
                 activeColor: AppColors.skyType3,
                 checkColor: AppColors.whiteType1,
                 shape: const CircleBorder(),
@@ -195,7 +203,8 @@ class _CmdChoiceViewBody extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      TextWidgetString(title, TextAlign.left, AppSizes.i14, FontWeights.w400, AppColors.blackType2),
+                      TextWidgetString(title, TextAlign.left, AppSizes.i14,
+                          FontWeights.w400, AppColors.blackType2),
                       const SizedBox(width: AppSizes.s4),
                       TextWidgetString(
                         subtitle,

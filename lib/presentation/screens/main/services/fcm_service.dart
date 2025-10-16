@@ -20,7 +20,7 @@ enum FCMMessageType {
   static FCMMessageType fromString(String? type) {
     if (type == null) return FCMMessageType.unknown;
     return FCMMessageType.values.firstWhere(
-          (e) => e.value == type,
+      (e) => e.value == type,
       orElse: () => FCMMessageType.unknown,
     );
   }
@@ -173,9 +173,9 @@ class FCMService {
 
   /// 메시지 타입별 처리
   FCMMessageResult _processMessage(
-      BuildContext context,
-      RemoteMessage message,
-      ) {
+    BuildContext context,
+    RemoteMessage message,
+  ) {
     final messageType = FCMMessageType.fromString(message.data['type']);
     final title = message.notification?.title ?? '알림';
     final body = message.notification?.body ?? '새로운 메시지';
@@ -202,10 +202,10 @@ class FCMService {
 
   /// 터빈 진입 경고 처리
   FCMMessageResult _handleTurbineAlert(
-      BuildContext context,
-      String title,
-      String body,
-      ) {
+    BuildContext context,
+    String title,
+    String body,
+  ) {
     if (_popupService.isPopupActive(PopupService.TURBINE_ENTRY_ALERT)) {
       return FCMMessageResult.failure(
         FCMMessageType.turbineEntryAlert,
@@ -220,7 +220,7 @@ class FCMService {
       context,
       title,
       body,
-          () {
+      () {
         _onStopFlashing();
         _popupService.hidePopup(PopupService.TURBINE_ENTRY_ALERT);
       },
@@ -231,10 +231,10 @@ class FCMService {
 
   /// 날씨 경고 처리
   FCMMessageResult _handleWeatherAlert(
-      BuildContext context,
-      String title,
-      String body,
-      ) {
+    BuildContext context,
+    String title,
+    String body,
+  ) {
     if (_popupService.isPopupActive(PopupService.WEATHER_ALERT)) {
       return FCMMessageResult.failure(
         FCMMessageType.weatherAlert,
@@ -248,7 +248,7 @@ class FCMService {
       context,
       title,
       body,
-          () {
+      () {
         _onStopFlashing();
         _popupService.hidePopup(PopupService.WEATHER_ALERT);
       },
@@ -259,10 +259,10 @@ class FCMService {
 
   /// 해저 케이블 경고 처리
   FCMMessageResult _handleSubmarineAlert(
-      BuildContext context,
-      String title,
-      String body,
-      ) {
+    BuildContext context,
+    String title,
+    String body,
+  ) {
     if (_popupService.isPopupActive(PopupService.SUBMARINE_CABLE_ALERT)) {
       return FCMMessageResult.failure(
         FCMMessageType.submarineCableAlert,
@@ -277,7 +277,7 @@ class FCMService {
       context,
       title,
       body,
-          () {
+      () {
         _onStopFlashing();
         _popupService.hidePopup(PopupService.SUBMARINE_CABLE_ALERT);
       },

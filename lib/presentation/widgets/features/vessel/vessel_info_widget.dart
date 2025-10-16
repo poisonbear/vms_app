@@ -42,9 +42,18 @@ class VesselInfoTable extends StatelessWidget {
           _buildInfoRow('MMSI', vessel!.mmsi?.toString() ?? '-'),
           _buildInfoRow('선종', vessel!.ship_knd ?? '-'),
           if (showExtendedInfo) ...[
-            _buildInfoRow('흘수', vessel!.draft != null ? '${vessel!.draft} m' : '-'),
-            _buildInfoRow('속력', vessel!.sog != null ? '${vessel!.sog!.toStringAsFixed(1)} kn' : '-'),
-            _buildInfoRow('침로', vessel!.cog != null ? '${vessel!.cog!.toStringAsFixed(1)}°' : '-'),
+            _buildInfoRow(
+                '흘수', vessel!.draft != null ? '${vessel!.draft} m' : '-'),
+            _buildInfoRow(
+                '속력',
+                vessel!.sog != null
+                    ? '${vessel!.sog!.toStringAsFixed(1)} kn'
+                    : '-'),
+            _buildInfoRow(
+                '침로',
+                vessel!.cog != null
+                    ? '${vessel!.cog!.toStringAsFixed(1)}°'
+                    : '-'),
             _buildInfoRow('위치', _formatPosition()),
           ],
         ],
@@ -157,15 +166,13 @@ class VesselListWidget extends StatelessWidget {
         vertical: AppSizes.s4.toDouble(),
       ),
       elevation: isSelected ? 4 : 1,
-      color: isSelected
-          ? Theme.of(context).primaryColor.withOpacity(0.1)
-          : null,
+      color:
+          isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
       child: ListTile(
         leading: Icon(
           Icons.directions_boat,
-          color: isSelected
-              ? Theme.of(context).primaryColor
-              : AppColors.grayType6,
+          color:
+              isSelected ? Theme.of(context).primaryColor : AppColors.grayType6,
         ),
         title: Text(
           vessel.ship_nm ?? 'Unknown',

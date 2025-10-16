@@ -20,7 +20,8 @@ class VesselEntity {
   });
 
   /// 선박이 이동 중인지 확인 (비즈니스 로직)
-  bool get isMoving => speed != null && speed! > NumericConstants.movingSpeedThreshold;
+  bool get isMoving =>
+      speed != null && speed! > NumericConstants.movingSpeedThreshold;
 
   /// 위치 정보가 있는지 확인
   bool get hasLocation => latitude != null && longitude != null;

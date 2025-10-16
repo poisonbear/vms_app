@@ -35,7 +35,8 @@ extension BuildContextExtension on BuildContext {
   NavigatorState get navigator => Navigator.of(this);
 
   /// SnackBar 표시
-  void showSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+  void showSnackBar(String message,
+      {Duration? duration, SnackBarAction? action}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Text(message),

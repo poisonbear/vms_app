@@ -21,10 +21,12 @@ import 'package:vms_app/data/repositories/emergency_repository.dart';
 
 // Domain Repositories
 import 'package:vms_app/domain/repositories/terms_repository.dart' as domain;
-import 'package:vms_app/domain/repositories/navigation_repository.dart' as domain;
+import 'package:vms_app/domain/repositories/navigation_repository.dart'
+    as domain;
 import 'package:vms_app/domain/repositories/vessel_repository.dart' as domain;
 import 'package:vms_app/domain/repositories/weather_repository.dart' as domain;
-import 'package:vms_app/domain/repositories/emergency_repository.dart' as domain;
+import 'package:vms_app/domain/repositories/emergency_repository.dart'
+    as domain;
 
 // UseCases
 import 'package:vms_app/domain/usecases/terms_usecases.dart';
@@ -56,7 +58,8 @@ void _registerInfrastructure() {
   getIt.registerLazySingleton<DioRequest>(() => DioRequest());
 
   // Cache
-  getIt.registerLazySingleton<PersistentCacheService>(() => PersistentCacheService());
+  getIt.registerLazySingleton<PersistentCacheService>(
+      () => PersistentCacheService());
 
   AppLogger.d('Infrastructure registered');
 }
@@ -76,24 +79,24 @@ void _registerServices() {
 void _registerDataSources() {
   // Remote DataSources
   getIt.registerLazySingleton<TermsDataSource>(
-        () => TermsDataSource(),
+    () => TermsDataSource(),
   );
 
   getIt.registerLazySingleton<NavigationDataSource>(
-        () => NavigationDataSource(),
+    () => NavigationDataSource(),
   );
 
   getIt.registerLazySingleton<VesselDataSource>(
-        () => VesselDataSource(),
+    () => VesselDataSource(),
   );
 
   getIt.registerLazySingleton<WeatherDataSource>(
-        () => WeatherDataSource(),
+    () => WeatherDataSource(),
   );
 
   // Local DataSource
   getIt.registerLazySingleton<EmergencyDataSource>(
-        () => EmergencyDataSource(),
+    () => EmergencyDataSource(),
   );
 
   AppLogger.d('DataSources registered');
@@ -103,44 +106,44 @@ void _registerDataSources() {
 void _registerRepositories() {
   // Data Layer Repositories
   getIt.registerLazySingleton<TermsRepository>(
-        () => TermsRepository(getIt<TermsDataSource>()),
+    () => TermsRepository(getIt<TermsDataSource>()),
   );
 
   getIt.registerLazySingleton<NavigationRepository>(
-        () => NavigationRepository(getIt<NavigationDataSource>()),
+    () => NavigationRepository(getIt<NavigationDataSource>()),
   );
 
   getIt.registerLazySingleton<VesselRepository>(
-        () => VesselRepository(getIt<VesselDataSource>()),
+    () => VesselRepository(getIt<VesselDataSource>()),
   );
 
   getIt.registerLazySingleton<WeatherRepository>(
-        () => WeatherRepository(getIt<WeatherDataSource>()),
+    () => WeatherRepository(getIt<WeatherDataSource>()),
   );
 
   getIt.registerLazySingleton<EmergencyRepository>(
-        () => EmergencyRepository(getIt<EmergencyDataSource>()),
+    () => EmergencyRepository(getIt<EmergencyDataSource>()),
   );
 
   // Domain Repositories
   getIt.registerLazySingleton<domain.TermsRepository>(
-        () => getIt<TermsRepository>(),
+    () => getIt<TermsRepository>(),
   );
 
   getIt.registerLazySingleton<domain.NavigationRepository>(
-        () => getIt<NavigationRepository>(),
+    () => getIt<NavigationRepository>(),
   );
 
   getIt.registerLazySingleton<domain.VesselRepository>(
-        () => getIt<VesselRepository>(),
+    () => getIt<VesselRepository>(),
   );
 
   getIt.registerLazySingleton<domain.WeatherRepository>(
-        () => getIt<WeatherRepository>(),
+    () => getIt<WeatherRepository>(),
   );
 
   getIt.registerLazySingleton<domain.EmergencyRepository>(
-        () => getIt<EmergencyRepository>(),
+    () => getIt<EmergencyRepository>(),
   );
 
   AppLogger.d('Repositories registered');
@@ -150,67 +153,67 @@ void _registerRepositories() {
 void _registerUseCases() {
   // Terms UseCases
   getIt.registerFactory<GetTermsList>(
-        () => GetTermsList(getIt<domain.TermsRepository>()),
+    () => GetTermsList(getIt<domain.TermsRepository>()),
   );
 
   // Navigation UseCases
   getIt.registerFactory<GetNavigationHistory>(
-        () => GetNavigationHistory(getIt<domain.NavigationRepository>()),
+    () => GetNavigationHistory(getIt<domain.NavigationRepository>()),
   );
 
   getIt.registerFactory<GetWeatherInfo>(
-        () => GetWeatherInfo(getIt<domain.NavigationRepository>()),
+    () => GetWeatherInfo(getIt<domain.NavigationRepository>()),
   );
 
   getIt.registerFactory<GetNavigationWarnings>(
-        () => GetNavigationWarnings(getIt<domain.NavigationRepository>()),
+    () => GetNavigationWarnings(getIt<domain.NavigationRepository>()),
   );
 
   // Vessel UseCases
   getIt.registerFactory<SearchVessel>(
-        () => SearchVessel(getIt<domain.VesselRepository>()),
+    () => SearchVessel(getIt<domain.VesselRepository>()),
   );
 
   getIt.registerFactory<GetVesselRoute>(
-        () => GetVesselRoute(getIt<domain.VesselRepository>()),
+    () => GetVesselRoute(getIt<domain.VesselRepository>()),
   );
 
   // Weather UseCases
   getIt.registerFactory<GetWeatherList>(
-        () => GetWeatherList(getIt<domain.WeatherRepository>()),
+    () => GetWeatherList(getIt<domain.WeatherRepository>()),
   );
 
   getIt.registerFactory<GetCurrentWeather>(
-        () => GetCurrentWeather(getIt<domain.WeatherRepository>()),
+    () => GetCurrentWeather(getIt<domain.WeatherRepository>()),
   );
 
   // Emergency UseCases
   getIt.registerFactory<SaveEmergencyData>(
-        () => SaveEmergencyData(getIt<domain.EmergencyRepository>()),
+    () => SaveEmergencyData(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<LoadEmergencyHistory>(
-        () => LoadEmergencyHistory(getIt<domain.EmergencyRepository>()),
+    () => LoadEmergencyHistory(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<LoadLastEmergency>(
-        () => LoadLastEmergency(getIt<domain.EmergencyRepository>()),
+    () => LoadLastEmergency(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<ClearEmergencyHistory>(
-        () => ClearEmergencyHistory(getIt<domain.EmergencyRepository>()),
+    () => ClearEmergencyHistory(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<SaveLocationTracking>(
-        () => SaveLocationTracking(getIt<domain.EmergencyRepository>()),
+    () => SaveLocationTracking(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<LoadLocationTracking>(
-        () => LoadLocationTracking(getIt<domain.EmergencyRepository>()),
+    () => LoadLocationTracking(getIt<domain.EmergencyRepository>()),
   );
 
   getIt.registerFactory<CheckActiveEmergency>(
-        () => CheckActiveEmergency(getIt<domain.EmergencyRepository>()),
+    () => CheckActiveEmergency(getIt<domain.EmergencyRepository>()),
   );
 
   AppLogger.d('UseCases registered');
@@ -219,13 +222,18 @@ void _registerUseCases() {
 /// DI 초기화 확인
 void verifyDependencies() {
   AppLogger.d('=== DI Configuration ===');
-  AppLogger.d('NetworkClient: ${getIt.isRegistered<NetworkClient>() ? "✓" : "✗"}');
+  AppLogger.d(
+      'NetworkClient: ${getIt.isRegistered<NetworkClient>() ? "✓" : "✗"}');
   AppLogger.d('DioRequest: ${getIt.isRegistered<DioRequest>() ? "✓" : "✗"}');
-  AppLogger.d('DataSources: ${getIt.isRegistered<VesselDataSource>() ? "✓" : "✗"}');
-  AppLogger.d('Repositories: ${getIt.isRegistered<VesselRepository>() ? "✓" : "✗"}');
-  AppLogger.d('Domain Repositories: ${getIt.isRegistered<domain.VesselRepository>() ? "✓" : "✗"}');
+  AppLogger.d(
+      'DataSources: ${getIt.isRegistered<VesselDataSource>() ? "✓" : "✗"}');
+  AppLogger.d(
+      'Repositories: ${getIt.isRegistered<VesselRepository>() ? "✓" : "✗"}');
+  AppLogger.d(
+      'Domain Repositories: ${getIt.isRegistered<domain.VesselRepository>() ? "✓" : "✗"}');
   AppLogger.d('UseCases: ${getIt.isRegistered<SearchVessel>() ? "✓" : "✗"}');
-  AppLogger.d('Emergency: ${getIt.isRegistered<EmergencyDataSource>() ? "✓" : "✗"}');
+  AppLogger.d(
+      'Emergency: ${getIt.isRegistered<EmergencyDataSource>() ? "✓" : "✗"}');
   AppLogger.d('========================');
 }
 

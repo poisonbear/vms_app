@@ -8,7 +8,7 @@ import 'package:vms_app/presentation/widgets/widgets.dart';
 
 class MainViewWindyDate extends StatefulWidget {
   final Function? onClose;
-  
+
   const MainViewWindyDate({super.key, this.onClose});
 
   @override
@@ -18,7 +18,7 @@ class MainViewWindyDate extends StatefulWidget {
 class _MainViewWindyDateState extends State<MainViewWindyDate> {
   DateTime _selectedDay = DateTime.now();
   PersistentBottomSheetController? _bottomSheetController;
-  
+
   final Set<DateTime> holidays = {
     DateTime(2025, 1, 1),
     DateTime(2025, 1, 28),
@@ -50,7 +50,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
     return holidayNames[date] ?? '';
   }
 
-  @override  
+  @override
   void dispose() {
     _bottomSheetController?.close();
     super.dispose();
@@ -80,8 +80,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
           height: AppSizes.s550,
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.spacing20,
-              horizontal: AppSizes.spacingM),
+              vertical: AppSizes.spacing20, horizontal: AppSizes.spacingM),
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -106,12 +105,13 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                         _bottomSheetController =
                             Scaffold.of(context).showBottomSheet(
                           (context) {
-                            return MainScreenWindy(context, onClose: widget.onClose);
+                            return MainScreenWindy(context,
+                                onClose: widget.onClose);
                           },
                           backgroundColor: AppColors.blackType3,
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(0)),
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(0)),
                           ),
                         );
                       },
@@ -234,8 +234,7 @@ class _MainViewWindyDateState extends State<MainViewWindyDate> {
                             ? BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: Colors.blue,
-                                    width: AppSizes.s2),
+                                    color: Colors.blue, width: AppSizes.s2),
                               )
                             : null,
                         alignment: Alignment.center,

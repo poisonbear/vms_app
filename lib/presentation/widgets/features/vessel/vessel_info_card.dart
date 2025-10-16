@@ -10,7 +10,7 @@ class VesselInfoCard extends StatelessWidget {
   final String label;
   final String value;
   final bool isCompact;
-  final bool enableCopy;  // 복사 기능 활성화
+  final bool enableCopy; // 복사 기능 활성화
 
   const VesselInfoCard({
     super.key,
@@ -18,7 +18,7 @@ class VesselInfoCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.isCompact = false,
-    this.enableCopy = false,  // 기본값: 비활성화
+    this.enableCopy = false, // 기본값: 비활성화
   });
 
   @override
@@ -97,7 +97,7 @@ class VesselInfoCard extends StatelessWidget {
   // 🆕 클립보드에 복사
   void _copyToClipboard(BuildContext context) {
     Clipboard.setData(ClipboardData(text: value));
-    HapticFeedback.lightImpact();  // 햅틱 피드백
+    HapticFeedback.lightImpact(); // 햅틱 피드백
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

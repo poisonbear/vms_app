@@ -24,7 +24,8 @@ class StringConstants {
 
   // ============ 에셋 경로 ============
   static const String turbinePoleAsset = 'assets/kdn/home/img/turbine_pole.svg';
-  static const String turbineBladeAsset = 'assets/kdn/home/img/turbine_blade.svg';
+  static const String turbineBladeAsset =
+      'assets/kdn/home/img/turbine_blade.svg';
 
   // ============ 디렉토리/파일 관련 ============
   static const String assetsDir = 'assets';

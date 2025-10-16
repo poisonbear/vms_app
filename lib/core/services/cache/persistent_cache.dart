@@ -243,8 +243,8 @@ class PersistentCacheService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final keys = prefs.getKeys().where((key) =>
-      (key.startsWith(_persistentPrefix) ||
-          key.startsWith(_timestampPrefix)) &&
+          (key.startsWith(_persistentPrefix) ||
+              key.startsWith(_timestampPrefix)) &&
           key.contains(pattern));
 
       for (final key in keys) {
@@ -263,7 +263,7 @@ class PersistentCacheService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final keys = prefs.getKeys().where((key) =>
-      key.startsWith(_persistentPrefix) ||
+          key.startsWith(_persistentPrefix) ||
           key.startsWith(_timestampPrefix));
 
       for (final key in keys) {
@@ -322,7 +322,7 @@ class PersistentCacheService {
     _maintenanceTimer?.cancel();
     _maintenanceTimer = Timer.periodic(
       const Duration(minutes: 10),
-          (_) => performMaintenance(),
+      (_) => performMaintenance(),
     );
   }
 
@@ -427,9 +427,7 @@ class CacheManager {
   static Future<void> clearCache(String pattern) =>
       PersistentCacheService.clearCache(pattern);
 
-  static Future<void> clearAllCache() =>
-      PersistentCacheService.clearAllCache();
+  static Future<void> clearAllCache() => PersistentCacheService.clearAllCache();
 
-  static Future<String> getCacheSize() =>
-      PersistentCacheService.getCacheSize();
+  static Future<String> getCacheSize() => PersistentCacheService.getCacheSize();
 }

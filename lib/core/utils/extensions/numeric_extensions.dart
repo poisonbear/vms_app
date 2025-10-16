@@ -17,7 +17,7 @@ extension IntExtension on int {
   String get toFormattedString {
     return toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]},',
+      (Match m) => '${m[1]},',
     );
   }
 
@@ -51,7 +51,7 @@ extension DoubleExtension on double {
   String toCurrencyString({String symbol = '₩'}) {
     return '$symbol${toStringAsFixed(0).replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]},',
+      (Match m) => '${m[1]},',
     )}';
   }
 }

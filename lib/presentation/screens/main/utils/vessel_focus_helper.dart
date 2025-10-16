@@ -16,7 +16,9 @@ class VesselFocusHelper {
       // 사용자 MMSI와 일치하는 선박 찾기
       final userVessel = vessels.firstWhere(
         (vessel) => vessel.mmsi == userMmsi,
-        orElse: () => vessels.isNotEmpty ? vessels.first : throw Exception('No vessels found'),
+        orElse: () => vessels.isNotEmpty
+            ? vessels.first
+            : throw Exception('No vessels found'),
       );
 
       // 선박 위치로 이동
@@ -26,11 +28,11 @@ class VesselFocusHelper {
       );
 
       mapController.move(vesselLocation, zoom);
-      
+
       AppLogger.i('📍 사용자 선박(MMSI: $userMmsi) 위치로 포커스: $vesselLocation');
     } catch (e) {
       AppLogger.e('선박 포커스 실패: $e');
-      
+
       // 실패 시 기본 위치(풍력단지)로 이동
       mapController.move(
         const LatLng(35.374509, 126.132268),
@@ -51,7 +53,7 @@ class VesselFocusHelper {
     );
 
     mapController.move(vesselLocation, zoom);
-    
+
     AppLogger.d('📍 선박(MMSI: ${vessel.mmsi}) 위치로 포커스: $vesselLocation');
   }
 }

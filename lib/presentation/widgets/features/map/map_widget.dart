@@ -37,7 +37,8 @@ class MapWidget extends StatelessWidget {
       builder: (context, routeSearchViewModel, child) {
         // 항적 데이터 처리
         final pastRouteLine = _processPastRoute(routeSearchViewModel);
-        final predRouteLine = _processPredRoute(routeSearchViewModel, pastRouteLine);
+        final predRouteLine =
+            _processPredRoute(routeSearchViewModel, pastRouteLine);
 
         // 트래킹 비활성화 또는 네비게이션 히스토리 모드가 아닌 경우 항적 클리어
         if (!isTrackingEnabled &&
@@ -49,7 +50,8 @@ class MapWidget extends StatelessWidget {
         return FlutterMap(
           mapController: mapController,
           options: MapOptions(
-            initialCenter: currentPosition ?? const LatLng(35.374509, 126.132268),
+            initialCenter:
+                currentPosition ?? const LatLng(35.374509, 126.132268),
             initialZoom: 12.0,
             maxZoom: 14.0,
             minZoom: 5.5,
@@ -94,20 +96,22 @@ class MapWidget extends StatelessWidget {
   List<Widget> _buildWMSLayers() {
     final baseUrl = "${ApiConfig.geoserverUrl}?";
     final layers = [
-      'vms_space:enc_map',        // 전자해도
+      'vms_space:enc_map', // 전자해도
       'vms_space:t_enc_sou_sp01', // 수심
       'vms_space:t_gis_tur_sp01', // 터빈
     ];
 
-    return layers.map((layer) => TileLayer(
-      wmsOptions: WMSTileLayerOptions(
-        baseUrl: baseUrl,
-        layers: [layer],
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.1',
-      ),
-    )).toList();
+    return layers
+        .map((layer) => TileLayer(
+              wmsOptions: WMSTileLayerOptions(
+                baseUrl: baseUrl,
+                layers: [layer],
+                format: 'image/png',
+                transparent: true,
+                version: '1.1.1',
+              ),
+            ))
+        .toList();
   }
 
   /// 과거 항적 처리
@@ -140,7 +144,8 @@ class MapWidget extends StatelessWidget {
   }
 
   /// 예측 항로 처리
-  List<LatLng> _processPredRoute(RouteProvider viewModel, List<LatLng> pastRouteLine) {
+  List<LatLng> _processPredRoute(
+      RouteProvider viewModel, List<LatLng> pastRouteLine) {
     var predRouteLine = viewModel.predRoutes
         .map((route) => LatLng(route.lttd ?? 0, route.lntd ?? 0))
         .toList();
@@ -231,9 +236,7 @@ class MapWidget extends StatelessWidget {
   Widget _buildEscapeRouteLine(List<VesselSearchModel> vessels) {
     return PolylineLayer(
       polylineCulling: false,
-      polylines: vessels
-          .where((v) => v.escapeRouteGeojson != null)
-          .map((v) {
+      polylines: vessels.where((v) => v.escapeRouteGeojson != null).map((v) {
         final pts = GeoUtils.parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
         return Polyline(
           points: pts,
@@ -259,7 +262,8 @@ class MapWidget extends StatelessWidget {
 
   /// 삼각형 폴리곤 생성
   Polygon? _createTrianglePolygon(VesselSearchModel vessel) {
-    final pts = GeoUtils.parseGeoJsonLineString(vessel.escapeRouteGeojson ?? '');
+    final pts =
+        GeoUtils.parseGeoJsonLineString(vessel.escapeRouteGeojson ?? '');
     if (pts.length < 2) return null;
 
     final end = pts.last;
@@ -309,7 +313,8 @@ class MapWidget extends StatelessWidget {
   }
 
   /// 현재 사용자 선박 마커
-  Widget _buildCurrentUserVessel(List<VesselSearchModel> vessels, int currentUserMmsi) {
+  Widget _buildCurrentUserVessel(
+      List<VesselSearchModel> vessels, int currentUserMmsi) {
     return MarkerLayer(
       markers: vessels
           .where((vessel) => (vessel.mmsi ?? 0) == currentUserMmsi)
@@ -333,10 +338,10 @@ class MapWidget extends StatelessWidget {
 
   /// 다른 선박 마커
   Widget _buildOtherVessels(
-      List<VesselSearchModel> vessels,
-      int currentUserMmsi,
-      Function(VesselSearchModel) onVesselTap,
-      ) {
+    List<VesselSearchModel> vessels,
+    int currentUserMmsi,
+    Function(VesselSearchModel) onVesselTap,
+  ) {
     return MarkerLayer(
       markers: vessels
           .where((vessel) => (vessel.mmsi ?? 0) != currentUserMmsi)

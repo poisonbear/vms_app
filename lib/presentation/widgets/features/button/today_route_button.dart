@@ -71,21 +71,21 @@ class TodayRouteButton extends StatelessWidget {
                     const SizedBox(width: AppSizes.s8),
                     isLoading
                         ? const SizedBox(
-                      width: AppSizes.s16,
-                      height: AppSizes.s16,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            width: AppSizes.s16,
+                            height: AppSizes.s16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : const Text(
-                      '당일 항적보기',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: AppSizes.s14,
-                        fontWeight: FontWeights.w600,
-                      ),
-                    ),
+                            '당일 항적보기',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: AppSizes.s14,
+                              fontWeight: FontWeights.w600,
+                            ),
+                          ),
                   ],
                 ),
               ),

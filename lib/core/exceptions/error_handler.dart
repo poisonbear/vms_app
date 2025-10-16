@@ -251,9 +251,7 @@ class ErrorHandler {
     }
 
     if (exception is AuthException) {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : '로그인이 필요합니다';
+      return exception.message.isNotEmpty ? exception.message : '로그인이 필요합니다';
     }
 
     if (exception is ValidationException) {
@@ -263,9 +261,7 @@ class ErrorHandler {
     }
 
     if (exception is PermissionException) {
-      return exception.message.isNotEmpty
-          ? exception.message
-          : '필요한 권한이 없습니다';
+      return exception.message.isNotEmpty ? exception.message : '필요한 권한이 없습니다';
     }
 
     if (exception is LocationException) {

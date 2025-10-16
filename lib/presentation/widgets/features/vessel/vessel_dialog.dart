@@ -62,7 +62,7 @@ class VesselDialog extends StatelessWidget {
           icon: Icons.confirmation_number,
           label: 'MMSI',
           value: vessel.mmsi?.toString() ?? '-',
-          enableCopy: true,  // 복사 기능 활성화
+          enableCopy: true, // 복사 기능 활성화
         ),
         const SizedBox(height: AppSizes.s12),
 
@@ -72,7 +72,7 @@ class VesselDialog extends StatelessWidget {
           label: '현재 위치',
           value: '${vessel.lttd?.toStringAsFixed(6) ?? '-'}\n'
               '${vessel.lntd?.toStringAsFixed(6) ?? '-'}',
-          enableCopy: true,  // 복사 기능 활성화
+          enableCopy: true, // 복사 기능 활성화
         ),
         const SizedBox(height: AppSizes.s12),
 

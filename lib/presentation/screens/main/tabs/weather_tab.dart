@@ -52,7 +52,8 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop || _isClosing) return;
 
-        final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+        final mainScreenState =
+            context.findAncestorStateOfType<State<MainScreen>>();
         if (mainScreenState != null) {
           try {
             (mainScreenState as dynamic).selectedIndex = -1;
@@ -146,7 +147,8 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
         widget.onClose!();
       }
 
-      final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+      final mainScreenState =
+          context.findAncestorStateOfType<State<MainScreen>>();
       if (mainScreenState != null) {
         try {
           (mainScreenState as dynamic).selectedIndex = -1;
@@ -213,7 +215,8 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
         Padding(
           padding: const EdgeInsets.all(AppSizes.s8),
           child: SizedBox(
-            height: AppSizes.s36 + AppSizes.s4 + AppSizes.s9, // 아이콘 + 간격 + 방향텍스트 높이
+            height:
+                AppSizes.s36 + AppSizes.s4 + AppSizes.s9, // 아이콘 + 간격 + 방향텍스트 높이
             child: Align(
               alignment: Alignment.centerLeft,
               child: TextWidgetString(
@@ -519,16 +522,18 @@ class _WeatherDataColumn extends StatelessWidget {
 
 // 원본 svgload 함수
 Future<Widget> svgload(
-    String svgurl,
-    double height,
-    double width,
-    String windIcon,
-    String windSpeed,
-    ) async {
+  String svgurl,
+  double height,
+  double width,
+  String windIcon,
+  String windSpeed,
+) async {
   try {
-    AppLogger.d('SVG 로딩: url=$svgurl, windIcon=$windIcon, windSpeed=$windSpeed');
+    AppLogger.d(
+        'SVG 로딩: url=$svgurl, windIcon=$windIcon, windSpeed=$windSpeed');
 
-    final speedStr = windSpeed.isEmpty ? '0' : windSpeed.replaceAll('m/s', '').trim();
+    final speedStr =
+        windSpeed.isEmpty ? '0' : windSpeed.replaceAll('m/s', '').trim();
     final speed = double.tryParse(speedStr) ?? 0;
 
     final String svgString = await rootBundle.loadString(svgurl);
@@ -544,7 +549,8 @@ Future<Widget> svgload(
     }
 
     RegExp pathRegex = RegExp(r'<path[^>]*>');
-    RegExp strokeRectRegex = RegExp(r'<rect[^>]*stroke="#[0-9A-Fa-f]{6}"[^>]*>');
+    RegExp strokeRectRegex =
+        RegExp(r'<rect[^>]*stroke="#[0-9A-Fa-f]{6}"[^>]*>');
     String modifiedSvg = svgString;
 
     // SVG 색상 변경

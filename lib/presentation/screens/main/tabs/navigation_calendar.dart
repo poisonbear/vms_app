@@ -77,8 +77,10 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
 
   void _confirmSelection() {
     // 선택된 날짜를 문자열로 변환
-    String startDate = "${_selectedStartDate.year}-${_selectedStartDate.month.toString().padLeft(2, '0')}-${_selectedStartDate.day.toString().padLeft(2, '0')}";
-    String endDate = "${_selectedEndDate.year}-${_selectedEndDate.month.toString().padLeft(2, '0')}-${_selectedEndDate.day.toString().padLeft(2, '0')}";
+    String startDate =
+        "${_selectedStartDate.year}-${_selectedStartDate.month.toString().padLeft(2, '0')}-${_selectedStartDate.day.toString().padLeft(2, '0')}";
+    String endDate =
+        "${_selectedEndDate.year}-${_selectedEndDate.month.toString().padLeft(2, '0')}-${_selectedEndDate.day.toString().padLeft(2, '0')}";
 
     // 콜백 호출하여 날짜 전달
     if (widget.onClose != null) {
@@ -195,7 +197,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 rangeStartDay: _selectedStartDate,
                 rangeEndDay: _selectedEndDate,
                 selectedDayPredicate: (day) {
-                  return isSameDay(_selectedStartDate, day) || isSameDay(_selectedEndDate, day);
+                  return isSameDay(_selectedStartDate, day) ||
+                      isSameDay(_selectedEndDate, day);
                 },
                 onRangeSelected: _onRangeSelected,
                 onFormatChanged: (format) {
@@ -206,23 +209,20 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
                 },
-                rowHeight: 38.0,  // 더 줄이기 (42 → 38)
-                daysOfWeekHeight: 30.0,  // 더 줄이기 (35 → 30)
+                rowHeight: 38.0, // 더 줄이기 (42 → 38)
+                daysOfWeekHeight: 30.0, // 더 줄이기 (35 → 30)
                 calendarStyle: CalendarStyle(
                   outsideDaysVisible: false,
-                  cellMargin: const EdgeInsets.all(1),  // 더 줄이기 (2 → 1)
-                  cellPadding: EdgeInsets.zero,  // 완전 제거
+                  cellMargin: const EdgeInsets.all(1), // 더 줄이기 (2 → 1)
+                  cellPadding: EdgeInsets.zero, // 완전 제거
                   weekendTextStyle: TextStyle(
                       color: Colors.red,
-                      fontSize: AppSizes.s12.toDouble()  // 더 작게
-                  ),
+                      fontSize: AppSizes.s12.toDouble() // 더 작게
+                      ),
                   holidayTextStyle: TextStyle(
-                      color: Colors.red,
-                      fontSize: AppSizes.s12.toDouble()
-                  ),
-                  defaultTextStyle: TextStyle(
-                      fontSize: AppSizes.s12.toDouble()
-                  ),
+                      color: Colors.red, fontSize: AppSizes.s12.toDouble()),
+                  defaultTextStyle:
+                      TextStyle(fontSize: AppSizes.s12.toDouble()),
                   rangeHighlightColor: AppColors.skyType2.withOpacity(0.2),
                   rangeStartDecoration: const BoxDecoration(
                     color: AppColors.skyType2,
@@ -242,19 +242,20 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                   ),
                   selectedTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                    fontSize: AppSizes.s12.toDouble(), // 더 작게
                     fontWeight: FontWeights.w600,
                   ),
                   todayTextStyle: TextStyle(
                     color: Colors.white,
-                    fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                    fontSize: AppSizes.s12.toDouble(), // 더 작게
                     fontWeight: FontWeights.w500,
                   ),
                 ),
                 headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  headerPadding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),  // 헤더 패딩 줄이기
+                  headerPadding: EdgeInsets.symmetric(
+                      vertical: AppSizes.s8.toDouble()), // 헤더 패딩 줄이기
                   titleTextStyle: TextStyle(
                     fontSize: AppSizes.s16.toDouble(),
                     fontWeight: FontWeights.w600,
@@ -270,8 +271,10 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                 ),
                 calendarBuilders: CalendarBuilders(
                   dowBuilder: (context, day) {
-                    final text = ['월', '화', '수', '목', '금', '토', '일'][day.weekday - 1];
-                    final isWeekend = day.weekday == DateTime.saturday || day.weekday == DateTime.sunday;
+                    final text =
+                        ['월', '화', '수', '목', '금', '토', '일'][day.weekday - 1];
+                    final isWeekend = day.weekday == DateTime.saturday ||
+                        day.weekday == DateTime.sunday;
                     return Center(
                       child: Text(
                         text,
@@ -285,13 +288,17 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                   },
                   holidayBuilder: (context, day, focusedDay) {
                     final holidayName = getHolidayName(day);
-                    final isInRange = day.isAfter(_selectedStartDate.subtract(const Duration(days: 1))) &&
-                        day.isBefore(_selectedEndDate.add(const Duration(days: 1)));
+                    final isInRange = day.isAfter(_selectedStartDate
+                            .subtract(const Duration(days: 1))) &&
+                        day.isBefore(
+                            _selectedEndDate.add(const Duration(days: 1)));
 
                     return Container(
-                      margin: const EdgeInsets.all(1),  // 더 줄이기
+                      margin: const EdgeInsets.all(1), // 더 줄이기
                       decoration: BoxDecoration(
-                        color: isInRange ? AppColors.skyType2.withOpacity(0.2) : null,
+                        color: isInRange
+                            ? AppColors.skyType2.withOpacity(0.2)
+                            : null,
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -302,7 +309,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                               '${day.day}',
                               style: TextStyle(
                                 color: Colors.red,
-                                fontSize: AppSizes.s12.toDouble(),  // 더 작게
+                                fontSize: AppSizes.s12.toDouble(), // 더 작게
                                 fontWeight: FontWeights.w500,
                               ),
                             ),
@@ -311,7 +318,7 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                                 holidayName,
                                 style: TextStyle(
                                   color: Colors.red,
-                                  fontSize: AppSizes.s6.toDouble(),  // 더 작게
+                                  fontSize: AppSizes.s6.toDouble(), // 더 작게
                                   fontWeight: FontWeights.w400,
                                 ),
                               ),
@@ -354,7 +361,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       ),
                       side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
@@ -371,7 +379,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       // 최근 7일
                       final today = DateTime.now();
                       setState(() {
-                        _selectedStartDate = today.subtract(const Duration(days: 6));
+                        _selectedStartDate =
+                            today.subtract(const Duration(days: 6));
                         _selectedEndDate = today;
                         _focusedDay = today;
                       });
@@ -383,7 +392,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       ),
                       side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
@@ -400,7 +410,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       // 최근 30일
                       final today = DateTime.now();
                       setState(() {
-                        _selectedStartDate = today.subtract(const Duration(days: 29));
+                        _selectedStartDate =
+                            today.subtract(const Duration(days: 29));
                         _selectedEndDate = today;
                         _focusedDay = today;
                       });
@@ -412,7 +423,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                       ),
                       side: const BorderSide(color: AppColors.grayType7),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(
@@ -434,7 +446,8 @@ class _MainViewNavigationDateState extends State<MainViewNavigationDate> {
                         vertical: AppSizes.s10.toDouble(),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSizes.s6.toDouble()),
+                        borderRadius:
+                            BorderRadius.circular(AppSizes.s6.toDouble()),
                       ),
                     ),
                     child: TextWidgetString(

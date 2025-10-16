@@ -45,7 +45,7 @@ class VesselDialogActions extends StatelessWidget {
             child: _ActionButton(
               label: '항적 보기',
               onTap: onTracking,
-              backgroundColor: AppColors.blueNavy,  // 변경: 하드코딩 → 상수 사용
+              backgroundColor: AppColors.blueNavy, // 변경: 하드코딩 → 상수 사용
               textColor: AppColors.whiteType1,
             ),
           ),

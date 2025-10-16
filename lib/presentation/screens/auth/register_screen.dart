@@ -53,7 +53,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Email Domain Configuration
   // ========================================
   String? _selectedEmailDomain;
-  static final List<String> _emailDomains = ['naver.com', 'gmail.com', 'hanmail.net', '직접입력'];
+  static final List<String> _emailDomains = [
+    'naver.com',
+    'gmail.com',
+    'hanmail.net',
+    '직접입력'
+  ];
 
   // ========================================
   // Lifecycle Methods
@@ -170,8 +175,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // 이메일 검증 (선택사항)
-    if (_emailController.text.trim().isNotEmpty || _emailAddrController.text.trim().isNotEmpty) {
-      if (_emailController.text.trim().isEmpty || _emailAddrController.text.trim().isEmpty) {
+    if (_emailController.text.trim().isNotEmpty ||
+        _emailAddrController.text.trim().isNotEmpty) {
+      if (_emailController.text.trim().isEmpty ||
+          _emailAddrController.text.trim().isEmpty) {
         showTopSnackBar(context, '이메일을 완전히 입력해주세요.');
         return false;
       }
@@ -214,13 +221,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (response.data is int) {
           _isIdAvailable = response.data;
         } else if (response.data is Map) {
-          _isIdAvailable = response.data['result'] ?? response.data['available'] ?? response.data['code'] ?? 1;
+          _isIdAvailable = response.data['result'] ??
+              response.data['available'] ??
+              response.data['code'] ??
+              1;
         } else {
           _isIdAvailable = ValidationRules.idAvailable;
         }
       });
 
-      final message = _isIdAvailable == ValidationRules.idAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.';
+      final message = _isIdAvailable == ValidationRules.idAvailable
+          ? '사용 가능한 아이디입니다.'
+          : '이미 사용 중인 아이디입니다.';
       showTopSnackBar(context, message);
     } catch (e) {
       AppLogger.e('ID 중복 확인 실패: $e');
@@ -244,7 +256,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       // API 서버에 회원정보 등록
-      final email = _emailController.text.trim().isNotEmpty && _emailAddrController.text.trim().isNotEmpty
+      final email = _emailController.text.trim().isNotEmpty &&
+              _emailAddrController.text.trim().isNotEmpty
           ? '${_emailController.text.trim()}@${_emailAddrController.text.trim()}'
           : '';
 
@@ -257,7 +270,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'mphn_no': _phoneController.text.trim(),
           'email_addr': email,
           'firebase_uuid': userCredential.user?.uid,
-          'choice_time': widget.nowTime?.toIso8601String() ?? DateTime.now().toIso8601String(),
+          'choice_time': widget.nowTime?.toIso8601String() ??
+              DateTime.now().toIso8601String(),
         },
       );
 
@@ -268,11 +282,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // 회원가입 완료 화면으로 이동
         if (mounted) {
           Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const RegisterCompleteView(),
-          ),
-        );
+            context,
+            MaterialPageRoute(
+              builder: (context) => const RegisterCompleteView(),
+            ),
+          );
         }
       } else {
         // Firebase 계정 삭제
@@ -304,11 +318,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           AppLogger.i('API 404 - Proceeding with Firebase only');
           if (mounted) {
             Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const RegisterCompleteView(),
-            ),
-          );
+              context,
+              MaterialPageRoute(
+                builder: (context) => const RegisterCompleteView(),
+              ),
+            );
           }
         } else {
           showTopSnackBar(context, '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
@@ -636,7 +650,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           Expanded(
             flex: 5,
-            child: _isDirectInput ? _buildEmailDirectInput() : _buildEmailDomainDropdown(),
+            child: _isDirectInput
+                ? _buildEmailDirectInput()
+                : _buildEmailDomainDropdown(),
           ),
         ],
       ),
@@ -672,7 +688,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: value == '직접입력' ? AppColors.grayType2 : AppColors.blackType2,
+                  color: value == '직접입력'
+                      ? AppColors.grayType2
+                      : AppColors.blackType2,
                 ),
               ),
             );
@@ -772,7 +790,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: enabled ? AppColors.whiteType1 : AppColors.grayType3.withValues(alpha: 0.5),
+        fillColor: enabled
+            ? AppColors.whiteType1
+            : AppColors.grayType3.withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,

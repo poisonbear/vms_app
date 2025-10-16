@@ -76,13 +76,11 @@ class AutoLocationHelper {
         AppLogger.i('✅ 내 위치찾기 자동 실행 완료 (최적화)');
         AppLogger.i('📍 선박(MMSI: $userMmsi) 위치: $vesselLocation');
         AppLogger.i('⚡ 총 소요 시간: 약 0.6초');
-
       } else {
         // 선박을 찾지 못한 경우
         AppLogger.w('MMSI $userMmsi 선박을 찾을 수 없음. 발전단지 중앙으로 이동');
         mapController.move(DEFAULT_CENTER, 12.0);
       }
-
     } catch (e) {
       AppLogger.e('내 위치찾기 자동 실행 실패: $e');
 
@@ -109,7 +107,6 @@ class AutoLocationHelper {
         );
 
         return; // 성공
-
       } catch (e) {
         AppLogger.e('자동 포커스 시도 ${i + 1}/$maxRetries 실패: $e');
 

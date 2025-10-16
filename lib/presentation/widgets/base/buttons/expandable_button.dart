@@ -5,16 +5,16 @@ import 'package:vms_app/presentation/widgets/base/text/custom_text.dart';
 
 /// 슬라이드 온 버튼 빌더 함수 - 확장/축소 애니메이션 지원
 Widget buildCircularButtonSlideOn(
-    String svgPath,
-    Color color,
-    int widthsize,
-    int heightsize,
-    String labelText,
-    int widthSizeline,
-    String statusText, {
-      VoidCallback? onTap,
-      bool isSelected = true,
-    }) {
+  String svgPath,
+  Color color,
+  int widthsize,
+  int heightsize,
+  String labelText,
+  int widthSizeline,
+  String statusText, {
+  VoidCallback? onTap,
+  bool isSelected = true,
+}) {
   return Padding(
     padding: EdgeInsets.only(bottom: AppSizes.s12.toDouble()),
     child: SizedBox(
@@ -29,9 +29,8 @@ Widget buildCircularButtonSlideOn(
             top: 0,
             child: AnimatedContainer(
               duration: AppDurations.milliseconds200,
-              width: isSelected
-                  ? widthSizeline.toDouble()
-                  : widthsize.toDouble(),
+              width:
+                  isSelected ? widthSizeline.toDouble() : widthsize.toDouble(),
               height: heightsize.toDouble(),
               decoration: BoxDecoration(
                 color: AppColors.blackType1,

@@ -47,7 +47,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
   static String? _savedMmsi;
   static String? _savedShipName;
 
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -56,7 +57,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     mmsiController = TextEditingController();
     shipNameController = TextEditingController();
 
-    NavigationDebugHelper.debugPrint('NavigationSheet initState', location: 'nav_tab');
+    NavigationDebugHelper.debugPrint('NavigationSheet initState',
+        location: 'nav_tab');
 
     if (widget.resetSearch) {
       mmsiController.clear();
@@ -82,9 +84,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     if (widget.resetDate) {
       final today = DateTime.now();
       selectedStartDate =
-      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+          "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
       selectedEndDate =
-      "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+          "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
     }
 
     if (widget.resetSearch || widget.resetDate) {
@@ -105,12 +107,11 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
           mmsi: role == 'ROLE_USER'
               ? mmsi
               : (mmsiController.text.isEmpty
-              ? null
-              : int.tryParse(mmsiController.text)),
+                  ? null
+                  : int.tryParse(mmsiController.text)),
           shipName: shipNameController.text.isEmpty
               ? null
-              : shipNameController.text.toUpperCase()
-      );
+              : shipNameController.text.toUpperCase());
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -129,8 +130,10 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     final startDate = today.subtract(Duration(days: days));
 
     setState(() {
-      selectedStartDate = "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
-      selectedEndDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+      selectedStartDate =
+          "${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}";
+      selectedEndDate =
+          "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
     });
 
     _performSearch();
@@ -146,8 +149,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       mmsi: role == 'ROLE_USER'
           ? mmsi
           : (mmsiController.text.isEmpty
-          ? null
-          : int.tryParse(mmsiController.text)),
+              ? null
+              : int.tryParse(mmsiController.text)),
       shipName: shipNameController.text.isEmpty
           ? null
           : shipNameController.text.toUpperCase(),
@@ -161,17 +164,20 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    NavigationDebugHelper.debugPrint('NavigationSheet build', location: 'nav_tab.build');
+    NavigationDebugHelper.debugPrint('NavigationSheet build',
+        location: 'nav_tab.build');
     NavigationDebugHelper.checkProviderAccess(context, 'nav_tab.build');
 
-    final routeSearchViewModel = Provider.of<RouteProvider>(context, listen: false);
+    final routeSearchViewModel =
+        Provider.of<RouteProvider>(context, listen: false);
 
     return PopScope(
         canPop: _isClosing,
         onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop || _isClosing) return;
 
-          final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+          final mainScreenState =
+              context.findAncestorStateOfType<State<MainScreen>>();
           if (mainScreenState != null) {
             try {
               (mainScreenState as dynamic).selectedIndex = -1;
@@ -206,7 +212,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildHeader(),
-
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -221,28 +226,36 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
                                   children: [
-                                    _buildQuickDateButton('오늘', () => _quickSelectDate(0)),
+                                    _buildQuickDateButton(
+                                        '오늘', () => _quickSelectDate(0)),
                                     const SizedBox(width: AppSizes.s8),
-                                    _buildQuickDateButton('어제', () => _quickSelectDate(1)),
+                                    _buildQuickDateButton(
+                                        '어제', () => _quickSelectDate(1)),
                                     const SizedBox(width: AppSizes.s8),
-                                    _buildQuickDateButton('최근 7일', () => _quickSelectDate(7)),
+                                    _buildQuickDateButton(
+                                        '최근 7일', () => _quickSelectDate(7)),
                                     const SizedBox(width: AppSizes.s8),
-                                    _buildQuickDateButton('최근 30일', () => _quickSelectDate(30)),
+                                    _buildQuickDateButton(
+                                        '최근 30일', () => _quickSelectDate(30)),
                                     const SizedBox(width: AppSizes.s8),
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
                                           final today = DateTime.now();
-                                          selectedStartDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
-                                          selectedEndDate = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                                          selectedStartDate =
+                                              "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+                                          selectedEndDate =
+                                              "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
 
                                           mmsiController.clear();
                                           shipNameController.clear();
                                           _savedMmsi = null;
                                           _savedShipName = null;
 
-                                          navigationViewModel = NavigationProvider();
-                                          _sharedNavigationProvider = navigationViewModel;
+                                          navigationViewModel =
+                                              NavigationProvider();
+                                          _sharedNavigationProvider =
+                                              navigationViewModel;
                                         });
 
                                         _performSearch();
@@ -254,10 +267,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                           vertical: AppSizes.s8,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(AppSizes.s4),
+                                          borderRadius: BorderRadius.circular(
+                                              AppSizes.s4),
                                         ),
                                       ),
-                                      child: const Icon(Icons.refresh, size: AppSizes.s20, color: AppColors.whiteType1),
+                                      child: const Icon(Icons.refresh,
+                                          size: AppSizes.s20,
+                                          color: AppColors.whiteType1),
                                     ),
                                   ],
                                 ),
@@ -272,7 +288,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
                                     builder: (context) => SizedBox(
-                                      height: MediaQuery.of(context).size.height * 0.55,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.55,
                                       child: Material(
                                         color: Colors.transparent,
                                         child: MainViewNavigationDate(
@@ -289,31 +307,37 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     ),
                                   );
                                 },
-                                borderRadius: BorderRadius.circular(AppSizes.s4),
+                                borderRadius:
+                                    BorderRadius.circular(AppSizes.s4),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: AppSizes.s12,
-                                      vertical: AppSizes.s8
-                                  ),
+                                      vertical: AppSizes.s8),
                                   decoration: BoxDecoration(
                                     color: AppColors.whiteType1,
-                                    borderRadius: BorderRadius.circular(AppSizes.s4),
-                                    border: Border.all(color: AppColors.grayType7, width: AppSizes.s1),
+                                    borderRadius:
+                                        BorderRadius.circular(AppSizes.s4),
+                                    border: Border.all(
+                                        color: AppColors.grayType7,
+                                        width: AppSizes.s1),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.calendar_today, size: AppSizes.s16, color: AppColors.grayType3),
+                                      const Icon(Icons.calendar_today,
+                                          size: AppSizes.s16,
+                                          color: AppColors.grayType3),
                                       const SizedBox(width: AppSizes.s8),
                                       TextWidgetString(
                                           '$selectedStartDate ~ $selectedEndDate',
                                           TextAligns.center,
                                           AppSizes.i14,
                                           FontWeights.w500,
-                                          AppColors.blackType2
-                                      ),
+                                          AppColors.blackType2),
                                       const SizedBox(width: AppSizes.s8),
-                                      const Icon(Icons.arrow_drop_down, size: AppSizes.s20, color: AppColors.grayType3),
+                                      const Icon(Icons.arrow_drop_down,
+                                          size: AppSizes.s20,
+                                          color: AppColors.grayType3),
                                     ],
                                   ),
                                 ),
@@ -338,31 +362,45 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                               color: AppColors.grayType8,
                                               fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
-                                          suffixIcon: mmsiController.text.isNotEmpty
+                                          suffixIcon: mmsiController
+                                                  .text.isNotEmpty
                                               ? IconButton(
-                                            icon: const Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
-                                            onPressed: () {
-                                              setState(() {
-                                                mmsiController.clear();
-                                              });
-                                            },
-                                          )
+                                                  icon: const Icon(Icons.clear,
+                                                      size: AppSizes.s18,
+                                                      color:
+                                                          AppColors.grayType3),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      mmsiController.clear();
+                                                    });
+                                                  },
+                                                )
                                               : null,
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.grayType7,
+                                                width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.grayType7,
+                                                width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.skyType2,
+                                                width: AppSizes.s1),
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              horizontal: AppSizes.s12,
-                                              vertical: AppSizes.s12),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: AppSizes.s12,
+                                                  vertical: AppSizes.s12),
                                           isDense: true,
                                           fillColor: AppColors.whiteType1,
                                           filled: true,
@@ -375,7 +413,6 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     ),
                                   ),
                                   const SizedBox(width: AppSizes.s12),
-
                                   Expanded(
                                     child: SizedBox(
                                       height: AppSizes.s40,
@@ -391,31 +428,46 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                               color: AppColors.grayType8,
                                               fontSize: AppSizes.s12,
                                               fontWeight: FontWeight.w400),
-                                          suffixIcon: shipNameController.text.isNotEmpty
+                                          suffixIcon: shipNameController
+                                                  .text.isNotEmpty
                                               ? IconButton(
-                                            icon: const Icon(Icons.clear, size: AppSizes.s18, color: AppColors.grayType3),
-                                            onPressed: () {
-                                              setState(() {
-                                                shipNameController.clear();
-                                              });
-                                            },
-                                          )
+                                                  icon: const Icon(Icons.clear,
+                                                      size: AppSizes.s18,
+                                                      color:
+                                                          AppColors.grayType3),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      shipNameController
+                                                          .clear();
+                                                    });
+                                                  },
+                                                )
                                               : null,
                                           border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.grayType7,
+                                                width: AppSizes.s1),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.grayType7, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.grayType7,
+                                                width: AppSizes.s1),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(AppSizes.s4),
-                                            borderSide: const BorderSide(color: AppColors.skyType2, width: AppSizes.s1),
+                                            borderRadius: BorderRadius.circular(
+                                                AppSizes.s4),
+                                            borderSide: const BorderSide(
+                                                color: AppColors.skyType2,
+                                                width: AppSizes.s1),
                                           ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              horizontal: AppSizes.s12,
-                                              vertical: AppSizes.s12),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: AppSizes.s12,
+                                                  vertical: AppSizes.s12),
                                           isDense: true,
                                           fillColor: AppColors.whiteType1,
                                           filled: true,
@@ -427,38 +479,47 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                     ),
                                   ),
                                   const SizedBox(width: AppSizes.s12),
-
                                   SizedBox(
                                     height: AppSizes.s40,
                                     child: Consumer<NavigationProvider>(
                                       builder: (context, provider, child) {
                                         return ElevatedButton(
-                                          onPressed: provider.isLoading ? null : _performSearch,
+                                          onPressed: provider.isLoading
+                                              ? null
+                                              : _performSearch,
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.skyType2,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(AppSizes.s4),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      AppSizes.s4),
                                             ),
-                                            fixedSize: const Size(AppSizes.s65, AppSizes.s40),
+                                            fixedSize: const Size(
+                                                AppSizes.s65, AppSizes.s40),
                                             padding: EdgeInsets.zero,
                                           ),
                                           child: provider.isLoading
                                               ? const SizedBox(
-                                            width: AppSizes.s16,
-                                            height: AppSizes.s16,
-                                            child: CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.whiteType1),
-                                              strokeWidth: AppSizes.s2,
-                                            ),
-                                          )
+                                                  width: AppSizes.s16,
+                                                  height: AppSizes.s16,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                                Color>(
+                                                            AppColors
+                                                                .whiteType1),
+                                                    strokeWidth: AppSizes.s2,
+                                                  ),
+                                                )
                                               : const Text(
-                                            '조회',
-                                            style: TextStyle(
-                                              fontSize: AppSizes.s14,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.whiteType1,
-                                            ),
-                                          ),
+                                                  '조회',
+                                                  style: TextStyle(
+                                                    fontSize: AppSizes.s14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.whiteType1,
+                                                  ),
+                                                ),
                                         );
                                       },
                                     ),
@@ -482,16 +543,25 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                         key: _refreshIndicatorKey,
                                         onRefresh: _onRefresh,
                                         child: SingleChildScrollView(
-                                          physics: const AlwaysScrollableScrollPhysics(),
+                                          physics:
+                                              const AlwaysScrollableScrollPhysics(),
                                           child: Container(
-                                            height: MediaQuery.of(context).size.height * 0.4,
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height *
+                                                0.4,
                                             width: double.infinity,
-                                            padding: const EdgeInsets.all(AppSizes.s20),
+                                            padding: const EdgeInsets.all(
+                                                AppSizes.s20),
                                             child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
-                                                const Icon(Icons.info_outline, size: AppSizes.s48, color: AppColors.grayType8),
-                                                const SizedBox(height: AppSizes.s16),
+                                                const Icon(Icons.info_outline,
+                                                    size: AppSizes.s48,
+                                                    color: AppColors.grayType8),
+                                                const SizedBox(
+                                                    height: AppSizes.s16),
                                                 TextWidgetString(
                                                   '검색 결과가 없습니다.',
                                                   TextAligns.center,
@@ -499,7 +569,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                                   FontWeights.w600,
                                                   AppColors.grayType2,
                                                 ),
-                                                const SizedBox(height: AppSizes.s8),
+                                                const SizedBox(
+                                                    height: AppSizes.s8),
                                                 TextWidgetString(
                                                   '아래로 당겨서 새로고침',
                                                   TextAligns.center,
@@ -518,11 +589,13 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                       key: _refreshIndicatorKey,
                                       onRefresh: _onRefresh,
                                       child: SingleChildScrollView(
-                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        physics:
+                                            const AlwaysScrollableScrollPhysics(),
                                         child: Column(
                                           children: [
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: AppSizes.s12,
                                                 vertical: AppSizes.s8,
                                               ),
@@ -538,7 +611,9 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                                                 ],
                                               ),
                                             ),
-                                            for (int i = 0; i < rosList.length; i++) ...[
+                                            for (int i = 0;
+                                                i < rosList.length;
+                                                i++) ...[
                                               _buildNavigationItem(
                                                   context,
                                                   '${rosList[i].mmsi}',
@@ -616,14 +691,16 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
         widget.onClose!();
       }
 
-      final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+      final mainScreenState =
+          context.findAncestorStateOfType<State<MainScreen>>();
       if (mainScreenState != null) {
         try {
           (mainScreenState as dynamic).selectedIndex = -1;
         } catch (e) {}
       }
 
-      final routeSearchViewModel = Provider.of<RouteProvider>(context, listen: false);
+      final routeSearchViewModel =
+          Provider.of<RouteProvider>(context, listen: false);
       routeSearchViewModel.clearRoutes();
       routeSearchViewModel.setNavigationHistoryMode(false);
 
@@ -642,9 +719,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.s12,
-            vertical: AppSizes.s8
-        ),
+            horizontal: AppSizes.s12, vertical: AppSizes.s8),
         side: const BorderSide(color: AppColors.grayType7),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSizes.s4),
@@ -678,8 +753,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            vertical: AppSizes.s16,
-            horizontal: AppSizes.s12),
+            vertical: AppSizes.s16, horizontal: AppSizes.s12),
         child: Row(
           children: [
             Expanded(
@@ -747,7 +821,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
     if (startTime.isNotEmpty && int.tryParse(startTime) != null) {
       dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(startTime));
       formattedTime =
-      "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}";
+          "${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')}";
     } else {
       formattedTime = startTime;
     }
@@ -784,7 +858,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
           try {
             viewModel.setNavigationHistoryMode(true);
-            NavigationDebugHelper.debugPrint('API 호출 전', location: 'nav_tab.beforeAPI');
+            NavigationDebugHelper.debugPrint('API 호출 전',
+                location: 'nav_tab.beforeAPI');
 
             await viewModel.getVesselRoute(
               regDt: dateTime != null
@@ -804,7 +879,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
               try {
                 final mainController =
-                Provider.of<MainScreenController>(context, listen: false);
+                    Provider.of<MainScreenController>(context, listen: false);
                 mainController.mapController.move(firstPoint, 12.0);
               } catch (e) {
                 NavigationDebugHelper.debugPrint("지도 이동 실패: $e",
@@ -816,7 +891,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 
             // 🆕 항적조회 결과 바텀시트 표시
             Scaffold.of(context).showBottomSheet(
-                  (context) => GestureDetector(
+              (context) => GestureDetector(
                 onVerticalDragEnd: (details) {
                   if (details.primaryVelocity != null &&
                       details.primaryVelocity! > 0) {
@@ -824,7 +899,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     viewModel.setNavigationHistoryMode(false);
 
                     final MainScreenState =
-                    context.findAncestorStateOfType<State<MainScreen>>();
+                        context.findAncestorStateOfType<State<MainScreen>>();
                     if (MainScreenState != null) {
                       try {
                         (MainScreenState as dynamic).selectedIndex = -1;
@@ -840,7 +915,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     if (didPop) return;
 
                     final MainScreenState =
-                    context.findAncestorStateOfType<State<MainScreen>>();
+                        context.findAncestorStateOfType<State<MainScreen>>();
                     if (MainScreenState != null) {
                       try {
                         (MainScreenState as dynamic).selectedIndex = -1;
@@ -862,7 +937,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
               ),
             );
           } catch (e) {
-            NavigationDebugHelper.debugPrint('에러 발생: $e', location: 'nav_tab.error');
+            NavigationDebugHelper.debugPrint('에러 발생: $e',
+                location: 'nav_tab.error');
 
             Navigator.of(context).pop();
             if (mounted) {
@@ -994,12 +1070,12 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
 }
 
 Widget _buildCollapsedBottomSheet(
-    BuildContext context,
-    String shipNm,
-    String mmsi,
-    String formattedTime,
-    RouteProvider viewModel,
-    ) {
+  BuildContext context,
+  String shipNm,
+  String mmsi,
+  String formattedTime,
+  RouteProvider viewModel,
+) {
   String timeRange = '';
   if (viewModel.pastRoutes.isNotEmpty) {
     try {
@@ -1011,8 +1087,10 @@ Widget _buildCollapsedBottomSheet(
         final endTime = lastRoute.regDt.toString();
 
         if (startTime.length >= 14 && endTime.length >= 14) {
-          final startFormatted = '${startTime.substring(8, 10)}:${startTime.substring(10, 12)}:${startTime.substring(12, 14)}';
-          final endFormatted = '${endTime.substring(8, 10)}:${endTime.substring(10, 12)}:${endTime.substring(12, 14)}';
+          final startFormatted =
+              '${startTime.substring(8, 10)}:${startTime.substring(10, 12)}:${startTime.substring(12, 14)}';
+          final endFormatted =
+              '${endTime.substring(8, 10)}:${endTime.substring(10, 12)}:${endTime.substring(12, 14)}';
           timeRange = '$formattedTime $startFormatted ~ $endFormatted';
         } else {
           timeRange = '$formattedTime 00:00:00 ~ 23:59:59';
@@ -1054,7 +1132,6 @@ Widget _buildCollapsedBottomSheet(
             borderRadius: BorderRadius.circular(AppSizes.s2),
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSizes.s12,
@@ -1121,7 +1198,9 @@ Widget _buildCollapsedBottomSheet(
                                     builder: (context, constraints) {
                                       final textPainter = TextPainter(
                                         text: TextSpan(
-                                          text: shipNm.isEmpty ? 'Unknown' : shipNm,
+                                          text: shipNm.isEmpty
+                                              ? 'Unknown'
+                                              : shipNm,
                                           style: const TextStyle(
                                             fontSize: AppSizes.s14,
                                             fontWeight: FontWeights.w600,
@@ -1131,99 +1210,134 @@ Widget _buildCollapsedBottomSheet(
                                         textDirection: TextDirection.ltr,
                                       )..layout(maxWidth: constraints.maxWidth);
 
-                                      final isOverflowing = textPainter.didExceedMaxLines ||
-                                          textPainter.width > constraints.maxWidth;
+                                      final isOverflowing =
+                                          textPainter.didExceedMaxLines ||
+                                              textPainter.width >
+                                                  constraints.maxWidth;
 
                                       return GestureDetector(
-                                        onTap: isOverflowing ? () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return AlertDialog(
-                                                title: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.directions_boat,
-                                                      size: AppSizes.s20,
-                                                      color: AppColors.skyType2,
-                                                    ),
-                                                    const SizedBox(width: AppSizes.s8),
-                                                    TextWidgetString(
-                                                      '선박 정보',
-                                                      TextAligns.left,
-                                                      AppSizes.i16,
-                                                      FontWeights.w600,
-                                                      AppColors.blackType2,
-                                                    ),
-                                                  ],
-                                                ),
-                                                content: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        TextWidgetString(
-                                                          'MMSI : ',
-                                                          TextAligns.left,
-                                                          AppSizes.i14,
-                                                          FontWeights.w400,
-                                                          AppColors.grayType3,
-                                                        ),
-                                                        TextWidgetString(
-                                                          mmsi,
-                                                          TextAligns.left,
-                                                          AppSizes.i14,
-                                                          FontWeights.w600,
-                                                          AppColors.blackType2,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(height: AppSizes.s8),
-                                                    Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        TextWidgetString(
-                                                          '선명 : ',
-                                                          TextAligns.left,
-                                                          AppSizes.i14,
-                                                          FontWeights.w400,
-                                                          AppColors.grayType3,
-                                                        ),
-                                                        Expanded(
-                                                          child: TextWidgetString(
-                                                            shipNm,
+                                        onTap: isOverflowing
+                                            ? () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      title: Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .directions_boat,
+                                                            size: AppSizes.s20,
+                                                            color: AppColors
+                                                                .skyType2,
+                                                          ),
+                                                          const SizedBox(
+                                                              width:
+                                                                  AppSizes.s8),
+                                                          TextWidgetString(
+                                                            '선박 정보',
                                                             TextAligns.left,
+                                                            AppSizes.i16,
+                                                            FontWeights.w600,
+                                                            AppColors
+                                                                .blackType2,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      content: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Row(
+                                                            children: [
+                                                              TextWidgetString(
+                                                                'MMSI : ',
+                                                                TextAligns.left,
+                                                                AppSizes.i14,
+                                                                FontWeights
+                                                                    .w400,
+                                                                AppColors
+                                                                    .grayType3,
+                                                              ),
+                                                              TextWidgetString(
+                                                                mmsi,
+                                                                TextAligns.left,
+                                                                AppSizes.i14,
+                                                                FontWeights
+                                                                    .w600,
+                                                                AppColors
+                                                                    .blackType2,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const SizedBox(
+                                                              height:
+                                                                  AppSizes.s8),
+                                                          Row(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              TextWidgetString(
+                                                                '선명 : ',
+                                                                TextAligns.left,
+                                                                AppSizes.i14,
+                                                                FontWeights
+                                                                    .w400,
+                                                                AppColors
+                                                                    .grayType3,
+                                                              ),
+                                                              Expanded(
+                                                                child:
+                                                                    TextWidgetString(
+                                                                  shipNm,
+                                                                  TextAligns
+                                                                      .left,
+                                                                  AppSizes.i14,
+                                                                  FontWeights
+                                                                      .w600,
+                                                                  AppColors
+                                                                      .skyType2,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                          child:
+                                                              TextWidgetString(
+                                                            '확인',
+                                                            TextAligns.center,
                                                             AppSizes.i14,
                                                             FontWeights.w600,
                                                             AppColors.skyType2,
                                                           ),
                                                         ),
                                                       ],
-                                                    ),
-                                                  ],
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                    child: TextWidgetString(
-                                                      '확인',
-                                                      TextAligns.center,
-                                                      AppSizes.i14,
-                                                      FontWeights.w600,
-                                                      AppColors.skyType2,
-                                                    ),
-                                                  ),
-                                                ],
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(AppSizes.s12),
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        } : null,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                    AppSizes
+                                                                        .s12),
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              }
+                                            : null,
                                         child: Container(
                                           color: Colors.transparent,
                                           child: Row(
@@ -1231,25 +1345,34 @@ Widget _buildCollapsedBottomSheet(
                                             children: [
                                               Flexible(
                                                 child: Text(
-                                                  shipNm.isEmpty ? 'Unknown' : shipNm,
+                                                  shipNm.isEmpty
+                                                      ? 'Unknown'
+                                                      : shipNm,
                                                   style: TextStyle(
                                                     fontSize: AppSizes.s14,
-                                                    fontWeight: FontWeights.w600,
+                                                    fontWeight:
+                                                        FontWeights.w600,
                                                     color: isOverflowing
                                                         ? AppColors.skyType2
                                                         : AppColors.blackType2,
                                                     decoration: isOverflowing
-                                                        ? TextDecoration.underline
+                                                        ? TextDecoration
+                                                            .underline
                                                         : TextDecoration.none,
-                                                    decorationColor: AppColors.skyType2,
-                                                    decorationStyle: TextDecorationStyle.dotted,
+                                                    decorationColor:
+                                                        AppColors.skyType2,
+                                                    decorationStyle:
+                                                        TextDecorationStyle
+                                                            .dotted,
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   maxLines: 1,
                                                 ),
                                               ),
                                               if (isOverflowing) ...[
-                                                const SizedBox(width: AppSizes.s4),
+                                                const SizedBox(
+                                                    width: AppSizes.s4),
                                                 const Icon(
                                                   Icons.info_outlined,
                                                   size: AppSizes.s16,
@@ -1279,7 +1402,8 @@ Widget _buildCollapsedBottomSheet(
                           borderRadius: BorderRadius.circular(AppSizes.s8),
                         ),
                         child: IconButton(
-                          icon: SvgPicture.asset('assets/kdn/home/img/down_select_img.svg',
+                          icon: SvgPicture.asset(
+                              'assets/kdn/home/img/down_select_img.svg',
                               width: AppSizes.s20,
                               height: AppSizes.s20,
                               colorFilter: const ColorFilter.mode(
@@ -1287,7 +1411,7 @@ Widget _buildCollapsedBottomSheet(
                           onPressed: () {
                             Navigator.of(context).pop();
                             Scaffold.of(context).showBottomSheet(
-                                  (context) => MainViewNavigationSheet(
+                              (context) => MainViewNavigationSheet(
                                 onClose: () {},
                                 resetDate: false,
                                 resetSearch: false,
@@ -1296,7 +1420,8 @@ Widget _buildCollapsedBottomSheet(
                               backgroundColor: Colors.transparent,
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(DesignConstants.radiusXL)),
+                                    top: Radius.circular(
+                                        DesignConstants.radiusXL)),
                               ),
                             );
                           },
@@ -1311,14 +1436,15 @@ Widget _buildCollapsedBottomSheet(
                           borderRadius: BorderRadius.circular(AppSizes.s8),
                         ),
                         child: IconButton(
-                          icon: SvgPicture.asset('assets/kdn/home/img/close.svg',
+                          icon: SvgPicture.asset(
+                              'assets/kdn/home/img/close.svg',
                               width: AppSizes.s20,
                               height: AppSizes.s20,
                               colorFilter: const ColorFilter.mode(
                                   AppColors.grayType3, BlendMode.srcIn)),
                           onPressed: () {
-                            final MainScreenState =
-                            context.findAncestorStateOfType<State<MainScreen>>();
+                            final MainScreenState = context
+                                .findAncestorStateOfType<State<MainScreen>>();
                             if (MainScreenState != null) {
                               try {
                                 (MainScreenState as dynamic).selectedIndex = -1;

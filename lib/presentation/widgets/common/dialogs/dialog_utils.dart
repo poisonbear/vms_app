@@ -40,11 +40,11 @@ class DialogUtils {
   /// 제목과 메시지를 별도로 표시하는 경고 다이얼로그입니다.
   /// 선택적으로 확인 콜백을 제공할 수 있습니다.
   static void warningDetail(
-      BuildContext context, {
-        required String title,
-        required String message,
-        VoidCallback? onConfirm,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String message,
+    VoidCallback? onConfirm,
+  }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -70,13 +70,13 @@ class DialogUtils {
   /// 사용자 확인이 필요한 경우 사용합니다.
   /// 확인 시 true, 취소 시 false를 반환합니다.
   static Future<bool?> showConfirm(
-      BuildContext context, {
-        required String title,
-        required String message,
-        String confirmText = '확인',
-        String cancelText = '취소',
-        Color? confirmColor,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String message,
+    String confirmText = '확인',
+    String cancelText = '취소',
+    Color? confirmColor,
+  }) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -105,10 +105,10 @@ class DialogUtils {
   ///
   /// 삭제 작업 전에 사용자 확인을 받습니다.
   static Future<bool?> showDeleteConfirm(
-      BuildContext context, {
-        String title = '삭제 확인',
-        String message = '정말 삭제하시겠습니까?',
-      }) {
+    BuildContext context, {
+    String title = '삭제 확인',
+    String message = '정말 삭제하시겠습니까?',
+  }) {
     return showConfirm(
       context,
       title: title,
@@ -123,11 +123,11 @@ class DialogUtils {
   ///
   /// 일반적인 정보 전달용 다이얼로그입니다.
   static void showInfo(
-      BuildContext context, {
-        required String title,
-        required String message,
-        VoidCallback? onClose,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String message,
+    VoidCallback? onClose,
+  }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -152,11 +152,11 @@ class DialogUtils {
   ///
   /// 작업 성공을 알리는 다이얼로그입니다.
   static void showSuccess(
-      BuildContext context, {
-        String title = '성공',
-        required String message,
-        VoidCallback? onClose,
-      }) {
+    BuildContext context, {
+    String title = '성공',
+    required String message,
+    VoidCallback? onClose,
+  }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -187,11 +187,11 @@ class DialogUtils {
   ///
   /// 에러 발생을 알리는 다이얼로그입니다.
   static void showError(
-      BuildContext context, {
-        String title = '오류',
-        required String message,
-        VoidCallback? onClose,
-      }) {
+    BuildContext context, {
+    String title = '오류',
+    required String message,
+    VoidCallback? onClose,
+  }) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -223,10 +223,10 @@ class DialogUtils {
   /// 작업 진행 중임을 표시합니다.
   /// hideLoading()으로 닫아야 합니다.
   static void showLoading(
-      BuildContext context, {
-        String message = '처리 중...',
-        bool barrierDismissible = false,
-      }) {
+    BuildContext context, {
+    String message = '처리 중...',
+    bool barrierDismissible = false,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: barrierDismissible,
@@ -260,12 +260,12 @@ class DialogUtils {
   ///
   /// 자유로운 형태의 다이얼로그를 표시합니다.
   static Future<T?> showCustom<T>(
-      BuildContext context, {
-        required Widget content,
-        List<Widget>? actions,
-        String? title,
-        bool barrierDismissible = true,
-      }) {
+    BuildContext context, {
+    required Widget content,
+    List<Widget>? actions,
+    String? title,
+    bool barrierDismissible = true,
+  }) {
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
@@ -295,11 +295,11 @@ void warningPop(BuildContext context, String message) {
 ///
 /// **새로운 코드에서는 DialogUtils.warningDetail() 사용을 권장합니다.**
 void warningPopdetail(
-    BuildContext context, {
-      required String title,
-      required String message,
-      VoidCallback? onConfirm,
-    }) {
+  BuildContext context, {
+  required String title,
+  required String message,
+  VoidCallback? onConfirm,
+}) {
   DialogUtils.warningDetail(
     context,
     title: title,

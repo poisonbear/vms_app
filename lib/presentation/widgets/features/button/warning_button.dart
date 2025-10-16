@@ -32,10 +32,10 @@ class WarningPopButton extends StatelessWidget {
     super.key,
     required this.svgPath,
     required this.color,
-    required this.widthSize,        // ✅ this.widthSize로 직접 초기화
-    required this.heightSize,       // ✅ this.heightSize로 직접 초기화
+    required this.widthSize, // ✅ this.widthSize로 직접 초기화
+    required this.heightSize, // ✅ this.heightSize로 직접 초기화
     required this.labelText,
-    required this.widthSizeLine,    // ✅ this.widthSizeLine로 직접 초기화
+    required this.widthSizeLine, // ✅ this.widthSizeLine로 직접 초기화
     required this.title,
     required this.titleColor,
     required this.detail,
@@ -123,13 +123,13 @@ class WarningPopButton extends StatelessWidget {
       warningPopdetail(
         context,
         title: title,
-        message: detail,  // detail을 message로 전달
+        message: detail, // detail을 message로 전달
       );
     } else {
       // warningPop은 위치 매개변수를 사용
       warningPop(
         context,
-        '$title\n\n$detail',  // title과 detail을 하나의 메시지로 결합
+        '$title\n\n$detail', // title과 detail을 하나의 메시지로 결합
       );
     }
   }
@@ -181,7 +181,7 @@ class WarningPopDetailButton extends StatelessWidget {
       detailColor: detailColor,
       alarmIcon: alarmIcon,
       shadowColor: shadowColor,
-      isDetailVersion: true,  // 상세 버전으로 설정
+      isDetailVersion: true, // 상세 버전으로 설정
     );
   }
 }

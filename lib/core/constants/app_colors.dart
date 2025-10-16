@@ -50,7 +50,6 @@ class AppColors {
   static const grayType15 = Color(0xFFF8F9FA);
   static const grayType16 = Color(0xFFE9ECEF);
 
-
   // ============================================
   // Red Colors
   // ============================================
@@ -116,10 +115,10 @@ class AppColors {
   // ============================================
   // 경고/알림 색상 (Warning Colors)
   // ============================================
-  static const warningBg = Color(0xFFFFFBEB);          // 크림색 배경
-  static const warningBorder = Color(0xFFFDE68A);      // 부드러운 노란색 테두리
-  static const warningIconBg = Color(0xFFFBBF24);      // 골드 아이콘 배경
-  static const warningText = Color(0xFF92400E);        // 브라운 텍스트
+  static const warningBg = Color(0xFFFFFBEB); // 크림색 배경
+  static const warningBorder = Color(0xFFFDE68A); // 부드러운 노란색 테두리
+  static const warningIconBg = Color(0xFFFBBF24); // 골드 아이콘 배경
+  static const warningText = Color(0xFF92400E); // 브라운 텍스트
 
   // 투명도 헬퍼
   static final warningBgLight = warningBg.withOpacity(0.8);
@@ -145,16 +144,20 @@ class AppColors {
   // ============================================
 
   /// 색상에 투명도 적용 (일반)
-  static Color withOpacity(Color color, double opacity) => color.withOpacity(opacity);
+  static Color withOpacity(Color color, double opacity) =>
+      color.withOpacity(opacity);
 
   /// White에 투명도 적용
-  static Color whiteOpacity(double opacity) => Colors.white.withOpacity(opacity);
+  static Color whiteOpacity(double opacity) =>
+      Colors.white.withOpacity(opacity);
 
   /// Black에 투명도 적용
-  static Color blackOpacity(double opacity) => Colors.black.withOpacity(opacity);
+  static Color blackOpacity(double opacity) =>
+      Colors.black.withOpacity(opacity);
 
   /// Emergency Red에 투명도 적용
-  static Color emergencyRedOpacity(double opacity) => emergencyRed.withOpacity(opacity);
+  static Color emergencyRedOpacity(double opacity) =>
+      emergencyRed.withOpacity(opacity);
 
   // ============================================
   // 자주 사용하는 투명도 (편의 상수)

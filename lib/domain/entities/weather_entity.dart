@@ -19,7 +19,8 @@ class WeatherEntity {
   });
 
   /// 위험 여부
-  bool get isDangerous => waveHeight > 3.0 || visibility < 1000 || windSpeed > 20;
+  bool get isDangerous =>
+      waveHeight > 3.0 || visibility < 1000 || windSpeed > 20;
 
   /// 안전 레벨
   SafetyLevel get safetyLevel {

@@ -97,9 +97,9 @@ class LocationServiceManager {
   /// - 현재 위치로 이동
   /// - UI 피드백
   Future<LocationResult> autoFocusToMyLocation(
-      BuildContext context, {
-        bool forceAutoFocus = false,
-      }) async {
+    BuildContext context, {
+    bool forceAutoFocus = false,
+  }) async {
     try {
       AppLogger.d('🎯 자동 위치 포커스 시작...');
 
@@ -199,7 +199,7 @@ class LocationServiceManager {
 
       case LocationPermission.denied:
       case LocationPermission.unableToDetermine:
-      // 권한 요청
+        // 권한 요청
         final requested = await Geolocator.requestPermission();
         if (requested == LocationPermission.whileInUse ||
             requested == LocationPermission.always) {
@@ -226,9 +226,9 @@ class LocationServiceManager {
 
   /// 권한 실패 처리
   LocationResult _handlePermissionFailure(
-      BuildContext context,
-      LocationPermissionStatus status,
-      ) {
+    BuildContext context,
+    LocationPermissionStatus status,
+  ) {
     String message;
 
     if (status == LocationPermissionStatus.deniedForever) {

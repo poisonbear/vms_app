@@ -13,23 +13,25 @@ class RouteProvider extends BaseProvider {
   // 캐시 매니저
   final _cache = MemoryCache();
 
-  // 기존 구조 유지
   List<PastRouteSearchModel> _pastRouteList = [];
   List<PredRouteSearchModel> _predRouteList = [];
   bool _isNavigationHistoryMode = false;
 
-  // Getters
+  // ✅ 모든 Getters (호환성 100%)
   List<PastRouteSearchModel> get pastRouteList => _pastRouteList;
   List<PredRouteSearchModel> get predRouteList => _predRouteList;
+
+  // ✅ 추가: 다른 파일에서 사용하는 이름
   List<PastRouteSearchModel> get pastRoutes => _pastRouteList;
   List<PredRouteSearchModel> get predRoutes => _predRouteList;
+
   bool get isNavigationHistoryMode => _isNavigationHistoryMode;
 
   RouteProvider() {
     _vesselRepository = getIt<VesselRepository>();
   }
 
-  // 항행이력 지도 데이터 조회 - 캐싱 활성화
+  // ✅ 메서드명: getVesselRoute (기존 코드 호환)
   Future<void> getVesselRoute({String? regDt, int? mmsi}) async {
     try {
       AppLogger.d('==========================================');
@@ -49,27 +51,30 @@ class RouteProvider extends BaseProvider {
         try {
           // 캐시된 데이터 복원
           _pastRouteList = (cachedData['past'] as List<dynamic>?)
-              ?.map((item) => PastRouteSearchModel(
-            regDt: item['regDt'],
-            mmsi: item['mmsi'],
-            lntd: item['lntd'],
-            lttd: item['lttd'],
-            spd: item['spd'],
-            cog: item['cog'],
-          ))
-              .toList() ?? [];
+                  ?.map((item) => PastRouteSearchModel(
+                        regDt: item['regDt'],
+                        mmsi: item['mmsi'],
+                        lntd: item['lntd'],
+                        lttd: item['lttd'],
+                        spd: item['spd'],
+                        cog: item['cog'],
+                      ))
+                  .toList() ??
+              [];
 
           _predRouteList = (cachedData['pred'] as List<dynamic>?)
-              ?.map((item) => PredRouteSearchModel(
-            pdcthh: item['pdcthh'],
-            lntd: item['lntd'],
-            lttd: item['lttd'],
-            spd: item['spd'],
-          ))
-              .toList() ?? [];
+                  ?.map((item) => PredRouteSearchModel(
+                        pdcthh: item['pdcthh'],
+                        lntd: item['lntd'],
+                        lttd: item['lttd'],
+                        spd: item['spd'],
+                      ))
+                  .toList() ??
+              [];
 
-          AppLogger.d('📊 캐시 데이터 복원 - past: ${_pastRouteList.length}, pred: ${_predRouteList.length}');
-          notifyListeners();
+          AppLogger.d(
+              '📊 캐시 데이터 복원 - past: ${_pastRouteList.length}, pred: ${_predRouteList.length}');
+          safeNotifyListeners();
           return;
         } catch (e) {
           AppLogger.w('⚠️ 캐시 복원 실패, API 호출로 진행: $e');
@@ -109,30 +114,34 @@ class RouteProvider extends BaseProvider {
         try {
           // 데이터를 캐시에 저장
           final cacheData = {
-            'past': _pastRouteList.map((route) => {
-              'regDt': route.regDt,
-              'mmsi': route.mmsi,
-              'lntd': route.lntd,
-              'lttd': route.lttd,
-              'spd': route.spd,
-              'cog': route.cog,
-            }).toList(),
-            'pred': _predRouteList.map((route) => {
-              'pdcthh': route.pdcthh,
-              'lntd': route.lntd,
-              'lttd': route.lttd,
-              'spd': route.spd,
-            }).toList(),
+            'past': _pastRouteList
+                .map((route) => {
+                      'regDt': route.regDt,
+                      'mmsi': route.mmsi,
+                      'lntd': route.lntd,
+                      'lttd': route.lttd,
+                      'spd': route.spd,
+                      'cog': route.cog,
+                    })
+                .toList(),
+            'pred': _predRouteList
+                .map((route) => {
+                      'pdcthh': route.pdcthh,
+                      'lntd': route.lntd,
+                      'lttd': route.lttd,
+                      'spd': route.spd,
+                    })
+                .toList(),
           };
 
-          _cache.put(cacheKey, cacheData, AppDurations.hours2); // ✅ 수정
+          _cache.put(cacheKey, cacheData, AppDurations.hours2);
           AppLogger.d('💾 [캐시 저장] 항행이력 지도 데이터 (2시간 유효)');
         } catch (e) {
           AppLogger.w('⚠️ 캐시 저장 실패 (무시하고 계속): $e');
         }
         // ========== 캐싱 완료 ==========
 
-        notifyListeners();
+        safeNotifyListeners();
       } else {
         AppLogger.d('==========================================');
         AppLogger.w('[WARNING] API 응답이 null입니다');
@@ -142,7 +151,7 @@ class RouteProvider extends BaseProvider {
         // 빈 리스트로 초기화
         _pastRouteList = [];
         _predRouteList = [];
-        notifyListeners();
+        safeNotifyListeners();
       }
     } catch (e) {
       AppLogger.d('==========================================');
@@ -155,32 +164,22 @@ class RouteProvider extends BaseProvider {
       _pastRouteList = [];
       _predRouteList = [];
 
-      try {
-        setError('항행이력 조회 실패: $e');
-      } catch (_) {
-        AppLogger.d('[INFO] setError 메서드를 사용할 수 없음');
-      }
-
-      notifyListeners();
+      setError('항행이력 조회 실패: $e');
+      safeNotifyListeners();
     }
   }
 
-  // 기존 메서드들
   void setNavigationHistoryMode(bool value) {
     _isNavigationHistoryMode = value;
-    notifyListeners();
+    safeNotifyListeners();
   }
 
   void clearRoutes() {
     _pastRouteList = [];
     _predRouteList = [];
     _isNavigationHistoryMode = false;
-
-    try {
-      clearError();
-    } catch (_) {}
-
-    notifyListeners();
+    clearError();
+    safeNotifyListeners();
   }
 
   void clearCache() {
@@ -190,12 +189,12 @@ class RouteProvider extends BaseProvider {
 
   void setPastRoutes(List<PastRouteSearchModel> routes) {
     _pastRouteList = routes;
-    notifyListeners();
+    safeNotifyListeners();
   }
 
   void setPredRoutes(List<PredRouteSearchModel> routes) {
     _predRouteList = routes;
-    notifyListeners();
+    safeNotifyListeners();
   }
 
   bool get hasData => _pastRouteList.isNotEmpty || _predRouteList.isNotEmpty;
@@ -204,22 +203,15 @@ class RouteProvider extends BaseProvider {
     _pastRouteList = [];
     _predRouteList = [];
     _isNavigationHistoryMode = false;
-
-    try {
-      clearError();
-    } catch (_) {}
-
-    try {
-      setLoading(false);
-    } catch (_) {}
-
-    notifyListeners();
+    clearError();
+    setLoading(false);
+    safeNotifyListeners();
   }
 
   @override
   void dispose() {
     clearRoutes();
-    _isNavigationHistoryMode = false;
+    clearCache();
     super.dispose();
   }
 }

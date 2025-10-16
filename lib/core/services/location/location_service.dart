@@ -78,7 +78,7 @@ class LocationService {
       _positionSubscription = Geolocator.getPositionStream(
         locationSettings: _locationSettings,
       ).listen(
-            (Position position) {
+        (Position position) {
           _currentPosition = position;
           _locationController.add(position);
           AppLogger.d(
@@ -121,10 +121,12 @@ class LocationService {
   }
 
   /// 두 지점 간 거리 계산 (미터)
-  double calculateDistance(double startLatitude,
-      double startLongitude,
-      double endLatitude,
-      double endLongitude,) {
+  double calculateDistance(
+    double startLatitude,
+    double startLongitude,
+    double endLatitude,
+    double endLongitude,
+  ) {
     return Geolocator.distanceBetween(
       startLatitude,
       startLongitude,
@@ -134,10 +136,12 @@ class LocationService {
   }
 
   /// 방위각 계산
-  double calculateBearing(double startLatitude,
-      double startLongitude,
-      double endLatitude,
-      double endLongitude,) {
+  double calculateBearing(
+    double startLatitude,
+    double startLongitude,
+    double endLatitude,
+    double endLongitude,
+  ) {
     return Geolocator.bearingBetween(
       startLatitude,
       startLongitude,

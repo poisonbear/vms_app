@@ -118,10 +118,12 @@ class StateManager {
 
       final currentMemory = stateSize ~/ 1024; // KB 단위
 
-      if (currentMemory > _lastMemoryUsage + 100) { // 100KB 이상 증가 시
+      if (currentMemory > _lastMemoryUsage + 100) {
+        // 100KB 이상 증가 시
         AppLogger.w('Memory usage increased: ${currentMemory}KB');
 
-        if (currentMemory > 5000) { // 5MB 초과 시
+        if (currentMemory > 5000) {
+          // 5MB 초과 시
           _performMemoryCleanup();
         }
       }

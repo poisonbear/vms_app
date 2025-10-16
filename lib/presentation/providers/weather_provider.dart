@@ -8,9 +8,11 @@ import 'package:vms_app/data/models/weather_model.dart';
 import 'package:vms_app/domain/repositories/weather_repository.dart';
 import 'package:vms_app/presentation/providers/base_provider.dart';
 
-/// 기상정보 Provider (캐싱 통합 버전)
+/// 기상정보 Provider (LRU 캐싱 최적화)
 class WeatherProvider extends BaseProvider {
   late final WeatherRepository _widRepository;
+
+  // ✅ LRU 캐시 (자동 메모리 관리)
   final _cache = MemoryCache();
 
   List<WidModel>? _widList;
@@ -34,43 +36,34 @@ class WeatherProvider extends BaseProvider {
     getWidList();
   }
 
-  /// 기상정보 리스트 조회 (캐싱 포함)
+  /// 기상정보 리스트 조회 (LRU 캐싱 최적화)
+  ///
+  /// - 캐시 유효 시간: 30분 (기상 데이터 갱신 주기 고려)
+  /// - 30분 단위로 캐시 키 생성 (불필요한 API 호출 감소)
   Future<void> getWidList({bool forceRefresh = false}) async {
     final now = DateTime.now();
-    final cacheKey = 'wid_list_${now.hour}_${now.minute ~/ NumericConstants.i30}';
+    // ✅ 30분 단위로 캐시 키 생성
+    final cacheKey =
+        'wid_list_${now.year}${now.month}${now.day}_${now.hour}_${now.minute ~/ 30}';
 
-    // 캐시 확인 (강제 새로고침이 아닐 때만)
+    // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (LRU 자동 적용)
     if (!forceRefresh) {
-      final cachedData = _cache.get<Map<String, dynamic>>(cacheKey);
+      final cachedData = _cache.get<List<WidModel>>(cacheKey);
       if (cachedData != null) {
         _cacheHits++;
-        AppLogger.d('✅ [캐시 사용] 기상정보 리스트 (hits: $_cacheHits)');
-        AppLogger.d('📦 캐시 데이터 타입: ${cachedData['widList'].runtimeType}');
+        AppLogger.d('✅ [캐시 HIT] 기상정보 (hits: $_cacheHits)');
+        AppLogger.d('📊 캐시된 기상 데이터: ${cachedData.length}개');
 
-        if (cachedData['widList'] != null) {
-          try {
-            _widList = cachedData['widList'] as List<WidModel>?;
-            AppLogger.d('📊 _widList 길이: ${_widList?.length}');
-
-            if (_widList != null && _widList!.isNotEmpty) {
-              AppLogger.d('🌡️ 첫 데이터 온도: ${_widList!.first.current_temp}');
-              AppLogger.d('🌊 첫 데이터 파고: ${_widList!.first.wave_height}');
-            }
-
-            _processWindData(_widList!);
-            safeNotifyListeners();
-            return;
-          } catch(e) {
-            AppLogger.e('❌ 캐시 복원 에러: $e');
-            AppLogger.e('❌ 타입 캐스팅 실패, API 재호출 필요');
-          }
-        }
+        _widList = cachedData;
+        _processWindData(cachedData);
+        safeNotifyListeners();
+        return;
       }
     }
 
-    // API 호출
+    // ✅ 캐시 미스 또는 강제 새로고침
     _cacheMisses++;
-    AppLogger.d('🔄 [API 호출] 기상정보 리스트 (misses: $_cacheMisses)');
+    AppLogger.d('🔄 [캐시 MISS] 기상정보 API 호출 (misses: $_cacheMisses)');
 
     final result = await executeAsync(() async {
       return await _widRepository.getWidList();
@@ -80,16 +73,10 @@ class WeatherProvider extends BaseProvider {
       _widList = result;
       _processWindData(result);
 
-      AppLogger.d('💾 저장 전 _widList 타입: ${_widList.runtimeType}');
-      AppLogger.d('💾 저장 전 _widList 길이: ${_widList?.length}');
+      // ✅ LRU 캐시 저장 (30분, 자동 메모리 관리)
+      _cache.put(cacheKey, result, AppDurations.minutes30);
+      AppLogger.d('💾 [캐시 저장] 기상정보 ${result.length}개 (30분 유효)');
 
-      // 캐시 저장
-      final dataToCache = {
-        'widList': result,
-      };
-
-      _cache.put(cacheKey, dataToCache, AppDurations.minutes30);
-      AppLogger.d('💾 [캐시 저장] 기상정보 리스트 (30분간 유효)');
       safeNotifyListeners();
     }
   }
@@ -102,7 +89,6 @@ class WeatherProvider extends BaseProvider {
 
     AppLogger.d('🌪️ === 풍향/풍속 데이터 처리 (8방위) ===');
     AppLogger.d('총 ${weatherList.length}개 기상 데이터 처리');
-    AppLogger.d('');
 
     for (int i = 0; i < weatherList.length; i++) {
       final weather = weatherList[i];
@@ -145,7 +131,8 @@ class WeatherProvider extends BaseProvider {
     _windDirection.add(directions[index]);
 
     // 아이콘 회전 각도 (SVG 아이콘이 북쪽 기준일 때)
-    final iconRotation = ((index * 45 + NumericConstants.i180) % NumericConstants.i360);
+    final iconRotation =
+        ((index * 45 + NumericConstants.i180) % NumericConstants.i360);
     _windIcon.add('ro$iconRotation');
   }
 
@@ -154,31 +141,50 @@ class WeatherProvider extends BaseProvider {
     AppLogger.d('');
     AppLogger.d('📋 === 전체 풍향/풍속 요약 ===');
     for (int i = 0; i < _windDirection.length; i++) {
-      AppLogger.d('[$i] ${_windDirection[i]} / ${_windSpeed[i]}m/s / ${_windIcon[i]}');
+      AppLogger.d(
+          '[$i] ${_windDirection[i]} / ${_windSpeed[i]}m/s / ${_windIcon[i]}');
     }
     AppLogger.d('================================');
-    AppLogger.d('');
   }
 
   /// 캐시 통계 조회
   Map<String, dynamic> getCacheStatistics() {
     final total = _cacheHits + _cacheMisses;
+    final hitRate =
+        total > 0 ? (_cacheHits * 100 / total).toStringAsFixed(1) : '0.0';
+
     return {
       'hits': _cacheHits,
       'misses': _cacheMisses,
-      'hitRate': total > 0 ? (_cacheHits * 100 ~/ total) : 0,
+      'hitRate': '$hitRate%',
       'total': total,
+      'weatherCount': _widList?.length ?? 0,
     };
+  }
+
+  /// ✅ 캐시 상태 디버그 출력
+  void printCacheStats() {
+    final stats = getCacheStatistics();
+    AppLogger.d('📊 WeatherProvider 캐시 통계:');
+    AppLogger.d('  Hits: ${stats['hits']}, Misses: ${stats['misses']}');
+    AppLogger.d('  Hit Rate: ${stats['hitRate']}');
+    AppLogger.d('  기상 데이터: ${stats['weatherCount']}개');
+
+    // MemoryCache 전체 통계
+    _cache.printDebugInfo();
   }
 
   /// 캐시 클리어
   void clearCache() {
     _cache.clear();
+    _cacheHits = 0;
+    _cacheMisses = 0;
     AppLogger.d('[CACHE] WeatherProvider 캐시 클리어');
   }
 
   /// 현재 날씨 (첫 번째 데이터)
-  WidModel? get currentWeather => _widList?.isNotEmpty == true ? _widList!.first : null;
+  WidModel? get currentWeather =>
+      _widList?.isNotEmpty == true ? _widList!.first : null;
 
   /// 평균 파고
   double get averageWaveHeight {
@@ -207,7 +213,7 @@ class WeatherProvider extends BaseProvider {
     _windDirection.clear();
     _windSpeed.clear();
     _windIcon.clear();
-    _cache.clear();
+    clearCache();
     AppLogger.d('WeatherProvider disposed');
     super.dispose();
   }

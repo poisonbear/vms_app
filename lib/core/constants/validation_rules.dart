@@ -40,8 +40,10 @@ class ValidationRules {
   static final RegExp numberRegExp = RegExp(numberPattern);
   static final RegExp specialCharRegExp = RegExp(specialCharPattern);
 
-  static bool isValidPassword(String value) => passwordSimpleRegExp.hasMatch(value);
-  static bool isValidComplexPassword(String value) => passwordComplexRegExp.hasMatch(value);
+  static bool isValidPassword(String value) =>
+      passwordSimpleRegExp.hasMatch(value);
+  static bool isValidComplexPassword(String value) =>
+      passwordComplexRegExp.hasMatch(value);
 
   static bool hasLetter(String value) => letterRegExp.hasMatch(value);
   static bool hasNumber(String value) => numberRegExp.hasMatch(value);
@@ -119,6 +121,7 @@ class ValidationRules {
   static bool isValidIpAddress(String value) => ipAddressRegExp.hasMatch(value);
   static bool isKorean(String value) => koreanRegExp.hasMatch(value);
   static bool isEnglish(String value) => englishRegExp.hasMatch(value);
-  static bool isAlphanumeric(String value) => alphanumericRegExp.hasMatch(value);
+  static bool isAlphanumeric(String value) =>
+      alphanumericRegExp.hasMatch(value);
   static bool isValidHexColor(String value) => hexColorRegExp.hasMatch(value);
 }

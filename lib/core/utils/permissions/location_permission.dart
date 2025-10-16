@@ -104,7 +104,8 @@ class PointRequestUtil {
   PointRequestUtil._();
 
   /// 위치 권한 요청 (승인될 때까지 반복)
-  static Future<bool> requestPermissionUntilGranted(BuildContext context) async {
+  static Future<bool> requestPermissionUntilGranted(
+      BuildContext context) async {
     return await LocationPermissionUtil.requestWithDialog(context);
   }
 

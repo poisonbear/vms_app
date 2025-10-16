@@ -16,7 +16,8 @@ class SecureStorageService {
   static const String _savedIdKey = 'secure_saved_id';
   static const String _firebaseTokenKey = 'secure_firebase_token';
   static const String _uuidKey = 'secure_uuid';
-  static const String _migrationCompleteKey = 'migration_to_secure_storage_complete';
+  static const String _migrationCompleteKey =
+      'migration_to_secure_storage_complete';
 
   SecureStorageService._() {
     _storage = const FlutterSecureStorage(

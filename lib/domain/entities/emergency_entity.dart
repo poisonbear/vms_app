@@ -26,10 +26,12 @@ class EmergencyEntity {
   bool get hasLocation => latitude != null && longitude != null;
 
   /// 긴급 상황이 활성 상태인지 확인
-  bool get isActive => status == EmergencyStatus.active || status == EmergencyStatus.inProgress;
+  bool get isActive =>
+      status == EmergencyStatus.active || status == EmergencyStatus.inProgress;
 
   /// 긴급 상황이 완료되었는지 확인
-  bool get isCompleted => status == EmergencyStatus.resolved || status == EmergencyStatus.cancelled;
+  bool get isCompleted =>
+      status == EmergencyStatus.resolved || status == EmergencyStatus.cancelled;
 
   /// 긴급 상황 경과 시간 (분)
   int get elapsedMinutes => DateTime.now().difference(registeredDate).inMinutes;
@@ -72,4 +74,5 @@ class EmergencyEntity {
 }
 
 enum EmergencyStatus { active, inProgress, resolved, cancelled }
+
 enum EmergencyPriority { low, medium, high }

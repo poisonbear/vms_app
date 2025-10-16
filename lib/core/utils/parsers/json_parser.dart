@@ -72,10 +72,10 @@ class JsonParser {
 
   /// List 파싱
   static List<T>? parseList<T>(
-      dynamic value,
-      T Function(dynamic) parser, [
-        List<T>? defaultValue,
-      ]) {
+    dynamic value,
+    T Function(dynamic) parser, [
+    List<T>? defaultValue,
+  ]) {
     if (value == null) return defaultValue;
     if (value is! List) return defaultValue;
 
@@ -89,15 +89,16 @@ class JsonParser {
 
   /// List 파싱 (Non-null)
   static List<T> parseListNonNull<T>(
-      dynamic value,
-      T Function(dynamic) parser, [
-        List<T>? defaultValue,
-      ]) {
+    dynamic value,
+    T Function(dynamic) parser, [
+    List<T>? defaultValue,
+  ]) {
     return parseList(value, parser, defaultValue) ?? defaultValue ?? [];
   }
 
   /// Map 파싱
-  static Map<String, dynamic>? parseMap(dynamic value, [Map<String, dynamic>? defaultValue]) {
+  static Map<String, dynamic>? parseMap(dynamic value,
+      [Map<String, dynamic>? defaultValue]) {
     if (value == null) return defaultValue;
     if (value is Map<String, dynamic>) return value;
     if (value is Map) {
@@ -112,7 +113,8 @@ class JsonParser {
   }
 
   /// Map 파싱 (Non-null)
-  static Map<String, dynamic> parseMapNonNull(dynamic value, [Map<String, dynamic>? defaultValue]) {
+  static Map<String, dynamic> parseMapNonNull(dynamic value,
+      [Map<String, dynamic>? defaultValue]) {
     return parseMap(value, defaultValue) ?? defaultValue ?? {};
   }
 
@@ -135,7 +137,8 @@ class JsonParser {
   }
 
   /// DateTime 파싱 (Non-null)
-  static DateTime parseDateTimeNonNull(dynamic value, [DateTime? defaultValue]) {
+  static DateTime parseDateTimeNonNull(dynamic value,
+      [DateTime? defaultValue]) {
     return parseDateTime(value, defaultValue) ?? defaultValue ?? DateTime.now();
   }
 }

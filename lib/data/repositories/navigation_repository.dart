@@ -1,6 +1,7 @@
 import 'package:vms_app/data/datasources/navigation_datasource.dart';
 import 'package:vms_app/data/models/navigation_model.dart';
-import 'package:vms_app/domain/repositories/navigation_repository.dart' as domain;
+import 'package:vms_app/domain/repositories/navigation_repository.dart'
+    as domain;
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 항행 정보 저장소 구현
@@ -27,7 +28,8 @@ class NavigationRepository implements domain.NavigationRepository {
     return result.fold(
       onSuccess: (list) {
         // 타입 확인
-        AppLogger.d('NavigationRepository: Returning ${list.length} NavigationModel items');
+        AppLogger.d(
+            'NavigationRepository: Returning ${list.length} NavigationModel items');
         return list;
       },
       onFailure: (error) {

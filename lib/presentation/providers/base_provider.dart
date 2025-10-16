@@ -71,11 +71,11 @@ abstract class BaseProvider extends ChangeNotifier {
   /// 비동기 작업 실행 래퍼
   @protected
   Future<T?> executeAsync<T>(
-      Future<T> Function() operation, {
-        String? errorMessage,
-        bool showLoading = true,
-        Function(AppException)? onError,
-      }) async {
+    Future<T> Function() operation, {
+    String? errorMessage,
+    bool showLoading = true,
+    Function(AppException)? onError,
+  }) async {
     if (_isDisposed) {
       AppLogger.w('Attempted async operation after disposal');
       return null;
@@ -110,9 +110,9 @@ abstract class BaseProvider extends ChangeNotifier {
   /// 동기 작업 실행 래퍼
   @protected
   T? executeSafe<T>(
-      T Function() operation, {
-        String? errorMessage,
-      }) {
+    T Function() operation, {
+    String? errorMessage,
+  }) {
     if (_isDisposed) {
       AppLogger.w('Attempted sync operation after disposal');
       return null;
@@ -171,17 +171,17 @@ abstract class BaseProvider extends ChangeNotifier {
   /// Stream subscription 추가 (자동 관리)
   @protected
   StreamSubscription<T> addSubscription<T>(
-      Stream<T> stream,
-      void Function(T) onData, {
-        Function? onError,
-        VoidCallback? onDone,
-      }) {
+    Stream<T> stream,
+    void Function(T) onData, {
+    Function? onError,
+    VoidCallback? onDone,
+  }) {
     if (_isDisposed) {
       throw StateError('Cannot add subscription after disposal');
     }
 
     final subscription = stream.listen(
-          (data) {
+      (data) {
         if (!_isDisposed) {
           onData(data);
         }

@@ -1,6 +1,7 @@
 import 'package:vms_app/data/datasources/emergency_datasource.dart';
 import 'package:vms_app/data/models/emergency_model.dart';
-import 'package:vms_app/domain/repositories/emergency_repository.dart' as domain;
+import 'package:vms_app/domain/repositories/emergency_repository.dart'
+    as domain;
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 
 /// 긴급 상황 저장소 구현
@@ -67,7 +68,8 @@ class EmergencyRepository implements domain.EmergencyRepository {
 
   /// 위치 추적 데이터 저장
   @override
-  Future<bool> saveLocationTracking(List<LocationTrackingData> locations) async {
+  Future<bool> saveLocationTracking(
+      List<LocationTrackingData> locations) async {
     final result = await _dataSource.saveLocationTracking(locations);
 
     return result.fold(

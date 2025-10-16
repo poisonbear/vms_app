@@ -30,7 +30,9 @@ class WeatherDataSource {
 
       if (response.data is Map) {
         final List items = response.data['ts'] ?? [];
-        weatherList = items.map<WeatherModel>((json) => WeatherModel.fromJson(json)).toList();
+        weatherList = items
+            .map<WeatherModel>((json) => WeatherModel.fromJson(json))
+            .toList();
       } else if (response.data is List) {
         weatherList = (response.data as List)
             .map<WeatherModel>((json) => WeatherModel.fromJson(json))

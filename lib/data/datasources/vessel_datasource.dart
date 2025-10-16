@@ -44,9 +44,13 @@ class VesselDataSource {
 
       if (response.data is Map) {
         final List items = response.data['mmsi'] ?? [];
-        vessels = items.map<VesselModel>((json) => VesselModel.fromJson(json)).toList();
+        vessels = items
+            .map<VesselModel>((json) => VesselModel.fromJson(json))
+            .toList();
       } else if (response.data is List) {
-        vessels = (response.data as List).map<VesselModel>((json) => VesselModel.fromJson(json)).toList();
+        vessels = (response.data as List)
+            .map<VesselModel>((json) => VesselModel.fromJson(json))
+            .toList();
       }
 
       AppLogger.d('Vessel list fetched: ${vessels.length} items');

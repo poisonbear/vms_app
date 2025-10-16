@@ -17,7 +17,8 @@ class TermsDataSource {
       final String apiUrl = ApiConfig.termsList;
 
       if (apiUrl.isEmpty) {
-        return const Failure(GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'));
+        return const Failure(
+            GeneralAppException('API URL이 설정되지 않았습니다', 'NO_API_URL'));
       }
 
       final response = await dioRequest.dio.get(apiUrl);
@@ -25,7 +26,9 @@ class TermsDataSource {
       // 프로덕션에서는 로그 레벨 조정 필요
       AppLogger.d('[API Call] Terms list fetched successfully');
 
-      final list = (response.data as List).map<TermsModel>((json) => TermsModel.fromJson(json)).toList();
+      final list = (response.data as List)
+          .map<TermsModel>((json) => TermsModel.fromJson(json))
+          .toList();
 
       return Success(list);
     } catch (e) {

@@ -29,9 +29,9 @@ class LocationManager {
   ///
   /// 첫 실행 또는 명시적 요청 시 현재 위치로 이동합니다.
   Future<LatLng?> autoFocusToMyLocation(
-      BuildContext context, {
-        bool autoFocusLocation = false,
-      }) async {
+    BuildContext context, {
+    bool autoFocusLocation = false,
+  }) async {
     try {
       AppLogger.d('🎯 자동 위치 포커스 시작...');
 
@@ -128,11 +128,11 @@ class LocationManager {
 
   /// 거리 계산 (미터)
   double calculateDistance(
-      double startLatitude,
-      double startLongitude,
-      double endLatitude,
-      double endLongitude,
-      ) {
+    double startLatitude,
+    double startLongitude,
+    double endLatitude,
+    double endLongitude,
+  ) {
     return _locationService.calculateDistance(
       startLatitude,
       startLongitude,
@@ -143,11 +143,11 @@ class LocationManager {
 
   /// 방위각 계산
   double calculateBearing(
-      double startLatitude,
-      double startLongitude,
-      double endLatitude,
-      double endLongitude,
-      ) {
+    double startLatitude,
+    double startLongitude,
+    double endLatitude,
+    double endLongitude,
+  ) {
     return _locationService.calculateBearing(
       startLatitude,
       startLongitude,

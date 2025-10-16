@@ -10,13 +10,13 @@ import 'package:vms_app/core/constants/constants.dart';
 /// [color] : 힌트 텍스트 색상
 /// [obscureText] : 비밀번호 입력용 마스킹 여부
 Widget inputWidget(
-    int widthsize,
-    int heightsize,
-    TextEditingController controller,
-    String title,
-    Color color, {
-      bool obscureText = false,
-    }) {
+  int widthsize,
+  int heightsize,
+  TextEditingController controller,
+  String title,
+  Color color, {
+  bool obscureText = false,
+}) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
@@ -48,14 +48,14 @@ Widget inputWidget(
 /// [isEnabled] : 활성화 여부
 /// [isReadOnly] : 읽기 전용 여부
 Widget inputWidget_deactivate(
-    int widthsize,
-    int heightsize,
-    TextEditingController controller,
-    String title,
-    Color color, {
-      bool isEnabled = true,
-      bool isReadOnly = false,
-    }) {
+  int widthsize,
+  int heightsize,
+  TextEditingController controller,
+  String title,
+  Color color, {
+  bool isEnabled = true,
+  bool isReadOnly = false,
+}) {
   return SizedBox(
     width: widthsize.toDouble(),
     height: heightsize.toDouble(),
@@ -87,9 +87,7 @@ Widget inputWidget_deactivate(
           borderSide: BorderSide(color: color.withValues(alpha: 0.5)),
         ),
         filled: true,
-        fillColor: isEnabled
-            ? Colors.white
-            : Colors.grey.shade100,
+        fillColor: isEnabled ? Colors.white : Colors.grey.shade100,
       ),
     ),
   );

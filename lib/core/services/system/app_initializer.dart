@@ -38,7 +38,8 @@ class AppInitializer {
 
       // 1. SecureStorage 마이그레이션 실행
       final secureStorage = SecureStorageService();
-      final migrationSuccess = await secureStorage.migrateFromSharedPreferences();
+      final migrationSuccess =
+          await secureStorage.migrateFromSharedPreferences();
 
       if (migrationSuccess) {
         AppLogger.i('✅ 보안 스토리지 마이그레이션 완료');

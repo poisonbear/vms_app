@@ -29,7 +29,7 @@ import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 Future<void> _setupFlutterNotifications() async {
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -39,15 +39,16 @@ Future<void> _setupFlutterNotifications() async {
     importance: Importance.high,
   );
 
-  final androidPlugin = flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  final androidPlugin =
+      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidPlugin != null) {
     await androidPlugin.createNotificationChannel(channel);
   }
 
   const initializationSettingsAndroid =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/ic_launcher');
   const initializationSettingsIOS = DarwinInitializationSettings();
 
   const initializationSettings = InitializationSettings(
@@ -89,7 +90,8 @@ void main() async {
       AppLogger.e('환경 변수 로드 실패', e);
     }
 
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
     await _setupFlutterNotifications();
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -207,12 +209,14 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initializeFcmToken() async {
     try {
-      fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
+      fcmToken = await FirebaseMessaging.instance.getToken() ??
+          StringConstants.emptyString;
 
       if (fcmToken.isEmpty) {
         AppLogger.w(LogMessages.fcmTokenRetry);
         await Future.delayed(AppDurations.seconds2);
-        fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
+        fcmToken = await FirebaseMessaging.instance.getToken() ??
+            StringConstants.emptyString;
       }
 
       if (fcmToken.isNotEmpty) {
@@ -232,11 +236,13 @@ class _SplashScreenState extends State<SplashScreen>
   void _logAutoLoginCheck(bool? isAutoLogin, String? savedId, String? savedPw) {
     AppLogger.d(LogMessages.autoLoginCheck);
     AppLogger.d('자동 로그인 상태: $isAutoLogin');
-    AppLogger.d('저장된 계정 정보: ${savedId != null && savedPw != null ? "존재" : "없음"}');
+    AppLogger.d(
+        '저장된 계정 정보: ${savedId != null && savedPw != null ? "존재" : "없음"}');
     AppLogger.d(LogMessages.separator);
   }
 
-  Future<void> _performAutoLogin(String userId, String password, {int retryCount = 0}) async {
+  Future<void> _performAutoLogin(String userId, String password,
+      {int retryCount = 0}) async {
     try {
       AppLogger.d(LogMessages.autoLoginStart);
       if (retryCount > 0) {
@@ -259,8 +265,10 @@ class _SplashScreenState extends State<SplashScreen>
       AppLogger.d(LogMessages.firebaseAuthSuccess);
 
       if (firebaseToken.isNotEmpty) {
-        final tokenPreview = firebaseToken.substring(0, math.min(20, firebaseToken.length));
-        AppLogger.d('Firebase 토큰 획득: $tokenPreview... (길이: ${firebaseToken.length})');
+        final tokenPreview =
+            firebaseToken.substring(0, math.min(20, firebaseToken.length));
+        AppLogger.d(
+            'Firebase 토큰 획득: $tokenPreview... (길이: ${firebaseToken.length})');
       }
 
       await _secureStorage.saveSessionData(
@@ -269,7 +277,8 @@ class _SplashScreenState extends State<SplashScreen>
       );
 
       final pureUserId = _extractPureUserId(userId);
-      final response = await _callLoginApi(pureUserId, password, firebaseToken, uuid);
+      final response =
+          await _callLoginApi(pureUserId, password, firebaseToken, uuid);
 
       _validateApiResponse(response);
 
@@ -287,15 +296,19 @@ class _SplashScreenState extends State<SplashScreen>
 
       _logSuccessAndNavigate(pureUserId);
     } on FirebaseAuthException catch (e) {
-      if (_isNetworkError(e.code) && retryCount < _AutoLoginRetryConfig.maxRetries) {
-        AppLogger.w('네트워크 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
+      if (_isNetworkError(e.code) &&
+          retryCount < _AutoLoginRetryConfig.maxRetries) {
+        AppLogger.w(
+            '네트워크 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
         await Future.delayed(_AutoLoginRetryConfig.retryDelay);
         return _performAutoLogin(userId, password, retryCount: retryCount + 1);
       }
       _handleFirebaseAuthError(e, retryCount);
     } on DioException catch (e) {
-      if (_isDioNetworkError(e) && retryCount < _AutoLoginRetryConfig.maxRetries) {
-        AppLogger.w('서버 통신 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
+      if (_isDioNetworkError(e) &&
+          retryCount < _AutoLoginRetryConfig.maxRetries) {
+        AppLogger.w(
+            '서버 통신 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
         await Future.delayed(_AutoLoginRetryConfig.retryDelay);
         return _performAutoLogin(userId, password, retryCount: retryCount + 1);
       }
@@ -329,11 +342,11 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<Response> _callLoginApi(
-      String userId,
-      String password,
-      String firebaseToken,
-      String? uuid,
-      ) async {
+    String userId,
+    String password,
+    String firebaseToken,
+    String? uuid,
+  ) async {
     return await dioRequest.dio.post(
       apiUrl,
       data: {
@@ -522,7 +535,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,

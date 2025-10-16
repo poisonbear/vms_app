@@ -14,7 +14,8 @@ class PointRequestUtil {
     }
   }
 
-  static Future<bool> requestPermissionUntilGranted(BuildContext context) async {
+  static Future<bool> requestPermissionUntilGranted(
+      BuildContext context) async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
 
@@ -80,7 +81,8 @@ class NotificationRequestUtil {
     }
   }
 
-  static Future<bool> requestPermissionUntilGranted(BuildContext context) async {
+  static Future<bool> requestPermissionUntilGranted(
+      BuildContext context) async {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
 
@@ -97,7 +99,8 @@ class NotificationRequestUtil {
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         AppLogger.d('✅ 알림 권한 허용됨');
         return true;
-      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      } else if (settings.authorizationStatus ==
+          AuthorizationStatus.provisional) {
         AppLogger.d('⚠️ 임시 알림 권한 허용됨');
         return true;
       } else {

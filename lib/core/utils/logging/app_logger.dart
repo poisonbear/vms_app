@@ -81,32 +81,33 @@ class AppLogger {
 
     // 1. JWT 토큰 마스킹 (Bearer eyJ...)
     filtered = filtered.replaceAllMapped(
-      RegExp(r'Bearer\s+([a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+)', caseSensitive: false),
-          (match) => 'Bearer [MASKED_JWT]',
+      RegExp(r'Bearer\s+([a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+)',
+          caseSensitive: false),
+      (match) => 'Bearer [MASKED_JWT]',
     );
 
     // 2. API 키/토큰 마스킹 (AIza..., ya29..., 등)
     filtered = filtered.replaceAllMapped(
       RegExp(r'(AIza|ya29|AKIA|sk-)[a-zA-Z0-9_-]{20,}', caseSensitive: false),
-          (match) => '[MASKED_API_KEY]',
+      (match) => '[MASKED_API_KEY]',
     );
 
     // 3. Password 값 마스킹
     filtered = filtered.replaceAllMapped(
       RegExp(r'(password|pwd)\s*[:=]\s*[^\s,}]+', caseSensitive: false),
-          (match) => '${match.group(1)}: [MASKED]',
+      (match) => '${match.group(1)}: [MASKED]',
     );
 
     // 4. Authorization 헤더 마스킹
     filtered = filtered.replaceAllMapped(
       RegExp(r'Authorization\s*[:=]\s*[^\s,}]+', caseSensitive: false),
-          (match) => 'Authorization: [MASKED]',
+      (match) => 'Authorization: [MASKED]',
     );
 
     // 5. Token 값 마스킹
     filtered = filtered.replaceAllMapped(
       RegExp(r'(token|fcm_tkn)\s*[:=]\s*[^\s,}]+', caseSensitive: false),
-          (match) => '${match.group(1)}: [MASKED]',
+      (match) => '${match.group(1)}: [MASKED]',
     );
 
     return filtered;

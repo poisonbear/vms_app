@@ -53,8 +53,12 @@ class NavigationModel {
   factory NavigationModel.fromJson(Map<String, dynamic> json) {
     return NavigationModel(
       mmsi: json['mmsi'] != null ? int.tryParse(json['mmsi'].toString()) : null,
-      reg_dt: json['reg_dt'] != null ? int.tryParse(json['reg_dt'].toString()) : null,
-      odb_reg_date: json['odb_reg_date'] != null ? int.tryParse(json['odb_reg_date'].toString()) : null,
+      reg_dt: json['reg_dt'] != null
+          ? int.tryParse(json['reg_dt'].toString())
+          : null,
+      odb_reg_date: json['odb_reg_date'] != null
+          ? int.tryParse(json['odb_reg_date'].toString())
+          : null,
       shipName: json['ship_nm']?.toString(),
       ship_kdn: json['ship_kdn']?.toString(),
       psng_auth: json['psng_auth']?.toString(),
@@ -115,7 +119,7 @@ class WeatherInfo {
 
     double wave = 0.0;
     double visibility = 0.0;
-    double walm1 = 1.0;  // 기본값 설정
+    double walm1 = 1.0; // 기본값 설정
     double walm2 = 2.0;
     double walm3 = 3.0;
     double walm4 = 4.0;
@@ -164,7 +168,8 @@ class WeatherInfo {
             walm3 = _safeParseDouble(waveData['alm_c_val'], 3.0);
             walm4 = _safeParseDouble(waveData['alm_d_val'], 4.0);
 
-            AppLogger.d('✅ Wave alarms parsed: [$walm1, $walm2, $walm3, $walm4]');
+            AppLogger.d(
+                '✅ Wave alarms parsed: [$walm1, $walm2, $walm3, $walm4]');
           }
         } else {
           AppLogger.w('⚠️ No waveData field found, using default wave alarms');
@@ -182,12 +187,13 @@ class WeatherInfo {
             valm3 = _safeParseDouble(visibilityData['alm_c_val'], 1000.0);
             valm4 = _safeParseDouble(visibilityData['alm_d_val'], 500.0);
 
-            AppLogger.d('✅ Visibility alarms parsed: [$valm1, $valm2, $valm3, $valm4]');
+            AppLogger.d(
+                '✅ Visibility alarms parsed: [$valm1, $valm2, $valm3, $valm4]');
           }
         } else {
-          AppLogger.w('⚠️ No visibilityData field found, using default visibility alarms');
+          AppLogger.w(
+              '⚠️ No visibilityData field found, using default visibility alarms');
         }
-
       } else {
         AppLogger.w('⚠️ No data field found, checking direct fields...');
 
@@ -208,7 +214,8 @@ class WeatherInfo {
           if (json.containsKey(field)) {
             visibility = _safeParseDouble(json[field], 0.0);
             if (visibility != 0.0) {
-              AppLogger.d('✅ Visibility found in direct field "$field": ${visibility}m');
+              AppLogger.d(
+                  '✅ Visibility found in direct field "$field": ${visibility}m');
               break;
             }
           }
@@ -220,8 +227,8 @@ class WeatherInfo {
       AppLogger.d('    🌊 Wave: ${wave}m');
       AppLogger.d('    👁️ Visibility: ${visibility}m');
       AppLogger.d('    🌊 Wave alarms: [$walm1, $walm2, $walm3, $walm4]');
-      AppLogger.d('    👁️ Visibility alarms: [$valm1, $valm2, $valm3, $valm4]');
-
+      AppLogger.d(
+          '    👁️ Visibility alarms: [$valm1, $valm2, $valm3, $valm4]');
     } catch (e) {
       AppLogger.e('❌ WeatherInfo parsing error: $e');
       AppLogger.w('⚠️ Using default values due to parsing error');

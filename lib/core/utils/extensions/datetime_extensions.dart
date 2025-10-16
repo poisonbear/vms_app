@@ -11,7 +11,9 @@ extension DateTimeExtension on DateTime {
   /// 어제인지 확인
   bool get isYesterday {
     final yesterday = DateTime.now().subtract(const Duration(days: 1));
-    return year == yesterday.year && month == yesterday.month && day == yesterday.day;
+    return year == yesterday.year &&
+        month == yesterday.month &&
+        day == yesterday.day;
   }
 
   /// 이번 주인지 확인

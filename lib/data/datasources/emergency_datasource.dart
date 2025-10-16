@@ -12,7 +12,8 @@ class EmergencyDataSource {
   static const int _maxHistoryCount = 50;
 
   /// 긴급 상황 데이터 저장
-  Future<Result<bool, AppException>> saveEmergencyData(EmergencyData data) async {
+  Future<Result<bool, AppException>> saveEmergencyData(
+      EmergencyData data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
@@ -41,19 +42,24 @@ class EmergencyDataSource {
   }
 
   /// 긴급 히스토리 로드
-  Future<Result<List<EmergencyData>, AppException>> loadEmergencyHistory() async {
+  Future<Result<List<EmergencyData>, AppException>>
+      loadEmergencyHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> history = prefs.getStringList(_emergencyHistoryKey) ?? [];
+      final List<String> history =
+          prefs.getStringList(_emergencyHistoryKey) ?? [];
 
-      final emergencyHistory = history.map((jsonStr) {
-        try {
-          return EmergencyData.fromJson(jsonDecode(jsonStr));
-        } catch (e) {
-          AppLogger.e('히스토리 항목 파싱 오류: $e');
-          return null;
-        }
-      }).whereType<EmergencyData>().toList();
+      final emergencyHistory = history
+          .map((jsonStr) {
+            try {
+              return EmergencyData.fromJson(jsonDecode(jsonStr));
+            } catch (e) {
+              AppLogger.e('히스토리 항목 파싱 오류: $e');
+              return null;
+            }
+          })
+          .whereType<EmergencyData>()
+          .toList();
 
       AppLogger.d('긴급 히스토리 로드: ${emergencyHistory.length}건');
       return Success(emergencyHistory);
@@ -75,7 +81,8 @@ class EmergencyDataSource {
         return const Success(null);
       }
 
-      final lastEmergency = EmergencyData.fromJson(jsonDecode(lastEmergencyJson));
+      final lastEmergency =
+          EmergencyData.fromJson(jsonDecode(lastEmergencyJson));
       return Success(lastEmergency);
     } catch (e) {
       AppLogger.e('마지막 긴급 상황 로드 실패: $e');
@@ -104,12 +111,13 @@ class EmergencyDataSource {
 
   /// 위치 추적 데이터 저장
   Future<Result<bool, AppException>> saveLocationTracking(
-      List<LocationTrackingData> locations,
-      ) async {
+    List<LocationTrackingData> locations,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      final jsonList = locations.map((loc) => jsonEncode(loc.toJson())).toList();
+      final jsonList =
+          locations.map((loc) => jsonEncode(loc.toJson())).toList();
       await prefs.setStringList('location_tracking', jsonList);
 
       AppLogger.d('위치 추적 데이터 저장: ${locations.length}건');
@@ -123,7 +131,8 @@ class EmergencyDataSource {
   }
 
   /// 위치 추적 데이터 로드
-  Future<Result<List<LocationTrackingData>, AppException>> loadLocationTracking() async {
+  Future<Result<List<LocationTrackingData>, AppException>>
+      loadLocationTracking() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final List<String>? jsonList = prefs.getStringList('location_tracking');
@@ -132,14 +141,17 @@ class EmergencyDataSource {
         return const Success([]);
       }
 
-      final locations = jsonList.map((jsonStr) {
-        try {
-          return LocationTrackingData.fromJson(jsonDecode(jsonStr));
-        } catch (e) {
-          AppLogger.e('위치 데이터 파싱 오류: $e');
-          return null;
-        }
-      }).whereType<LocationTrackingData>().toList();
+      final locations = jsonList
+          .map((jsonStr) {
+            try {
+              return LocationTrackingData.fromJson(jsonDecode(jsonStr));
+            } catch (e) {
+              AppLogger.e('위치 데이터 파싱 오류: $e');
+              return null;
+            }
+          })
+          .whereType<LocationTrackingData>()
+          .toList();
 
       AppLogger.d('위치 추적 데이터 로드: ${locations.length}건');
       return Success(locations);

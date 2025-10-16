@@ -13,8 +13,10 @@ class TermsProvider extends BaseProvider {
   List<CmdModel>? _allTermsList;
 
   // 각 약관별 getter - 더 정밀한 키워드로 매핑
-  CmdModel? get serviceTerms => _getTermsByTitle(['서비스'], excludeKeywords: ['위치', '기반']);
-  CmdModel? get privacyPolicy => _getTermsByTitle(['개인정보'], excludeKeywords: ['위치', '기반']);
+  CmdModel? get serviceTerms =>
+      _getTermsByTitle(['서비스'], excludeKeywords: ['위치', '기반']);
+  CmdModel? get privacyPolicy =>
+      _getTermsByTitle(['개인정보'], excludeKeywords: ['위치', '기반']);
   CmdModel? get locationTerms => _getTermsByTitle(['위치', '기반']);
   CmdModel? get marketingTerms => _getTermsByTitle(['마케팅']);
 
@@ -36,7 +38,8 @@ class TermsProvider extends BaseProvider {
     TermsType.marketing: false,
   };
 
-  Map<TermsType, bool> get agreementStatus => Map.unmodifiable(_agreementStatus);
+  Map<TermsType, bool> get agreementStatus =>
+      Map.unmodifiable(_agreementStatus);
 
   // 전체 동의 상태
   bool get isAllAgreed => _agreementStatus.values.every((agreed) => agreed);
@@ -44,8 +47,8 @@ class TermsProvider extends BaseProvider {
   // 필수 약관 동의 상태 (마케팅 제외)
   bool get isRequiredAgreed =>
       _agreementStatus[TermsType.service]! &&
-          _agreementStatus[TermsType.privacy]! &&
-          _agreementStatus[TermsType.location]!;
+      _agreementStatus[TermsType.privacy]! &&
+      _agreementStatus[TermsType.location]!;
 
   TermsProvider() {
     _getTermsList = getIt<GetTermsList>();
@@ -55,7 +58,7 @@ class TermsProvider extends BaseProvider {
   /// 모든 약관을 한 번에 로드
   Future<void> loadAllTerms() async {
     await executeAsync<void>(
-          () async {
+      () async {
         final result = await _getTermsList.execute();
 
         result.fold(
@@ -92,7 +95,8 @@ class TermsProvider extends BaseProvider {
 
       // 내용 미리보기 (더 길게)
       final content = terms.terms_ctt ?? '';
-      final preview = content.length > 100 ? content.substring(0, 100) : content;
+      final preview =
+          content.length > 100 ? content.substring(0, 100) : content;
       AppLogger.d('   내용: "$preview${content.length > 100 ? "..." : ""}"');
       AppLogger.d('');
     }
@@ -110,7 +114,8 @@ class TermsProvider extends BaseProvider {
   }
 
   /// 매핑 시도 과정 로깅
-  void _tryMapTerm(String termName, List<String> includeKeywords, List<String> excludeKeywords) {
+  void _tryMapTerm(String termName, List<String> includeKeywords,
+      List<String> excludeKeywords) {
     AppLogger.d('🔍 "$termName" 매핑 시도...');
     AppLogger.d('   포함 키워드: $includeKeywords');
     AppLogger.d('   제외 키워드: $excludeKeywords');
@@ -171,17 +176,20 @@ class TermsProvider extends BaseProvider {
   }
 
   /// 제목 키워드로 약관 찾기 (제외 키워드 포함)
-  CmdModel? _getTermsByTitle(List<String> includeKeywords, {List<String> excludeKeywords = const <String>[]}) {
+  CmdModel? _getTermsByTitle(List<String> includeKeywords,
+      {List<String> excludeKeywords = const <String>[]}) {
     if (_allTermsList == null) return null;
 
     for (final terms in _allTermsList!) {
       final title = terms.terms_nm?.toLowerCase() ?? '';
 
       // 모든 포함 키워드가 제목에 포함되어 있는지 확인
-      bool allIncludeFound = includeKeywords.every((keyword) => title.contains(keyword.toLowerCase()));
+      bool allIncludeFound = includeKeywords
+          .every((keyword) => title.contains(keyword.toLowerCase()));
 
       // 제외 키워드가 제목에 포함되어 있는지 확인
-      bool anyExcludeFound = excludeKeywords.any((keyword) => title.contains(keyword.toLowerCase()));
+      bool anyExcludeFound = excludeKeywords
+          .any((keyword) => title.contains(keyword.toLowerCase()));
 
       if (allIncludeFound && !anyExcludeFound) {
         return terms;

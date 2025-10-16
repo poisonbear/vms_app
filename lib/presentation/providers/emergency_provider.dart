@@ -40,7 +40,8 @@ class EmergencyProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isEmergencyActive =>
       _status == EmergencyStatus.active || _status == EmergencyStatus.preparing;
-  List<LocationTrackingData> get locationHistory => List.unmodifiable(_locationHistory);
+  List<LocationTrackingData> get locationHistory =>
+      List.unmodifiable(_locationHistory);
 
   // 초기화
   EmergencyProvider() {
@@ -97,7 +98,6 @@ class EmergencyProvider extends ChangeNotifier {
 
       notifyListeners();
       AppLogger.d('위치 업데이트: ${position.latitude}, ${position.longitude}');
-
     } catch (e) {
       _errorMessage = '위치 정보를 가져올 수 없습니다: $e';
       AppLogger.e('위치 업데이트 실패: $e');
@@ -126,7 +126,7 @@ class EmergencyProvider extends ChangeNotifier {
     _positionStreamSubscription = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen(
-          (Position position) {
+      (Position position) {
         _currentPosition = position;
         _addLocationToHistory(position);
         notifyListeners();
@@ -178,7 +178,8 @@ class EmergencyProvider extends ChangeNotifier {
     required String? ship_nm,
     int countdownSeconds = 5,
   }) {
-    if (_status == EmergencyStatus.preparing || _status == EmergencyStatus.active) {
+    if (_status == EmergencyStatus.preparing ||
+        _status == EmergencyStatus.active) {
       AppLogger.w('이미 긴급 상황이 진행중입니다');
       return;
     }
@@ -421,16 +422,20 @@ class EmergencyProvider extends ChangeNotifier {
   Future<void> loadEmergencyHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> history = prefs.getStringList(_emergencyHistoryKey) ?? [];
+      final List<String> history =
+          prefs.getStringList(_emergencyHistoryKey) ?? [];
 
-      _emergencyHistory = history.map((jsonStr) {
-        try {
-          return EmergencyData.fromJson(jsonDecode(jsonStr));
-        } catch (e) {
-          AppLogger.e('히스토리 항목 파싱 오류: $e');
-          return null;
-        }
-      }).whereType<EmergencyData>().toList();
+      _emergencyHistory = history
+          .map((jsonStr) {
+            try {
+              return EmergencyData.fromJson(jsonDecode(jsonStr));
+            } catch (e) {
+              AppLogger.e('히스토리 항목 파싱 오류: $e');
+              return null;
+            }
+          })
+          .whereType<EmergencyData>()
+          .toList();
 
       notifyListeners();
       AppLogger.d('긴급 히스토리 로드: ${_emergencyHistory.length}건');

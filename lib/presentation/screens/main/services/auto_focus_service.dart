@@ -129,7 +129,7 @@ class AutoFocusService {
 
       // 선박 찾기
       final vessel = vesselProvider.vessels.firstWhere(
-            (v) => v.mmsi == mmsi,
+        (v) => v.mmsi == mmsi,
         orElse: () => throw Exception('Vessel not found: MMSI $mmsi'),
       );
 
@@ -173,10 +173,10 @@ class AutoFocusService {
 
   /// 사용자 선박 데이터 로드
   static Future<VesselSearchModel?> _loadUserVessel(
-      BuildContext context,
-      int userMmsi,
-      bool forceUpdate,
-      ) async {
+    BuildContext context,
+    int userMmsi,
+    bool forceUpdate,
+  ) async {
     try {
       final vesselProvider = context.read<VesselProvider>();
 
@@ -187,21 +187,24 @@ class AutoFocusService {
 
         // 로드 완료 대기
         await Future.delayed(_vesselLoadDelay);
-        AppLogger.d('  ✓ Vessel list loaded: ${vesselProvider.vessels.length} vessels');
+        AppLogger.d(
+            '  ✓ Vessel list loaded: ${vesselProvider.vessels.length} vessels');
       } else {
-        AppLogger.d('  ✓ Using cached vessel list: ${vesselProvider.vessels.length} vessels');
+        AppLogger.d(
+            '  ✓ Using cached vessel list: ${vesselProvider.vessels.length} vessels');
       }
 
       // 사용자 선박 찾기
       return vesselProvider.vessels.firstWhere(
-            (vessel) => vessel.mmsi == userMmsi,
+        (vessel) => vessel.mmsi == userMmsi,
         orElse: () {
           AppLogger.w('  ⚠️ User vessel not found: MMSI $userMmsi');
 
           // 첫 번째 선박 반환 (fallback)
           if (vesselProvider.vessels.isNotEmpty) {
             final fallback = vesselProvider.vessels.first;
-            AppLogger.w('  → Using first vessel as fallback: MMSI ${fallback.mmsi}');
+            AppLogger.w(
+                '  → Using first vessel as fallback: MMSI ${fallback.mmsi}');
             return fallback;
           }
 
@@ -223,10 +226,10 @@ class AutoFocusService {
 
   /// 지도 이동
   static void _moveMapToLocation(
-      MapController mapController,
-      LatLng location,
-      double zoom,
-      ) {
+    MapController mapController,
+    LatLng location,
+    double zoom,
+  ) {
     try {
       mapController.move(location, zoom);
       AppLogger.d('  ✓ Map moved to: $location (zoom: $zoom)');
@@ -245,9 +248,9 @@ class AutoFocusService {
 
   /// 선박 찾기 실패 처리
   static AutoFocusResult _handleVesselNotFound(
-      MapController mapController,
-      int userMmsi,
-      ) {
+    MapController mapController,
+    int userMmsi,
+  ) {
     AppLogger.w('  → Moving to default location');
     _moveMapToLocation(mapController, _defaultLocation, _fallbackZoom);
     AppLogger.d('========================================');

@@ -4,14 +4,16 @@ import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/domain/repositories/vessel_repository.dart';
 import 'package:vms_app/presentation/providers/base_provider.dart';
 
-/// 선박 정보 Provider (SimpleCache 추가)
+/// 선박 정보 Provider (LRU 캐시 최적화)
 class VesselProvider extends BaseProvider {
   late final VesselRepository _vesselRepository;
 
+  // ✅ LRU 캐시 (자동 메모리 관리)
   final _cache = MemoryCache();
 
   List<VesselSearchModel> _vessels = [];
@@ -29,9 +31,10 @@ class VesselProvider extends BaseProvider {
     _vesselRepository = getIt<VesselRepository>();
   }
 
-  /// 선박 목록 조회 (캐싱 포함)
+  /// 선박 목록 조회 (LRU 캐싱 최적화)
   ///
   /// - 캐시 유효 시간: 5분
+  /// - 자동 LRU: 오래된 데이터 자동 제거
   /// - forceRefresh: true 시 캐시 무시하고 서버 호출
   Future<void> getVesselList({
     String? regDt,
@@ -39,17 +42,17 @@ class VesselProvider extends BaseProvider {
     bool forceRefresh = false,
   }) async {
     await executeAsync<void>(
-          () async {
+      () async {
         // 캐시 키 생성
         final cacheKey = _generateCacheKey(regDt, mmsi);
 
-        // 강제 새로고침이 아닐 때만 캐시 확인
+        // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (LRU 자동 적용)
         if (!forceRefresh) {
           final cachedData = _cache.get<List<VesselSearchModel>>(cacheKey);
           if (cachedData != null) {
             _cacheHits++;
-            AppLogger.d('✅ [캐시 사용] 선박 목록 (hits: $_cacheHits)');
-            AppLogger.d('📊 캐시된 선박 수: ${cachedData.length}');
+            AppLogger.d('✅ [캐시 HIT] 선박 목록 (hits: $_cacheHits)');
+            AppLogger.d('📊 캐시된 선박: ${cachedData.length}개');
 
             _vessels = cachedData;
             safeNotifyListeners();
@@ -57,22 +60,22 @@ class VesselProvider extends BaseProvider {
           }
         }
 
-        // 캐시 미스 또는 강제 새로고침
+        // ✅ 캐시 미스 또는 강제 새로고침
         _cacheMisses++;
-        AppLogger.d('🔄 [API 호출] 선박 목록 (misses: $_cacheMisses)');
+        AppLogger.d('🔄 [캐시 MISS] 선박 목록 API 호출 (misses: $_cacheMisses)');
 
         _vessels = await _vesselRepository.getVesselList(
           regDt: regDt,
           mmsi: mmsi,
         );
 
-        // 캐시 저장 (5분)
-        _cache.put(cacheKey, _vessels, const Duration(minutes: 5));
-        AppLogger.d('💾 [캐시 저장] 선박 목록 (5분 유효, ${_vessels.length}개)');
+        // ✅ LRU 캐시 저장 (5분, 자동 메모리 관리)
+        _cache.put(cacheKey, _vessels, AppDurations.minutes5);
+        AppLogger.d('💾 [캐시 저장] 선박 ${_vessels.length}개 (5분 유효)');
 
         safeNotifyListeners();
       },
-      errorMessage: '선박 목록을 불러오는 중 오류가 발생했습니다',
+      errorMessage: ErrorMessages.vesselListLoadFailed,
       onError: (error) {
         if (error is AuthException) {
           setError('다시 로그인해주세요');
@@ -81,17 +84,20 @@ class VesselProvider extends BaseProvider {
     );
   }
 
+  /// 캐시 키 생성
+  String _generateCacheKey(String? regDt, int? mmsi) {
+    return 'vessel_list_${mmsi ?? "all"}_${regDt ?? "current"}';
+  }
+
   /// 캐시 클리어
-  ///
-  /// 선박 관련 캐시를 모두 삭제합니다.
   void clearCache() {
     _cache.clear();
-    AppLogger.d('VesselProvider cache cleared');
+    _cacheHits = 0;
+    _cacheMisses = 0;
+    AppLogger.d('[CACHE] VesselProvider 캐시 클리어');
   }
 
   /// 선박 목록 초기화 (메모리만)
-  ///
-  /// 캐시는 유지하고 메모리의 선박 목록만 비웁니다.
   void clearVessels() {
     executeSafe(() {
       _vessels = [];
@@ -134,15 +140,23 @@ class VesselProvider extends BaseProvider {
     };
   }
 
-  /// 캐시 키 생성
-  String _generateCacheKey(String? regDt, int? mmsi) {
-    return 'vessel_list_${mmsi ?? "all"}_${regDt ?? "current"}';
+  /// ✅ 캐시 상태 디버그 출력
+  void printCacheStats() {
+    final stats = getCacheStatistics();
+    AppLogger.d('📊 VesselProvider 캐시 통계:');
+    AppLogger.d(
+        '  Hits: ${stats['cacheHits']}, Misses: ${stats['cacheMisses']}');
+    AppLogger.d('  Hit Rate: ${stats['hitRate']}');
+    AppLogger.d('  현재 선박: ${stats['cachedVessels']}개');
+
+    // MemoryCache 전체 통계
+    _cache.printDebugInfo();
   }
 
   @override
   void dispose() {
     _vessels.clear();
-    _cache.clear();
+    clearCache();
     AppLogger.d('VesselProvider disposed');
     super.dispose();
   }

@@ -122,7 +122,8 @@ class _RetryInterceptor extends Interceptor {
 
     // Exponential backoff: 1초, 2초, 4초
     final delay = initialDelay * (1 << attempt);
-    AppLogger.d('Retrying request (attempt ${attempt + 1}/$maxRetries) after ${delay.inSeconds}s');
+    AppLogger.d(
+        'Retrying request (attempt ${attempt + 1}/$maxRetries) after ${delay.inSeconds}s');
 
     await Future.delayed(delay);
     err.requestOptions.extra['retry_attempt'] = attempt + 1;

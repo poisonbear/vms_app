@@ -5,8 +5,8 @@ class EmergencyData {
   final String emergency_id;
   final int? mmsi;
   final String? ship_nm;
-  final double? lttd;  // 위도
-  final double? lntd;  // 경도
+  final double? lttd; // 위도
+  final double? lntd; // 경도
   final DateTime reg_dt;
   final String emergency_status;
   final String? phone_no;
@@ -122,21 +122,21 @@ class EmergencyData {
 
 /// 긴급 상황 상태
 enum EmergencyStatus {
-  idle,       // 평상시
-  preparing,  // 준비중 (카운트다운)
-  active,     // 긴급상황 활성
-  completed,  // 완료
-  cancelled,  // 취소됨
+  idle, // 평상시
+  preparing, // 준비중 (카운트다운)
+  active, // 긴급상황 활성
+  completed, // 완료
+  cancelled, // 취소됨
 }
 
 /// 위치 추적 데이터 - 프로젝트 파라미터명 규칙 적용
 class LocationTrackingData {
-  final double lttd;      // 위도
-  final double lntd;      // 경도
-  final DateTime reg_dt;  // 등록일시
+  final double lttd; // 위도
+  final double lntd; // 경도
+  final DateTime reg_dt; // 등록일시
   final double? accuracy;
-  final double? spd;      // 속도 (프로젝트 표준)
-  final double? hdg;      // heading (프로젝트 표준)
+  final double? spd; // 속도 (프로젝트 표준)
+  final double? hdg; // heading (프로젝트 표준)
 
   LocationTrackingData({
     required this.lttd,

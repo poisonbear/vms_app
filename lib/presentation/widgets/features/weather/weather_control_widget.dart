@@ -52,7 +52,8 @@ class _WeatherControlWidgetState extends State<WeatherControlWidget> {
                 AppSizes.i56,
                 '시정',
                 AppSizes.i160,
-                viewModel.getFormattedVisibilityThresholdText(viewModel.visibility),
+                viewModel
+                    .getFormattedVisibilityThresholdText(viewModel.visibility),
                 isSelected: isVisibilitySelected,
                 onTap: () {
                   setState(() {

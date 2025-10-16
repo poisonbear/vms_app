@@ -21,8 +21,9 @@ class WeatherUseCases {
   /// 지역별 날씨 정보 필터링
   Future<List<WeatherModel>> getWeatherByRegion(String region) async {
     final weatherList = await _repository.getWidList();
-    return weatherList.where((weather) =>
-        weather.toString().contains(region)).toList();
+    return weatherList
+        .where((weather) => weather.toString().contains(region))
+        .toList();
   }
 }
 

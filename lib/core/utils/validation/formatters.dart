@@ -9,7 +9,8 @@ class Formatters {
   static final DateFormat dateTimeFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
   static final DateFormat timeFormatter = DateFormat('HH:mm:ss');
   static final DateFormat koreanDateFormatter = DateFormat('yyyy년 MM월 dd일');
-  static final DateFormat koreanDateTimeFormatter = DateFormat('yyyy년 MM월 dd일 HH시 mm분');
+  static final DateFormat koreanDateTimeFormatter =
+      DateFormat('yyyy년 MM월 dd일 HH시 mm분');
 
   // Number Formatters
   static final NumberFormat currencyFormatter = NumberFormat.currency(
@@ -18,7 +19,8 @@ class Formatters {
     decimalDigits: 0,
   );
   static final NumberFormat decimalFormatter = NumberFormat('#,##0.##');
-  static final NumberFormat percentFormatter = NumberFormat.percentPattern('ko_KR');
+  static final NumberFormat percentFormatter =
+      NumberFormat.percentPattern('ko_KR');
 
   /// 전화번호 포맷팅
   static String formatPhone(String phone) {

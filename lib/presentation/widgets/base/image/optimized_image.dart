@@ -47,11 +47,11 @@ class OptimizedNetworkImage extends StatelessWidget {
         return Center(
           child: showLoadingProgress
               ? CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                loadingProgress.expectedTotalBytes!
-                : null,
-          )
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                )
               : placeholder ?? const CircularProgressIndicator(),
         );
       },
@@ -157,11 +157,11 @@ class FadeInImage extends StatelessWidget {
             child: frame != null
                 ? child
                 : Image.asset(
-              placeholderAsset!,
-              width: width,
-              height: height,
-              fit: fit,
-            ),
+                    placeholderAsset!,
+                    width: width,
+                    height: height,
+                    fit: fit,
+                  ),
           );
         },
         errorBuilder: (context, error, stackTrace) {
@@ -209,19 +209,19 @@ class CircularImage extends StatelessWidget {
         height: size,
         child: isAsset
             ? OptimizedAssetImage(
-          assetPath: imageUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        )
+                assetPath: imageUrl,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+              )
             : OptimizedNetworkImage(
-          imageUrl: imageUrl,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          placeholder: placeholder,
-          errorWidget: errorWidget,
-        ),
+                imageUrl: imageUrl,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                placeholder: placeholder,
+                errorWidget: errorWidget,
+              ),
       ),
     );
   }

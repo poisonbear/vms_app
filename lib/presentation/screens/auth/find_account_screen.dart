@@ -8,7 +8,8 @@ class FindAccountView extends StatefulWidget {
   State<FindAccountView> createState() => _FindAccountViewState();
 }
 
-class _FindAccountViewState extends State<FindAccountView> with SingleTickerProviderStateMixin {
+class _FindAccountViewState extends State<FindAccountView>
+    with SingleTickerProviderStateMixin {
   // 변경 사항: isEmailSelected 변수를 유지하되 항상 true로 설정 (다른 코드에 영향 없도록)
   bool isEmailSelected = true;
 
@@ -56,7 +57,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
       }
       // 비밀번호 찾기 탭 버튼 활성화 여부 (아이디와 이메일 모두 입력 있을 때)
       else if (_tabController.index == 1) {
-        _isPasswordTabButtonActive = _idController.text.isNotEmpty && _emailController.text.isNotEmpty;
+        _isPasswordTabButtonActive =
+            _idController.text.isNotEmpty && _emailController.text.isNotEmpty;
       }
     });
   }
@@ -88,7 +90,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF333333)),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Color(0xFF333333)),
                     onPressed: () {
                       if (mounted) Navigator.pop(context);
                     },
@@ -118,14 +121,17 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
             children: [
               // TabBar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 child: TabBar(
                   controller: _tabController,
                   indicator: const UnderlineTabIndicator(
-                    borderSide: BorderSide(width: 2.5, color: Color(0xFF333333)),
+                    borderSide:
+                        BorderSide(width: 2.5, color: Color(0xFF333333)),
                     insets: EdgeInsets.zero, // 양쪽 끝 여백 없애기
                   ),
-                  indicatorPadding: EdgeInsets.zero, // indicatorPadding을 없애서 밑줄을 탭 끝까지 꽉 차게 만듦
+                  indicatorPadding: EdgeInsets
+                      .zero, // indicatorPadding을 없애서 밑줄을 탭 끝까지 꽉 차게 만듦
                   indicatorSize: TabBarIndicatorSize.tab, // 탭 크기만큼 밑줄 설정
                   labelColor: const Color(0xFF333333),
                   unselectedLabelColor: const Color(0xFFD1D1D1),
@@ -150,7 +156,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                     // 첫 번째 탭: 아이디 찾기
                     SingleChildScrollView(
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 96), // 버튼 높이 + 패딩
+                        padding:
+                            const EdgeInsets.only(bottom: 96), // 버튼 높이 + 패딩
                         child: _buildEmailVerificationSection(),
                       ),
                     ),
@@ -158,7 +165,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                     // 두 번째 탭: 비밀번호 찾기
                     SingleChildScrollView(
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 96), // 버튼 높이 + 패딩
+                        padding:
+                            const EdgeInsets.only(bottom: 96), // 버튼 높이 + 패딩
                         child: _buildPasswordFindSection(),
                       ),
                     ),
@@ -226,7 +234,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
@@ -285,7 +294,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   fontFamily: 'Pretendard',
                 ),
                 // suffixIcon 제거함
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacing16),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: AppSizes.spacing16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
@@ -332,7 +342,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
                   color: Color(0xFFB0B0B0),
                   fontFamily: 'Pretendard',
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: AppSizes.spacingM),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(DesignConstants.radiusS),
                   borderSide: const BorderSide(color: Color(0xFFCCCCCC)),
@@ -361,7 +372,8 @@ class _FindAccountViewState extends State<FindAccountView> with SingleTickerProv
           onPressed: isActive ? () {} : null,
           style: ElevatedButton.styleFrom(
             // 활성화 상태에 따라 배경색 변경
-            backgroundColor: isActive ? const Color(0xFF5CA1F6) : const Color(0xFFCCCCCC),
+            backgroundColor:
+                isActive ? const Color(0xFF5CA1F6) : const Color(0xFFCCCCCC),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(DesignConstants.radiusS),
             ),

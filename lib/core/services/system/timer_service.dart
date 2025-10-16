@@ -91,10 +91,10 @@ class TimerService {
 
   /// 반복 타이머 시작 (별칭)
   void startPeriodicTimer(
-      String name,
-      Duration duration,
-      VoidCallback callback,
-      ) {
+    String name,
+    Duration duration,
+    VoidCallback callback,
+  ) {
     startTimer(name: name, duration: duration, callback: callback);
   }
 
@@ -167,9 +167,8 @@ class TimerService {
 
   /// 타이머 통계 정보
   Map<String, dynamic> getStatistics() {
-    final activeTimers = _timers.keys
-        .where((key) => _timers[key]?.isActive ?? false)
-        .toList();
+    final activeTimers =
+        _timers.keys.where((key) => _timers[key]?.isActive ?? false).toList();
 
     return {
       'active': activeTimers,

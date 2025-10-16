@@ -8,12 +8,12 @@ import 'package:flutter/material.dart';
 /// [fontWeight] : 폰트 굵기
 /// [color] : 텍스트 색상
 Widget TextWidgetString(
-    String title,
-    TextAlign textAlign,
-    int size,
-    FontWeight fontWeight,
-    Color color,
-    ) {
+  String title,
+  TextAlign textAlign,
+  int size,
+  FontWeight fontWeight,
+  Color color,
+) {
   return Text(
     title,
     textAlign: textAlign,
@@ -34,12 +34,12 @@ Widget TextWidgetString(
 /// [fontWeight] : 폰트 굵기
 /// [color] : 텍스트 색상
 Widget TextWidgetStringLine(
-    String title,
-    TextAlign textAlign,
-    int size,
-    FontWeight fontWeight,
-    Color color,
-    ) {
+  String title,
+  TextAlign textAlign,
+  int size,
+  FontWeight fontWeight,
+  Color color,
+) {
   return Text(
     title,
     textAlign: textAlign,

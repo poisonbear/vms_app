@@ -34,7 +34,7 @@ class _CmdViewState extends State<LoginView> {
   bool save_id = false;
   late FirebaseMessaging messaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   late String fcmToken;
   final _secureStorage = SecureStorageService();
 
@@ -206,7 +206,7 @@ class _CmdViewState extends State<LoginView> {
               MaterialPageRoute(
                 builder: (context) => MainScreen(username: username),
               ),
-                  (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
             );
           }
         } else {
@@ -316,7 +316,8 @@ class _CmdViewState extends State<LoginView> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                      borderRadius:
+                          BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: inputWidget(
                       AppSizes.i266,
@@ -334,7 +335,8 @@ class _CmdViewState extends State<LoginView> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                      borderRadius:
+                          BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: inputWidget(
                       AppSizes.i266,
@@ -399,7 +401,8 @@ class _CmdViewState extends State<LoginView> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.skyType2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                          borderRadius:
+                              BorderRadius.circular(DesignConstants.radiusS),
                         ),
                       ),
                       child: const Text(
@@ -433,7 +436,8 @@ class _CmdViewState extends State<LoginView> {
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(DesignConstants.radiusS),
+                        borderRadius:
+                            BorderRadius.circular(DesignConstants.radiusS),
                       ),
                     ),
                     child: const Text(

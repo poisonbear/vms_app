@@ -11,7 +11,8 @@ class NotificationPermissionUtil {
   /// 알림 권한 체크
   static Future<bool> check() async {
     try {
-      NotificationSettings settings = await FirebaseMessaging.instance.getNotificationSettings();
+      NotificationSettings settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
       return settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional;
     } catch (e) {
@@ -23,7 +24,8 @@ class NotificationPermissionUtil {
   /// 알림 권한 요청
   static Future<bool> request() async {
     try {
-      NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+      NotificationSettings settings =
+          await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -40,7 +42,8 @@ class NotificationPermissionUtil {
   /// 알림 권한 요청 (UI 포함)
   static Future<bool> requestWithDialog(BuildContext context) async {
     try {
-      NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+      NotificationSettings settings =
+          await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -82,7 +85,8 @@ class NotificationRequestUtil {
   NotificationRequestUtil._();
 
   /// 알림 권한 요청 (승인될 때까지)
-  static Future<bool> requestPermissionUntilGranted(BuildContext context) async {
+  static Future<bool> requestPermissionUntilGranted(
+      BuildContext context) async {
     return await NotificationPermissionUtil.requestWithDialog(context);
   }
 

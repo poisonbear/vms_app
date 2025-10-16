@@ -58,8 +58,8 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
       await Future.wait([
         prefs.remove('auto_login'),
         prefs.remove('username'),
-        prefs.remove('saved_id'),  // ✅ 삭제할 필요 없지만 안전하게
-        prefs.remove('saved_pw'),  // ✅ 이것도 이제 없지만 안전하게
+        prefs.remove('saved_id'), // ✅ 삭제할 필요 없지만 안전하게
+        prefs.remove('saved_pw'), // ✅ 이것도 이제 없지만 안전하게
         // ✅ firebase_token과 uuid는 더 이상 SharedPreferences에 없음
       ]);
 
@@ -92,7 +92,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginView()),
-              (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
         );
         AppLogger.i('로그아웃 완료 - 로그인 화면으로 이동');
       }
@@ -168,8 +168,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
               Padding(
                 padding: const EdgeInsets.only(
-                    top: AppSizes.s20,
-                    bottom: AppSizes.s20),
+                    top: AppSizes.s20, bottom: AppSizes.s20),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextWidgetString(
@@ -212,7 +211,7 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const LoginView()),
-                                    (Route<dynamic> route) => false,
+                                (Route<dynamic> route) => false,
                               );
                             }
                           },
@@ -240,16 +239,12 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
               Padding(
                 padding: const EdgeInsets.only(
-                    right: AppSizes.s12,
-                    left: AppSizes.s12),
+                    right: AppSizes.s12, left: AppSizes.s12),
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: Row(children: [
-                      TextWidgetString('자동 로그인',
-                          TextAligns.left,
-                          AppSizes.i16,
-                          FontWeights.w700,
-                          AppColors.grayType3),
+                      TextWidgetString('자동 로그인', TextAligns.left, AppSizes.i16,
+                          FontWeights.w700, AppColors.grayType3),
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
@@ -264,16 +259,21 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
                           width: AppSizes.s70,
                           height: AppSizes.s36,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(DesignConstants.radiusXL),
+                            borderRadius:
+                                BorderRadius.circular(DesignConstants.radiusXL),
                             border: Border.all(
-                              color: _isSwitched ? AppColors.skyType2 : AppColors.grayType11,
+                              color: _isSwitched
+                                  ? AppColors.skyType2
+                                  : AppColors.grayType11,
                             ),
-                            color: _isSwitched ? AppColors.skyType2 : AppColors.grayType11,
+                            color: _isSwitched
+                                ? AppColors.skyType2
+                                : AppColors.grayType11,
                           ),
                           child: Stack(
                             children: [
                               AnimatedPositioned(
-                                duration: AppDurations.milliseconds200 ,
+                                duration: AppDurations.milliseconds200,
                                 curve: Curves.easeInOut,
                                 left: _isSwitched ? AppSizes.s30 : AppSizes.s0,
                                 right: _isSwitched ? AppSizes.s0 : AppSizes.s30,
@@ -347,7 +347,9 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
               ),
 
               // 키보드가 올라와도 충분한 여백 확보
-              SizedBox(height: MediaQuery.of(context).viewInsets.bottom + AppSizes.s50),
+              SizedBox(
+                  height:
+                      MediaQuery.of(context).viewInsets.bottom + AppSizes.s50),
             ],
           ),
         ),

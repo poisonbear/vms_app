@@ -14,11 +14,11 @@ class MainScreenPopups {
 
   /// 터빈 진입 경고 팝업
   static void showTurbineWarningPopup(
-      BuildContext context,
-      String title,
-      String message,
-      VoidCallback onClose,
-      ) {
+    BuildContext context,
+    String title,
+    String message,
+    VoidCallback onClose,
+  ) {
     if (!_isContextValid(context)) return;
 
     try {
@@ -97,7 +97,7 @@ class MainScreenPopups {
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius:
-                          BorderRadius.circular(DesignConstants.radiusS),
+                              BorderRadius.circular(DesignConstants.radiusS),
                           side: const BorderSide(
                               color: Color(0xFF5CA1F6), width: 1),
                         ),
@@ -128,22 +128,22 @@ class MainScreenPopups {
 
   /// 기상 경고 팝업
   static void showWeatherWarningPopup(
-      BuildContext context,
-      String title,
-      String message,
-      VoidCallback onClose,
-      ) {
+    BuildContext context,
+    String title,
+    String message,
+    VoidCallback onClose,
+  ) {
     // 터빈 경고와 유사한 구조
     showTurbineWarningPopup(context, title, message, onClose);
   }
 
   /// 해저케이블 경고 팝업
   static void showSubmarineWarningPopup(
-      BuildContext context,
-      String title,
-      String message,
-      VoidCallback onClose,
-      ) {
+    BuildContext context,
+    String title,
+    String message,
+    VoidCallback onClose,
+  ) {
     // 터빈 경고와 유사한 구조
     showTurbineWarningPopup(context, title, message, onClose);
   }

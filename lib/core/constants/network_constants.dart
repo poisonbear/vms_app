@@ -32,7 +32,8 @@ class NetworkConstants {
 
   // ============ Content-Type ============
   static const String contentTypeJson = 'application/json';
-  static const String contentTypeFormUrlEncoded = 'application/x-www-form-urlencoded';
+  static const String contentTypeFormUrlEncoded =
+      'application/x-www-form-urlencoded';
   static const String contentTypeMultipart = 'multipart/form-data';
 
   // ============ API 버전 ============

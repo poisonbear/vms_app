@@ -115,9 +115,9 @@ class MainScreenController extends ChangeNotifier {
 
     try {
       mapController.moveAndRotate(
-        const LatLng(35.374509, 126.132268),  // 기본 홈 위치
-        12.0,  // 줌 레벨
-        0.0,   // 회전 각도
+        const LatLng(35.374509, 126.132268), // 기본 홈 위치
+        12.0, // 줌 레벨
+        0.0, // 회전 각도
       );
       AppLogger.d('Moved to home position');
     } catch (e) {
@@ -129,7 +129,7 @@ class MainScreenController extends ChangeNotifier {
   void resetNavigationHistory() {
     if (_isDisposed) return;
 
-    stopTracking();  // 트래킹 중지
+    stopTracking(); // 트래킹 중지
     _selectedIndex = 0;
     _safeNotifyListeners();
 
@@ -268,7 +268,7 @@ class MainScreenController extends ChangeNotifier {
     // 선박 업데이트 타이머
     final vesselTimer = Timer.periodic(
       const Duration(seconds: 30),
-          (_) {
+      (_) {
         if (!_isDisposed) {
           // 선박 데이터 업데이트 로직
           AppLogger.d('Vessel update timer fired');
@@ -280,7 +280,7 @@ class MainScreenController extends ChangeNotifier {
     // 날씨 업데이트 타이머
     final weatherTimer = Timer.periodic(
       const Duration(minutes: 10),
-          (_) {
+      (_) {
         if (!_isDisposed) {
           // 날씨 데이터 업데이트 로직
           AppLogger.d('Weather update timer fired');
@@ -292,7 +292,7 @@ class MainScreenController extends ChangeNotifier {
     // 경로 업데이트 타이머
     final routeTimer = Timer.periodic(
       const Duration(seconds: 5),
-          (_) {
+      (_) {
         if (!_isDisposed && _selectedVesselMmsi != null) {
           // 경로 데이터 업데이트 로직
           AppLogger.d('Route update timer fired');
@@ -326,7 +326,7 @@ class MainScreenController extends ChangeNotifier {
       timerService.stopTimer(TimerService.ROUTE_UPDATE);
       timerService.stopTimer(TimerService.VESSEL_UPDATE);
       timerService.stopAllTimers();
-    
+
       // 3. Stream subscriptions 취소
       await cancelAllSubscriptions();
 

@@ -18,7 +18,7 @@ class MapControlWidget extends StatelessWidget {
   final VoidCallback? onTrackingToggle;
   final MapController mapController;
   final Function(BuildContext)? onHomeButtonTap;
-  final bool useCustomStyle;  // true: CircularButton, false: Material Design
+  final bool useCustomStyle; // true: CircularButton, false: Material Design
 
   const MapControlWidget({
     super.key,
@@ -28,7 +28,7 @@ class MapControlWidget extends StatelessWidget {
     this.isTrackingEnabled = false,
     this.onTrackingToggle,
     this.onHomeButtonTap,
-    this.useCustomStyle = true,  // 기본값: 기존 스타일 유지
+    this.useCustomStyle = true, // 기본값: 기존 스타일 유지
   });
 
   @override
@@ -36,7 +36,8 @@ class MapControlWidget extends StatelessWidget {
     final role = context.watch<UserState>().role;
     final mmsi = context.read<UserState>().mmsi ?? 0;
     // ✅ 타입 명시
-    final List<VesselSearchModel> vessels = context.watch<VesselProvider>().vessels;
+    final List<VesselSearchModel> vessels =
+        context.watch<VesselProvider>().vessels;
 
     // MainScreenController와 RouteSearchProvider 가져오기
     final controller = context.watch<MainScreenController?>();
@@ -50,7 +51,7 @@ class MapControlWidget extends StatelessWidget {
           // ✨ NEW: 항적초기화(Refresh) 버튼 - 최상단에 위치
           if (controller != null && routeViewModel != null)
             if ((routeViewModel.pastRoutes.isNotEmpty == true ||
-                routeViewModel.predRoutes.isNotEmpty == true) &&
+                    routeViewModel.predRoutes.isNotEmpty == true) &&
                 routeViewModel.isNavigationHistoryMode != true &&
                 controller.isTrackingEnabled) ...[
               if (useCustomStyle)
@@ -98,7 +99,9 @@ class MapControlWidget extends StatelessWidget {
             if (useCustomStyle)
               CircularButton(
                 svgPath: 'assets/kdn/home/img/bouttom_ship_img.svg',
-                colorOn: isOtherVesselsVisible ? AppColors.grayType9 : AppColors.grayType8,
+                colorOn: isOtherVesselsVisible
+                    ? AppColors.grayType9
+                    : AppColors.grayType8,
                 colorOff: AppColors.grayType8,
                 widthSize: AppSizes.i56,
                 heightSize: AppSizes.i56,
@@ -142,8 +145,10 @@ class MapControlWidget extends StatelessWidget {
           if (onTrackingToggle != null) ...[
             if (useCustomStyle)
               CircularButton(
-                svgPath: 'assets/kdn/home/img/ico_timeline.svg',  // 아이콘 경로 확인 필요
-                colorOn: isTrackingEnabled ? AppColors.grayType9 : AppColors.grayType8,
+                svgPath: 'assets/kdn/home/img/ico_timeline.svg', // 아이콘 경로 확인 필요
+                colorOn: isTrackingEnabled
+                    ? AppColors.grayType9
+                    : AppColors.grayType8,
                 colorOff: AppColors.grayType8,
                 widthSize: AppSizes.i56,
                 heightSize: AppSizes.i56,
@@ -242,6 +247,6 @@ class MapControlButtons extends MapControlWidget {
     VoidCallback? onCenterLocation,
     super.onHomeButtonTap,
   }) : super(
-    useCustomStyle: true,
-  );
+          useCustomStyle: true,
+        );
 }

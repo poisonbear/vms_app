@@ -74,9 +74,9 @@ class VesselDataManager {
   ///
   /// [forceRefresh] - true 시 캐시를 무시하고 서버에서 새로 가져옴
   Future<VesselLoadResult> loadVesselDataAndUpdateMap(
-      BuildContext context, {
-        bool forceRefresh = false,
-      }) async {
+    BuildContext context, {
+    bool forceRefresh = false,
+  }) async {
     if (!context.mounted) {
       return VesselLoadResult.failure('Context not mounted');
     }
@@ -158,9 +158,9 @@ class VesselDataManager {
 
   /// 특정 MMSI 선박 데이터만 로드
   Future<VesselLoadResult> loadSpecificVessel(
-      BuildContext context,
-      int mmsi,
-      ) async {
+    BuildContext context,
+    int mmsi,
+  ) async {
     if (!context.mounted) {
       return VesselLoadResult.failure('Context not mounted');
     }

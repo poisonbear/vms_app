@@ -216,7 +216,8 @@ class ShipType {
 
   /// 모든 선박 타입 코드 목록 가져오기
   static List<String> getAllCodes() {
-    return _koreanNames.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    return _koreanNames.keys.toList()
+      ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
   }
 
   /// 카테고리별 선박 타입 그룹

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 /// 상단 스낵바 표시 함수
-void showTopSnackBar(BuildContext context, String message, {
+void showTopSnackBar(
+  BuildContext context,
+  String message, {
   Duration duration = const Duration(seconds: 3),
   IconData? icon,
   Color? backgroundColor,
@@ -65,13 +67,13 @@ void showTopSnackBar(BuildContext context, String message, {
 
 /// 하단 스낵바 표시 (기본 Material 스낵바 래퍼)
 void showBottomSnackBar(
-    BuildContext context,
-    String message, {
-      Duration duration = const Duration(seconds: 3),
-      SnackBarAction? action,
-      Color? backgroundColor,
-      Color? textColor,
-    }) {
+  BuildContext context,
+  String message, {
+  Duration duration = const Duration(seconds: 3),
+  SnackBarAction? action,
+  Color? backgroundColor,
+  Color? textColor,
+}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(

@@ -37,10 +37,10 @@ class VesselMarkersLayer extends StatelessWidget {
       markers: vessels
           .where((vessel) => (vessel.mmsi ?? 0) == userMmsi)
           .map((vessel) => _buildVesselMarker(
-        vessel: vessel,
-        svgPath: 'assets/kdn/home/img/myVessel.svg',
-        onTap: null,
-      ))
+                vessel: vessel,
+                svgPath: 'assets/kdn/home/img/myVessel.svg',
+                onTap: null,
+              ))
           .toList(),
     );
   }
@@ -55,10 +55,10 @@ class VesselMarkersLayer extends StatelessWidget {
           markers: vessels
               .where((vessel) => (vessel.mmsi ?? 0) != userMmsi)
               .map((vessel) => _buildVesselMarker(
-            vessel: vessel,
-            svgPath: 'assets/kdn/home/img/otherVessel.svg',
-            onTap: () => onVesselTap(vessel),
-          ))
+                    vessel: vessel,
+                    svgPath: 'assets/kdn/home/img/otherVessel.svg',
+                    onTap: () => onVesselTap(vessel),
+                  ))
               .toList(),
         ),
       ),
@@ -157,8 +157,8 @@ class RouteTrackWidget extends StatelessWidget {
             color: isStart
                 ? Colors.green
                 : isEnd
-                ? Colors.red
-                : trackColor,
+                    ? Colors.red
+                    : trackColor,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.white,

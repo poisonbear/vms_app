@@ -1,7 +1,10 @@
+// lib/core/constants/app_messages.dart
+
 /// 에러 메시지
 class ErrorMessages {
   ErrorMessages._();
 
+  // ============ 네트워크 관련 ============
   static const String network = '네트워크 연결을 확인해주세요';
   static const String server = '서버와의 통신 중 문제가 발생했습니다';
   static const String timeout = '연결 시간이 초과되었습니다';
@@ -16,6 +19,19 @@ class ErrorMessages {
   static const String apiUrlNotSet = 'API URL이 설정되지 않았습니다.';
   static const String roleDataMissing = '권한 정보를 가져올 수 없습니다.';
   static const String loginFailed = '로그인 실패';
+
+  // ✅ 선박 관련 추가
+  static const String vesselListLoadFailed = '선박 목록을 불러오는 중 오류가 발생했습니다';
+  static const String vesselRouteLoadFailed = '항로 정보를 불러오는데 실패했습니다';
+  static const String vesselNotFound = '선박 정보를 찾을 수 없습니다';
+
+  // ✅ 기상 관련 추가
+  static const String weatherLoadFailed = '기상 정보를 불러오는 중 오류가 발생했습니다';
+  static const String weatherInfoLoadFailed = '기상정보 조회 중 오류가 발생했습니다';
+
+  // ✅ 항행 관련 추가
+  static const String navigationLoadFailed = '항행이력 조회 중 오류가 발생했습니다';
+  static const String navigationWarningsLoadFailed = '항행경보 조회 중 오류가 발생했습니다';
 }
 
 /// 성공 메시지

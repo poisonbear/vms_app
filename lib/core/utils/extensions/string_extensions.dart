@@ -21,7 +21,8 @@ extension StringExtension on String {
 
   /// 이메일 유효성
   bool get isEmail {
-    return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(this);
+    return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(this);
   }
 
   /// URL 유효성

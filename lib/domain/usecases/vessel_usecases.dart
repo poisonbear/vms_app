@@ -32,7 +32,8 @@ class VesselUseCases {
   }
 
   /// 선박 항로 조회 (과거 + 예측)
-  Future<VesselRouteResponse> getVesselRoute(GetVesselRouteParams params) async {
+  Future<VesselRouteResponse> getVesselRoute(
+      GetVesselRouteParams params) async {
     return await _repository.getVesselRoute(
       regDt: params.regDt,
       mmsi: params.mmsi,

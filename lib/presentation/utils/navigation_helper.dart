@@ -24,7 +24,7 @@ class NavigationHelper {
   static void navigateAndRemoveUntil(BuildContext context, Widget screen) {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => screen),
-          (route) => false,
+      (route) => false,
     );
   }
 
@@ -35,20 +35,20 @@ class NavigationHelper {
 
   /// Named Route로 이동
   static Future<T?> navigateToNamed<T extends Object?>(
-      BuildContext context,
-      String routeName, {
-        Object? arguments,
-      }) {
+    BuildContext context,
+    String routeName, {
+    Object? arguments,
+  }) {
     return Navigator.of(context).pushNamed<T>(routeName, arguments: arguments);
   }
 
   /// Named Route로 교체
   static Future<T?> navigateReplaceNamed<T extends Object?, TO extends Object?>(
-      BuildContext context,
-      String routeName, {
-        TO? result,
-        Object? arguments,
-      }) {
+    BuildContext context,
+    String routeName, {
+    TO? result,
+    Object? arguments,
+  }) {
     return Navigator.of(context).pushReplacementNamed<T, TO>(
       routeName,
       result: result,

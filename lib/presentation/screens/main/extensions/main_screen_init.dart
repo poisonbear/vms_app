@@ -29,11 +29,11 @@ extension MainScreenInit on State {
 
       // 선박 목록 가져오기
       final vesselProvider = context.read<VesselProvider>();
-      
+
       // 선박 목록이 없으면 먼저 로드
       if (vesselProvider.vessels.isEmpty) {
         await vesselProvider.getVesselList();
-        
+
         // 로드 완료 대기
         await Future.delayed(const Duration(milliseconds: 300));
       }
@@ -45,7 +45,7 @@ extension MainScreenInit on State {
         mapController: mapController,
         vessels: vesselProvider.vessels,
         userMmsi: userMmsi,
-        zoom: 13.0,  // 로그인 시 좀 더 가까이 포커스
+        zoom: 13.0, // 로그인 시 좀 더 가까이 포커스
       );
 
       AppLogger.i('✅ 로그인 후 자동 포커스 완료 (MMSI: $userMmsi)');

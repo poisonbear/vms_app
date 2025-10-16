@@ -4,7 +4,7 @@ import 'package:vms_app/core/utils/logging/app_logger.dart';
 /// 캐시 상태 모니터링 유틸리티
 class CacheMonitor {
   static final _cache = MemoryCache();
-  
+
   /// 캐시 상태 로깅
   static void logCacheStatus(String prefix) {
     AppLogger.d('======= 캐시 상태 ($prefix) =======');
@@ -13,13 +13,13 @@ class CacheMonitor {
     AppLogger.d('캐시 시스템 활성화됨');
     AppLogger.d('================================');
   }
-  
+
   /// 특정 키의 캐시 존재 여부 확인
   static bool isCached(String key) {
     final data = _cache.get(key);
     return data != null;
   }
-  
+
   /// 캐시 통계 (실제 구현시 SimpleCache 수정 필요)
   static Map<String, dynamic> getCacheStats() {
     return {

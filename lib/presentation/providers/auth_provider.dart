@@ -34,7 +34,8 @@ class AuthProvider extends BaseProvider {
 
       try {
         final prefs = await SharedPreferences.getInstance();
-        final success = await prefs.setString(StringConstants.userRoleKey, newRole);
+        final success =
+            await prefs.setString(StringConstants.userRoleKey, newRole);
 
         if (!success) {
           throw Exception('역할 저장 실패');
@@ -84,7 +85,8 @@ class AuthProvider extends BaseProvider {
     await executeAsync(() async {
       final prefs = await SharedPreferences.getInstance();
 
-      _role = prefs.getString(StringConstants.userRoleKey) ?? StringConstants.emptyString;
+      _role = prefs.getString(StringConstants.userRoleKey) ??
+          StringConstants.emptyString;
       _mmsi = prefs.getInt(StringConstants.userMmsiKey);
       _isInitialized = true;
 
@@ -119,7 +121,8 @@ class AuthProvider extends BaseProvider {
   }
 
   /// 사용자가 로그인되어 있는지 확인
-  bool get isLoggedIn => _role.isNotEmpty && _role != StringConstants.emptyString;
+  bool get isLoggedIn =>
+      _role.isNotEmpty && _role != StringConstants.emptyString;
 
   /// 사용자가 일반 사용자인지 확인
   bool get isUser => _role == 'ROLE_USER';
@@ -135,7 +138,8 @@ class AuthProvider extends BaseProvider {
     AppLogger.d('IsInitialized: $_isInitialized');
     AppLogger.d('IsLoggedIn: $isLoggedIn');
     AppLogger.d('HasError: $hasError');
-    AppLogger.d('ErrorMessage: ${errorMessage.isNotEmpty ? errorMessage : "none"}');
+    AppLogger.d(
+        'ErrorMessage: ${errorMessage.isNotEmpty ? errorMessage : "none"}');
     AppLogger.d('==========================');
   }
 

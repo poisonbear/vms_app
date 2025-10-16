@@ -54,7 +54,9 @@ class NavigationDataSource {
         if (items.isNotEmpty) {
           AppLogger.d('Navigation API first item: ${items[0]}');
         }
-        navigationList = items.map<NavigationModel>((json) => NavigationModel.fromJson(json)).toList();
+        navigationList = items
+            .map<NavigationModel>((json) => NavigationModel.fromJson(json))
+            .toList();
       } else if (response.data is List) {
         // 디버그: 첫 번째 아이템 확인
         if ((response.data as List).isNotEmpty) {
@@ -121,10 +123,12 @@ class NavigationDataSource {
 
       // 🔧 수정: 응답 데이터 상세 로깅 추가
       if (response.data != null) {
-        AppLogger.d('📊 Weather API Response Type: ${response.data.runtimeType}');
+        AppLogger.d(
+            '📊 Weather API Response Type: ${response.data.runtimeType}');
         final responseStr = response.data.toString();
         if (responseStr.length > 500) {
-          AppLogger.d('📄 Weather API Response (truncated): ${responseStr.substring(0, 500)}...');
+          AppLogger.d(
+              '📄 Weather API Response (truncated): ${responseStr.substring(0, 500)}...');
         } else {
           AppLogger.d('📄 Weather API Response: $responseStr');
         }
@@ -169,8 +173,10 @@ class NavigationDataSource {
           AppLogger.d('✅ Successfully parsed WeatherInfo');
           AppLogger.d('  📊 Wave: ${weatherInfo.wave}m');
           AppLogger.d('  👁️ Visibility: ${weatherInfo.visibility}m');
-          AppLogger.d('  🌊 Wave alarms: [${weatherInfo.walm1}, ${weatherInfo.walm2}, ${weatherInfo.walm3}, ${weatherInfo.walm4}]');
-          AppLogger.d('  👁️ Visibility alarms: [${weatherInfo.valm1}, ${weatherInfo.valm2}, ${weatherInfo.valm3}, ${weatherInfo.valm4}]');
+          AppLogger.d(
+              '  🌊 Wave alarms: [${weatherInfo.walm1}, ${weatherInfo.walm2}, ${weatherInfo.walm3}, ${weatherInfo.walm4}]');
+          AppLogger.d(
+              '  👁️ Visibility alarms: [${weatherInfo.valm1}, ${weatherInfo.valm2}, ${weatherInfo.valm3}, ${weatherInfo.valm4}]');
           return Success(weatherInfo);
         } catch (parseError) {
           AppLogger.e('❌ WeatherInfo parsing failed: $parseError');
@@ -231,11 +237,12 @@ class NavigationDataSource {
         response = await dioRequest.dio.post(
           apiUrl,
           options: options,
-          data: {},  // 빈 body로 POST 요청
+          data: {}, // 빈 body로 POST 요청
         );
       } catch (postError) {
         // POST 실패 시 한번 더 시도 (fallback)
-        AppLogger.w('⚠️ POST failed, retrying with different config: $postError');
+        AppLogger.w(
+            '⚠️ POST failed, retrying with different config: $postError');
         try {
           // Content-Type을 명시적으로 설정
           final retryOptions = Options(
@@ -249,23 +256,27 @@ class NavigationDataSource {
           response = await dioRequest.dio.post(
             apiUrl,
             options: retryOptions,
-            data: null,  // null body로 재시도
+            data: null, // null body로 재시도
           );
         } catch (retryError) {
-          AppLogger.e('❌ Navigation Warnings API call failed completely: $retryError');
+          AppLogger.e(
+              '❌ Navigation Warnings API call failed completely: $retryError');
           // 에러가 나도 빈 리스트 반환 (앱 크래시 방지)
           return const Success([]);
         }
       }
 
-      AppLogger.d('✅ Navigation Warnings API Response Status: ${response.statusCode}');
+      AppLogger.d(
+          '✅ Navigation Warnings API Response Status: ${response.statusCode}');
 
       // 🔧 수정: 응답 데이터 상세 로깅
       if (response.data != null) {
-        AppLogger.d('📊 Navigation Warnings Response Type: ${response.data.runtimeType}');
+        AppLogger.d(
+            '📊 Navigation Warnings Response Type: ${response.data.runtimeType}');
         final responseStr = response.data.toString();
         if (responseStr.length > 300) {
-          AppLogger.d('📄 Navigation Warnings Response (truncated): ${responseStr.substring(0, 300)}...');
+          AppLogger.d(
+              '📄 Navigation Warnings Response (truncated): ${responseStr.substring(0, 300)}...');
         } else {
           AppLogger.d('📄 Navigation Warnings Response: $responseStr');
         }

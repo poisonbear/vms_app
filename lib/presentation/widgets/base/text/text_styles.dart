@@ -210,10 +210,11 @@ extension TextStyleExtensions on TextStyle {
   TextStyle withUnderline() => copyWith(decoration: TextDecoration.underline);
 
   /// 취소선 추가
-  TextStyle withLineThrough() => copyWith(decoration: TextDecoration.lineThrough);
+  TextStyle withLineThrough() =>
+      copyWith(decoration: TextDecoration.lineThrough);
 
   /// 투명도 적용
   TextStyle withOpacity(double opacity) => copyWith(
-    color: color?.withOpacity(opacity),
-  );
+        color: color?.withOpacity(opacity),
+      );
 }

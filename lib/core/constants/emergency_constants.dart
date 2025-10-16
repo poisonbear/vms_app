@@ -26,7 +26,8 @@ class EmergencyConstants {
   static const String messageLocationStart = '위치 추적 시작';
   static const String messageLocationFetching = '위치 정보를 가져오는 중...';
 
-  static const String warningFalseReport = '긴급 상황 시 122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.';
+  static const String warningFalseReport =
+      '긴급 상황 시 122 버튼을 3초간 길게 누르면 해양경찰과 연결됩니다.\n거짓 신고 시 법적 처벌을 받을 수 있습니다.';
 
   // ============ 라벨 ============
   static const String labelCancel = '취소';

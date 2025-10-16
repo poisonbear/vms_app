@@ -19,7 +19,7 @@ class MainPermissionHandler {
 
     // 알림 권한 확인
     NotificationSettings notifSettings =
-    await FirebaseMessaging.instance.getNotificationSettings();
+        await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus == AuthorizationStatus.authorized) {
       AppLogger.d('✅ 이미 알림 권한이 허용되어 있습니다.');
     } else {

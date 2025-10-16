@@ -23,11 +23,9 @@ class _VesselInfo {
     this.longitude,
   });
 
-  String get formattedLatitude =>
-      latitude?.toStringAsFixed(6) ?? '정보 없음';
+  String get formattedLatitude => latitude?.toStringAsFixed(6) ?? '정보 없음';
 
-  String get formattedLongitude =>
-      longitude?.toStringAsFixed(6) ?? '정보 없음';
+  String get formattedLongitude => longitude?.toStringAsFixed(6) ?? '정보 없음';
 }
 
 // ============================================
@@ -85,7 +83,8 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
   void _handleClose() {
     widget.onClose?.call();
 
-    final mainScreenState = context.findAncestorStateOfType<State<MainScreen>>();
+    final mainScreenState =
+        context.findAncestorStateOfType<State<MainScreen>>();
     if (mainScreenState != null) {
       try {
         (mainScreenState as dynamic).selectedIndex = -1;
@@ -102,7 +101,7 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
 
     try {
       final vessel = vesselProvider.vessels.firstWhere(
-            (v) => v.mmsi == mmsi,
+        (v) => v.mmsi == mmsi,
       );
       return _VesselInfo(
         shipName: vessel.ship_nm,
@@ -153,7 +152,8 @@ class _EmergencyBottomSheetState extends State<_EmergencyBottomSheet>
     );
   }
 
-  void _handleLongPressStart(EmergencyProvider provider, int? mmsi, String? shipName) {
+  void _handleLongPressStart(
+      EmergencyProvider provider, int? mmsi, String? shipName) {
     if (_isEmergencyPressed) return;
 
     setState(() => _isEmergencyPressed = true);

@@ -21,8 +21,10 @@ class FlashOverlay extends StatelessWidget {
                 Container(color: Colors.transparent),
                 _buildGradient(Alignment.topCenter, 250, true),
                 _buildGradient(Alignment.bottomCenter, 250, false),
-                _buildGradient(Alignment.centerLeft, 100, true, isVertical: false),
-                _buildGradient(Alignment.centerRight, 100, false, isVertical: false),
+                _buildGradient(Alignment.centerLeft, 100, true,
+                    isVertical: false),
+                _buildGradient(Alignment.centerRight, 100, false,
+                    isVertical: false),
               ],
             );
           },
@@ -32,11 +34,11 @@ class FlashOverlay extends StatelessWidget {
   }
 
   Widget _buildGradient(
-      Alignment alignment,
-      double size,
-      bool isStart, {
-        bool isVertical = true,
-      }) {
+    Alignment alignment,
+    double size,
+    bool isStart, {
+    bool isVertical = true,
+  }) {
     return Positioned(
       top: isVertical && alignment == Alignment.topCenter ? 0 : null,
       bottom: isVertical && alignment == Alignment.bottomCenter ? 0 : null,

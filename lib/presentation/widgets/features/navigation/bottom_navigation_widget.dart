@@ -19,7 +19,7 @@ class BottomNavigationWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.zero,  // ✅ 마진 제거
+      margin: EdgeInsets.zero, // ✅ 마진 제거
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -30,7 +30,7 @@ class BottomNavigationWidget extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        top: false,  // ✅ 상단 SafeArea 비활성화
+        top: false, // ✅ 상단 SafeArea 비활성화
         child: SizedBox(
           height: 60,
           child: Row(
@@ -197,13 +197,9 @@ class BottomNavigationWidget extends StatelessWidget {
   /// 아이템 색상 결정
   Color _getItemColor(bool isSelected, bool isEmergency, bool isIcon) {
     if (isEmergency) {
-      return isSelected
-          ? AppColors.emergencyRed
-          : AppColors.emergencyRed400;
+      return isSelected ? AppColors.emergencyRed : AppColors.emergencyRed400;
     } else {
-      return isSelected
-          ? AppColors.grayType8
-          : AppColors.grayType2;
+      return isSelected ? AppColors.grayType8 : AppColors.grayType2;
     }
   }
 }

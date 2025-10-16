@@ -35,8 +35,10 @@ class ApiConfig {
 
   // Navigation
   static const String _navigationHistoryKey = 'kdn_ros_select_navigation_Info';
-  static const String _navigationVisibilityKey = 'kdn_ros_select_visibility_Info';
-  static const String _navigationWarningsKey = 'kdn_ros_select_navigation_warn_Info';
+  static const String _navigationVisibilityKey =
+      'kdn_ros_select_visibility_Info';
+  static const String _navigationWarningsKey =
+      'kdn_ros_select_navigation_warn_Info';
 
   // Public Data
   static const String _holidayInfoKey = 'kdn_load_date';
@@ -44,7 +46,8 @@ class ApiConfig {
   // ============================================
   // Base URLs
   // ============================================
-  static String get baseUrl => _getEnv(_baseUrlKey, 'http://118.40.116.129:8080');
+  static String get baseUrl =>
+      _getEnv(_baseUrlKey, 'http://118.40.116.129:8080');
   static String get geoserverUrl => _getEnv(_geoserverUrlKey);
 
   // ============================================
@@ -182,10 +185,13 @@ class ApiConfig {
   static void printConfiguration() {
     AppLogger.d('=== API Configuration ===');
     AppLogger.d('Base URL: ${baseUrl.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
-    AppLogger.d('GeoServer: ${geoserverUrl.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
+    AppLogger.d(
+        'GeoServer: ${geoserverUrl.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
     AppLogger.d('Login API: ${authLogin.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
-    AppLogger.d('Vessel List: ${vesselList.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
-    AppLogger.d('Weather API: ${weatherInfo.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
+    AppLogger.d(
+        'Vessel List: ${vesselList.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
+    AppLogger.d(
+        'Weather API: ${weatherInfo.isNotEmpty ? "✓ SET" : "✗ NOT SET"}');
     AppLogger.d('========================');
   }
 
