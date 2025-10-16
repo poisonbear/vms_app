@@ -1,10 +1,9 @@
-// lib/presentation/screens/auth/login_screen.dart
-
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/core/services/services.dart';
-import 'package:vms_app/core/infrastructure/network_client.dart'; // ✅ 추가
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
@@ -38,10 +36,16 @@ class _CmdViewState extends State<LoginView> {
       FlutterLocalNotificationsPlugin();
   late String fcmToken;
   final _secureStorage = SecureStorageService();
-  final _dioRequest = DioRequest();
+
+  // Rate Limiting
+  int _loginAttempts = 0;
+  DateTime? _lastAttemptTime;
+  bool _isProcessing = false;
 
   @override
   void dispose() {
+    idController.clear();
+    passwordController.clear();
     idController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -99,14 +103,69 @@ class _CmdViewState extends State<LoginView> {
     }
   }
 
+  bool _checkRateLimit() {
+    if (_loginAttempts >= 5) {
+      final now = DateTime.now();
+      if (_lastAttemptTime != null &&
+          now.difference(_lastAttemptTime!).inMinutes < 5) {
+        return false;
+      } else {
+        _loginAttempts = 0;
+      }
+    }
+    return true;
+  }
+
+  String? _validateInput(String id, String password) {
+    if (id.isEmpty || password.isEmpty) {
+      return ErrorMessages.idPasswordRequired;
+    }
+
+    if (id.length < ValidationRules.idMinLength ||
+        id.length > ValidationRules.idMaxLength) {
+      return '아이디는 ${ValidationRules.idMinLength}-${ValidationRules.idMaxLength}자여야 합니다.';
+    }
+
+    if (!ValidationRules.idRegExp.hasMatch(id)) {
+      return '아이디는 영문, 숫자만 사용 가능합니다.';
+    }
+
+    if (password.length < ValidationRules.passwordMinLength ||
+        password.length > ValidationRules.passwordMaxLength) {
+      return '비밀번호는 ${ValidationRules.passwordMinLength}-${ValidationRules.passwordMaxLength}자여야 합니다.';
+    }
+
+    return null;
+  }
+
+  String _maskSensitiveData(String data) {
+    if (data.length <= 10) return '***';
+    return '${data.substring(0, 5)}...${data.substring(data.length - 5)}';
+  }
+
   Future<void> submitForm() async {
-    final id = '${idController.text.trim()}@kdn.vms.com';
+    if (_isProcessing) return;
+
+    final idInput = idController.text.trim();
     final password = passwordController.text.trim();
 
-    if (idController.text.trim().isEmpty || password.isEmpty) {
-      showTopSnackBar(context, ErrorMessages.idPasswordRequired);
+    if (!_checkRateLimit()) {
+      showTopSnackBar(context, '로그인 시도 횟수를 초과했습니다. 5분 후 다시 시도해주세요.');
       return;
     }
+
+    final validationError = _validateInput(idInput, password);
+    if (validationError != null) {
+      showTopSnackBar(context, validationError);
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    _lastAttemptTime = DateTime.now();
+    _loginAttempts++;
+
+    final id = '$idInput@kdn.vms.com';
 
     try {
       UserCredential userCredential = await FirebaseAuth.instance
@@ -128,9 +187,12 @@ class _CmdViewState extends State<LoginView> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       AppLogger.i('로그인 API 호출 시작');
-      AppLogger.d('API URL: $apiUrl');
+      if (kDebugMode) {
+        AppLogger.d('토큰 길이: ${firebaseToken.length}');
+        AppLogger.d('UUID: ${_maskSensitiveData(uuid ?? '')}');
+      }
 
-      Response response = await _dioRequest.dio.post(
+      Response response = await Dio().post(
         apiUrl,
         data: {
           'user_id': id,
@@ -140,32 +202,37 @@ class _CmdViewState extends State<LoginView> {
           'uuid': uuid
         },
         options: Options(
-          headers: {
-            'Authorization': 'Bearer $firebaseToken',
-          },
+          headers: {'Authorization': 'Bearer $firebaseToken'},
         ),
       );
 
       AppLogger.d('로그인 응답 상태: ${response.statusCode}');
 
       if (response.statusCode == 200) {
+        _loginAttempts = 0;
+        _lastAttemptTime = null;
+
         String username = response.data['username'];
         await prefs.setString('username', username);
-
         await saveUserId(id);
 
-        auto_login = true;
+        // ✅ 자동 로그인 설정 (사용자가 체크했을 때만)
         await prefs.setBool('auto_login', auto_login);
 
+        // ✅ 자동 로그인을 위한 자격증명 저장 (SecureStorage 사용)
         if (auto_login) {
           await _secureStorage.saveCredentials(
             id: id,
             password: password,
           );
-          AppLogger.i('로그인 정보가 안전하게 저장되었습니다');
+          AppLogger.i('자동 로그인 정보가 안전하게 저장되었습니다');
+        } else {
+          // 자동 로그인 해제 시 자격증명 삭제
+          await _secureStorage.deleteCredentials();
+          AppLogger.i('자동 로그인 정보가 삭제되었습니다');
         }
 
-        Response roleResponse = await _dioRequest.dio.post(
+        Response roleResponse = await Dio().post(
           apiUrl2,
           data: {'user_id': username},
         );
@@ -192,7 +259,7 @@ class _CmdViewState extends State<LoginView> {
                   final firestoreMmsi = doc.data()?['mmsi'] as int?;
                   if (firestoreMmsi != null && firestoreMmsi != 0) {
                     context.read<UserState>().setMmsi(firestoreMmsi);
-                    AppLogger.d('Firestore에서 MMSI 복구: $firestoreMmsi');
+                    AppLogger.d('Firestore에서 MMSI 복구');
                   }
                 }
               }
@@ -203,10 +270,14 @@ class _CmdViewState extends State<LoginView> {
 
           await updateFirebaseToken(username);
 
+          // ✅ autoFocusLocation 파라미터 추가
           if (mounted) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => MainScreen(username: username),
+                builder: (context) => MainScreen(
+                  username: username,
+                  autoFocusLocation: true, // ✅ 오토포커싱 활성화
+                ),
               ),
               (Route<dynamic> route) => false,
             );
@@ -235,14 +306,21 @@ class _CmdViewState extends State<LoginView> {
         case 'too-many-requests':
           errorMessage = ErrorMessages.tooManyRequestsAuth;
           break;
+        case 'invalid-credential':
+          errorMessage = '아이디 또는 비밀번호를 확인해주세요.';
+          break;
         default:
-          errorMessage = '${ErrorMessages.loginError}: ${e.code}';
+          errorMessage = ErrorMessages.loginError;
+          AppLogger.e('Firebase Auth Error: ${e.code}', e);
       }
       showTopSnackBar(context, errorMessage);
-      AppLogger.e('Firebase Auth Error: ${e.code}', e);
     } catch (e) {
       showTopSnackBar(context, ErrorMessages.loginError);
       AppLogger.e('Login Error', e);
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 
@@ -281,7 +359,7 @@ class _CmdViewState extends State<LoginView> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/kdn/background_img.png'),
+                image: AssetImage('assets/kdn/usm/img/blue_sky2.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -351,105 +429,164 @@ class _CmdViewState extends State<LoginView> {
                   ),
                 ),
 
-                // ID 저장 체크박스
+                // ID 저장 & 자동 로그인 체크박스
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: SizedBox(
                     width: AppSizes.s266,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                    child: Column(
                       children: [
-                        SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Checkbox(
-                            value: save_id,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                save_id = value ?? false;
-                              });
-                            },
-                            activeColor: AppColors.skyType2,
-                            checkColor: Colors.white,
-                            side: BorderSide(
-                              color: save_id
-                                  ? AppColors.skyType2
-                                  : AppColors.grayType3,
-                              width: 2,
+                        // ID 저장
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: save_id,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    save_id = value ?? false;
+                                  });
+                                },
+                                activeColor: AppColors.skyType2,
+                                checkColor: Colors.white,
+                                side: BorderSide(
+                                  color: save_id
+                                      ? AppColors.skyType2
+                                      : AppColors.grayType3,
+                                  width: 2,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'ID 저장',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.blackType2,
-                          ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'ID 저장',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.blackType2,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            // 자동 로그인
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: auto_login,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    auto_login = value ?? false;
+                                  });
+                                },
+                                activeColor: AppColors.skyType2,
+                                checkColor: Colors.white,
+                                side: BorderSide(
+                                  color: auto_login
+                                      ? AppColors.skyType2
+                                      : AppColors.grayType3,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              '자동 로그인',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.blackType2,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                // 로그인 버튼
+                // 로그인 & 회원가입 버튼
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: SizedBox(
-                    width: AppSizes.s266,
-                    height: AppSizes.s48,
-                    child: ElevatedButton(
-                      onPressed: submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.skyType2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(DesignConstants.radiusS),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 로그인 버튼
+                      SizedBox(
+                        width: 127,
+                        height: AppSizes.s48,
+                        child: ElevatedButton(
+                          onPressed: _isProcessing ? null : submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.skyType2,
+                            disabledBackgroundColor:
+                                AppColors.skyType2.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  DesignConstants.radiusS),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: _isProcessing
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  '로그인',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
-                      child: const Text(
-                        '로그인',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
 
-                // 회원가입 버튼
-                SizedBox(
-                  width: AppSizes.s266,
-                  height: AppSizes.s48,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CmdChoiceView(),
+                      const SizedBox(width: 12),
+
+                      // 회원가입 버튼
+                      SizedBox(
+                        width: 127,
+                        height: AppSizes.s48,
+                        child: ElevatedButton(
+                          onPressed: _isProcessing
+                              ? null
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CmdChoiceView(),
+                                    ),
+                                  );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.grayType3,
+                            disabledBackgroundColor:
+                                AppColors.grayType3.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  DesignConstants.radiusS),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            '회원가입',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(
-                        color: AppColors.skyType2,
-                        width: 2,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(DesignConstants.radiusS),
-                      ),
-                    ),
-                    child: const Text(
-                      '회원가입',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.skyType2,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -508,6 +645,7 @@ class _CmdViewState extends State<LoginView> {
       child: TextField(
         controller: controller,
         obscureText: obscureText,
+        enabled: !_isProcessing,
         style: const TextStyle(
           fontSize: 14,
           color: AppColors.blackType2,

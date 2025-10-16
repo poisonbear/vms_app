@@ -1,11 +1,13 @@
+// lib/presentation/providers/terms_provider.dart
 import 'package:vms_app/core/infrastructure/injection.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/exceptions/result.dart';
+import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/data/models/terms_model.dart';
 import 'package:vms_app/domain/usecases/terms_usecases.dart';
 import 'package:vms_app/presentation/providers/base_provider.dart';
 
 /// 통합 약관 Provider
-/// API에서 받아온 약관을 정밀한 키워드로 구분하여 정확한 매핑
 class TermsProvider extends BaseProvider {
   late final GetTermsList _getTermsList;
 
@@ -55,28 +57,38 @@ class TermsProvider extends BaseProvider {
     loadAllTerms();
   }
 
-  /// 모든 약관을 한 번에 로드
+  /// 모든 약관을 한 번에 로드 (일관된 패턴 적용)
   Future<void> loadAllTerms() async {
-    await executeAsync<void>(
+    // ✅ API 호출만 executeAsync로 감싸기
+    final result = await executeAsync<Result<List<CmdModel>, AppException>>(
       () async {
-        final result = await _getTermsList.execute();
-
-        result.fold(
-          onSuccess: (list) {
-            _allTermsList = list;
-            _logDetailedApiResponse(list);
-            _validateTermsList();
-            safeNotifyListeners();
-          },
-          onFailure: (error) {
-            _allTermsList = [];
-            throw error;
-          },
-        );
+        return await _getTermsList.execute();
       },
       errorMessage: '약관을 불러오는 중 오류가 발생했습니다',
       showLoading: true,
     );
+
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (result != null) {
+      result.fold(
+        onSuccess: (list) {
+          _allTermsList = list;
+          _logDetailedApiResponse(list);
+          _validateTermsList();
+          safeNotifyListeners();
+        },
+        onFailure: (error) {
+          AppLogger.e('약관 로드 실패: ${error.message}');
+          _allTermsList = [];
+          setError(error.message);
+          safeNotifyListeners();
+        },
+      );
+    } else {
+      AppLogger.w('[WARNING] 약관 API 응답이 null입니다');
+      _allTermsList = [];
+      safeNotifyListeners();
+    }
   }
 
   /// 상세한 API 응답 로깅
@@ -274,7 +286,8 @@ class TermsProvider extends BaseProvider {
       _agreementStatus[key] = false;
     });
 
-    // BaseProvider의 dispose 호출 (중요!)
+    AppLogger.d('TermsProvider disposed');
+
     super.dispose();
   }
 }
