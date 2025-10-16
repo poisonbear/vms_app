@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 import '../utils/location_utils.dart';
 
@@ -80,7 +81,7 @@ class LocationServiceManager {
       final position = await _locationService.getCurrentPosition();
       if (position != null) {
         final location = LatLng(position.latitude, position.longitude);
-        AppLogger.d('📍 Current location: $location');
+        AppLogger.d('Current location: $location');
         return location;
       }
       return null;
@@ -101,13 +102,13 @@ class LocationServiceManager {
     bool forceAutoFocus = false,
   }) async {
     try {
-      AppLogger.d('🎯 자동 위치 포커스 시작...');
+      AppLogger.d('자동 위치 포커스 시작...');
 
       // 첫 실행 체크
       if (!forceAutoFocus) {
         final shouldSkip = await _shouldSkipAutoFocus();
         if (shouldSkip) {
-          AppLogger.d('  첫 실행이 아니므로 자동 포커스 건너뜀');
+          AppLogger.d('첫 실행이 아니므로 자동 포커스 건너뜀');
           return LocationResult.failure(
             status: LocationPermissionStatus.granted,
             errorMessage: 'Auto focus skipped',
@@ -134,7 +135,7 @@ class LocationServiceManager {
       );
 
       final location = LatLng(position.latitude, position.longitude);
-      AppLogger.i('✅ 위치 포커스 성공: $location');
+      AppLogger.i('위치 포커스 성공: $location');
 
       // 첫 실행 플래그 저장
       await _markAutoFocusCompleted();
@@ -146,10 +147,16 @@ class LocationServiceManager {
 
       return LocationResult.success(location);
     } catch (e) {
-      AppLogger.e('❌ 자동 위치 포커스 오류', e);
+      AppLogger.e('자동 위치 포커스 오류', e);
 
-      // 실패 시 기본 위치 반환
-      return LocationResult.success(_defaultLocation);
+      if (context.mounted) {
+        showTopSnackBar(context, ErrorMessages.locationGetFailed);
+      }
+
+      return LocationResult.failure(
+        status: LocationPermissionStatus.denied,
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -158,12 +165,12 @@ class LocationServiceManager {
     final status = await _checkLocationPermission();
 
     if (status == LocationPermissionStatus.granted) {
-      AppLogger.d('✅ 위치 권한이 이미 허용되어 있습니다.');
+      AppLogger.d('위치 권한이 이미 허용되어 있습니다.');
       return true;
     }
 
     if (status == LocationPermissionStatus.deniedForever) {
-      AppLogger.w('⚠️ 위치 권한이 영구 거부되었습니다.');
+      AppLogger.w('위치 권한이 영구 거부되었습니다.');
       return false;
     }
 
@@ -173,9 +180,9 @@ class LocationServiceManager {
         permission == LocationPermission.always;
 
     if (granted) {
-      AppLogger.i('✅ 위치 권한 허용됨');
+      AppLogger.i('위치 권한 허용됨');
     } else {
-      AppLogger.w('❌ 위치 권한 거부됨');
+      AppLogger.w('위치 권한 거부됨');
     }
 
     return granted;
@@ -185,33 +192,36 @@ class LocationServiceManager {
   // Private Methods
   // ============================================
 
-  /// 위치 권한 상태 체크
+  /// 위치 권한 상태 확인
   Future<LocationPermissionStatus> _checkLocationPermission() async {
-    final permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
 
-    switch (permission) {
-      case LocationPermission.always:
-      case LocationPermission.whileInUse:
-        return LocationPermissionStatus.granted;
-
-      case LocationPermission.deniedForever:
-        return LocationPermissionStatus.deniedForever;
-
-      case LocationPermission.denied:
-      case LocationPermission.unableToDetermine:
-        // 권한 요청
-        final requested = await Geolocator.requestPermission();
-        if (requested == LocationPermission.whileInUse ||
-            requested == LocationPermission.always) {
-          return LocationPermissionStatus.granted;
-        } else if (requested == LocationPermission.deniedForever) {
-          return LocationPermissionStatus.deniedForever;
-        }
-        return LocationPermissionStatus.denied;
+    if (permission == LocationPermission.whileInUse ||
+        permission == LocationPermission.always) {
+      AppLogger.d('위치 권한 허용됨');
+      return LocationPermissionStatus.granted;
     }
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        AppLogger.d('위치 권한 거부됨');
+        return LocationPermissionStatus.denied;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      AppLogger.d('위치 권한 영구 거부됨');
+      return LocationPermissionStatus.deniedForever;
+    }
+
+    return permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always
+        ? LocationPermissionStatus.granted
+        : LocationPermissionStatus.denied;
   }
 
-  /// 자동 포커스를 건너뛸지 체크
+  /// 자동 포커스 건너뛰기 체크
   Future<bool> _shouldSkipAutoFocus() async {
     final prefs = await SharedPreferences.getInstance();
     final isFirstAutoFocus = prefs.getBool(_autoFocusKey) ?? true;
@@ -232,11 +242,11 @@ class LocationServiceManager {
     String message;
 
     if (status == LocationPermissionStatus.deniedForever) {
-      message = '설정에서 위치 권한을 허용해주세요.';
-      AppLogger.w('❌ 위치 권한이 영구 거부됨');
+      message = ErrorMessages.locationPermissionSettings;
+      AppLogger.w('위치 권한이 영구 거부됨');
     } else {
-      message = '위치 권한이 필요합니다.';
-      AppLogger.d('❌ 위치 권한 거부됨');
+      message = ErrorMessages.locationPermissionRequired;
+      AppLogger.d('위치 권한 거부됨');
     }
 
     if (context.mounted) {
@@ -251,8 +261,8 @@ class LocationServiceManager {
 
   /// 위치 서비스 비활성화 처리
   LocationResult _handleServiceDisabled(BuildContext context) {
-    const message = '위치 서비스를 활성화해주세요.';
-    AppLogger.w('❌ 위치 서비스가 비활성화됨');
+    const message = ErrorMessages.locationServiceActivationRequired;
+    AppLogger.w('위치 서비스가 비활성화됨');
 
     if (context.mounted) {
       showTopSnackBar(context, message);

@@ -465,7 +465,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
 
       // 성공 처리
       if (mounted) Navigator.pop(context); // 로딩 다이얼로그 닫기
-      showTopSnackBar(context, '회원정보가 성공적으로 수정되었습니다.');
+      showTopSnackBar(context, SuccessMessages.profileUpdated); // ✅ 수정
 
       // 키보드와 포커스 완전 제거
       await SystemChannels.textInput.invokeMethod('TextInput.hide');
@@ -535,18 +535,21 @@ class _MembershipviewState extends State<MemberInformationChange> {
       final responseData = e.response?.data;
 
       if (statusCode == 401) {
+        // ✅ 수정: 하드코딩 제거
         errorMessage = responseData is Map && responseData['message'] != null
             ? responseData['message']
-            : '기존 비밀번호가 일치하지 않습니다.';
+            : ErrorMessages.oldPasswordIncorrect;
       } else {
+        // ✅ 수정: 하드코딩 제거
         errorMessage = responseData is Map && responseData['message'] != null
             ? responseData['message']
             : statusCode == null
-                ? '서버에 연결할 수 없습니다. 다시 시도해주세요.'
-                : '처리 중 오류가 발생했습니다.';
+                ? ErrorMessages.serverConnection
+                : ErrorMessages.processingError;
       }
     } else {
-      errorMessage = '에러 발생: $e';
+      // ✅ 수정: 하드코딩 제거
+      errorMessage = '${ErrorMessages.generalError}: $e';
     }
 
     showTopSnackBar(context, errorMessage);
@@ -621,8 +624,9 @@ class _MembershipviewState extends State<MemberInformationChange> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ✅ 수정: 하드코딩 제거
                       TextWidgetString(
-                          '비밀번호는 문자, 숫자 및 특수문자를 포함한 6자리 이상 12자리 이하로 입력하여야 합니다.',
+                          ErrorMessages.passwordFormatLong,
                           TextAligns.left,
                           AppSizes.i12,
                           FontWeights.w700,

@@ -112,6 +112,10 @@ class ErrorMessages {
   static const String locationUpdateFailed = '위치 업데이트 실패';
   static const String locationTrackingError = '위치 추적 중 오류가 발생했습니다';
   static const String locationTrackingFailed = '위치 추적 오류';
+  // ✅ 새로 추가된 상수
+  static const String locationPermissionRequired = '위치 권한이 필요합니다.';
+  static const String locationServiceActivationRequired = '위치 서비스를 활성화해주세요.';
+  static const String locationPermissionSettings = '설정에서 위치 권한을 허용해주세요.';
 
   // ============ 긴급 관련 ============
   static const String emergencyAlreadyActive = '이미 긴급 상황이 진행중입니다';
@@ -130,6 +134,8 @@ class ErrorMessages {
   static const String permissionRequired = '필요한 권한이 없습니다';
   static const String cacheError = '캐시 처리 중 문제가 발생했습니다';
   static const String inputValidation = '입력한 정보를 확인해주세요';
+  // ✅ 새로 추가된 상수
+  static const String generalError = '에러 발생';
 }
 
 /// 성공 메시지
