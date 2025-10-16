@@ -23,9 +23,11 @@ class _VesselInfo {
     this.longitude,
   });
 
-  String get formattedLatitude => latitude?.toStringAsFixed(6) ?? '정보 없음';
+  String get formattedLatitude =>
+      latitude?.toStringAsFixed(6) ?? InfoMessages.noLocationInfo;
 
-  String get formattedLongitude => longitude?.toStringAsFixed(6) ?? '정보 없음';
+  String get formattedLongitude =>
+      longitude?.toStringAsFixed(6) ?? InfoMessages.noLocationInfo;
 }
 
 // ============================================
