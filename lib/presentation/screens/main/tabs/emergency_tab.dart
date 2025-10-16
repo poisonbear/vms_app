@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/emergency_model.dart';
-import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/emergency_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
@@ -685,8 +684,8 @@ class _InfoRow extends StatelessWidget {
           InkWell(
             onTap: () => _copyToClipboard(context, label, value),
             borderRadius: BorderRadius.circular(AppSizes.s4),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.s4),
+            child: const Padding(
+              padding: EdgeInsets.all(AppSizes.s4),
               child: Icon(
                 Icons.content_copy,
                 size: AppSizes.s16,

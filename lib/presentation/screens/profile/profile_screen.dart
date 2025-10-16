@@ -1,5 +1,5 @@
 // lib/presentation/screens/profile/profile_screen.dart
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/core/constants/constants.dart';
@@ -56,16 +56,16 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
 
       // 1. SharedPreferences 데이터 삭제
       await Future.wait([
-        prefs.remove('firebase_token'),
         prefs.remove('auto_login'),
         prefs.remove('username'),
-        prefs.remove('saved_id'),
-        prefs.remove('saved_pw'),
+        prefs.remove('saved_id'),  // ✅ 삭제할 필요 없지만 안전하게
+        prefs.remove('saved_pw'),  // ✅ 이것도 이제 없지만 안전하게
+        // ✅ firebase_token과 uuid는 더 이상 SharedPreferences에 없음
       ]);
 
       AppLogger.d('SharedPreferences 데이터 삭제 완료');
 
-      // 2. ✅ SecureStorage 데이터 삭제
+      // 2. ✅ SecureStorage의 모든 데이터 삭제 (토큰, UUID, 비밀번호 등 전부)
       await _secureStorage.clearAll();
       AppLogger.d('SecureStorage 데이터 삭제 완료');
 
@@ -80,26 +80,26 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
         }
       }
 
-      // 4. UI 업데이트
-      if (mounted) {
-        setState(() {
-          _isSwitched = false;  // 자동 로그인 스위치 끄기
-        });
+      // 4. Firebase 로그아웃
+      try {
+        await FirebaseAuth.instance.signOut();
+        AppLogger.d('Firebase 로그아웃 완료');
+      } catch (e) {
+        AppLogger.e('Firebase 로그아웃 실패: $e');
       }
 
-      AppLogger.i('로그아웃 완료');
-
-    } catch (e) {
-      AppLogger.e('로그아웃 중 오류 발생', e);
-
-      // 에러가 발생해도 계속 진행
+      // 5. 로그인 화면으로 이동
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('로그아웃 중 일부 오류가 발생했습니다.'),
-            duration: Duration(seconds: 2),
-          ),
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginView()),
+              (Route<dynamic> route) => false,
         );
+        AppLogger.i('로그아웃 완료 - 로그인 화면으로 이동');
+      }
+    } catch (e) {
+      AppLogger.e('로그아웃 처리 중 오류 발생', e);
+      if (mounted) {
+        showTopSnackBar(context, '로그아웃 중 오류가 발생했습니다.');
       }
     }
   }

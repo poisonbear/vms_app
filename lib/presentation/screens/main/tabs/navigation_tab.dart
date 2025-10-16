@@ -922,8 +922,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                         InkWell(
                           onTap: () => _copyToClipboard(context, 'MMSI', mmsi),
                           borderRadius: BorderRadius.circular(AppSizes.s4),
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSizes.s4),
+                          child: const Padding(
+                            padding: EdgeInsets.all(AppSizes.s4),
                             child: Icon(
                               Icons.content_copy,
                               size: AppSizes.s16,
@@ -941,7 +941,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                         Expanded(
                           child: Text(
                             shipNm,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: AppSizes.s13,
                               fontWeight: FontWeights.w500,
                               color: AppColors.grayType3,
@@ -954,8 +954,8 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                         InkWell(
                           onTap: () => _copyToClipboard(context, '선박명', shipNm),
                           borderRadius: BorderRadius.circular(AppSizes.s4),
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSizes.s4),
+                          child: const Padding(
+                            padding: EdgeInsets.all(AppSizes.s4),
                             child: Icon(
                               Icons.content_copy,
                               size: AppSizes.s16,
@@ -970,7 +970,7 @@ class _MainViewNavigationSheetState extends State<MainViewNavigationSheet> {
                     // 날짜
                     Text(
                       formattedTime,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: AppSizes.s12,
                         color: AppColors.grayType3,
                       ),

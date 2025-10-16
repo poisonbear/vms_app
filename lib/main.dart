@@ -24,15 +24,13 @@ import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/providers/emergency_provider.dart';
+import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 
-/// Flutter 로컬 알림 플러그인 인스턴스
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
-/// Flutter 알림 설정 초기화
-/// Android 및 iOS 플랫폼별 알림 채널 및 초기 설정 수행
 Future<void> _setupFlutterNotifications() async {
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel',
@@ -60,69 +58,80 @@ Future<void> _setupFlutterNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-/// 앱 권한 관리 클래스
 class PermissionManager {
   PermissionManager._();
 
-  /// 앱 실행에 필요한 권한 요청
   static Future<void> requestPermissions() async {
     await Permission.location.request();
     await Permission.notification.request();
   }
 }
 
-/// 앱 진입점
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await _setupFlutterNotifications();
-  await initializeDateFormatting('ko_KR', null);
-
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  await dotenv.load(fileName: '.env');
-  await initInjection();
-  await AppInitializer.initializeSecurity();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => NavigationProvider()),
-        ChangeNotifierProvider(create: (_) => UserState()),
-        ChangeNotifierProvider(create: (_) => VesselProvider()),
-        ChangeNotifierProvider(create: (_) => EmergencyProvider()),
-      ],
-      child: MyApp(prefs: prefs),
-    ),
-  );
+  AppLogger.d('백그라운드 메시지 처리: ${message.messageId}');
 }
 
-/// 앱의 최상위 위젯
+void main() async {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final secureStorage = SecureStorageService();
+    await secureStorage.migrateFromSharedPreferences();
+    AppLogger.i('보안 저장소 마이그레이션 완료');
+
+    try {
+      await dotenv.load(fileName: '.env');
+      AppLogger.d('환경 변수 로드 완료');
+    } catch (e) {
+      AppLogger.e('환경 변수 로드 실패', e);
+    }
+
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await _setupFlutterNotifications();
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      AppLogger.d('포그라운드 메시지 수신: ${message.notification?.title}');
+    });
+
+    await initializeDateFormatting('ko_KR', null);
+    setupDependencies();
+
+    final prefs = await SharedPreferences.getInstance();
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserState()),
+          ChangeNotifierProvider(create: (_) => NavigationProvider()),
+          ChangeNotifierProvider(create: (_) => RouteProvider()),
+          ChangeNotifierProvider(create: (_) => VesselProvider()),
+          ChangeNotifierProvider(create: (_) => EmergencyProvider()),
+        ],
+        child: MyApp(prefs: prefs),
+      ),
+    );
+  }, (error, stack) {
+    AppLogger.e('앱 크래시', error, stack);
+  });
+}
+
+// ✅ 수정: MaterialApp을 반환하도록 변경
 class MyApp extends StatelessWidget {
   final SharedPreferences prefs;
+
   const MyApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'VMS App',
       theme: ThemeData(
-        splashFactory: NoSplash.splashFactory,
-        scaffoldBackgroundColor: AppColors.whiteType1,
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.whiteType1,
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          iconTheme: const IconThemeData(color: AppColors.blackType1),
-          titleTextStyle: TextStyle(
-            color: AppColors.blackType1,
-            fontSize: AppSizes.s20.toDouble(),
-            fontWeight: FontWeights.bold,
-          ),
-        ),
+        fontFamily: 'Pretendard',
+        useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
       home: SplashScreen(prefs: prefs),
@@ -130,33 +139,29 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// 스플래시 화면 위젯
+class _AutoLoginRetryConfig {
+  static const int maxRetries = 3;
+  static const Duration retryDelay = Duration(seconds: 2);
+}
+
 class SplashScreen extends StatefulWidget {
   final SharedPreferences prefs;
+
   const SplashScreen({super.key, required this.prefs});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-/// 자동 로그인 재시도 설정
-class _AutoLoginRetryConfig {
-  const _AutoLoginRetryConfig._();
-
-  static const int maxRetries = 3;
-  static const Duration retryDelay = AppDurations.seconds2;
-}
-
-/// 스플래시 화면 상태 관리 클래스
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   String fcmToken = StringConstants.emptyString;
   late AnimationController _rotationController;
+  final _secureStorage = SecureStorageService();
 
   final String apiUrl = ApiConfig.authLogin;
   final String apiUrl2 = ApiConfig.authRole;
   final dioRequest = DioRequest();
-  final _secureStorage = SecureStorageService();
 
   @override
   void initState() {
@@ -174,7 +179,6 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  /// 로그인 상태 확인 메서드
   Future<void> _checkLoginStatus() async {
     await Future.delayed(AppDurations.seconds3);
     await PermissionManager.requestPermissions();
@@ -186,23 +190,21 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    final isAutoLogin = widget.prefs.getBool(StringConstants.autoLoginKey) ?? false;
+    final isAutoLogin = widget.prefs.getBool(StringConstants.autoLoginKey);
 
-    // ✅ SecureStorage에서 암호화된 데이터 읽기
     final credentials = await _secureStorage.loadCredentials();
     final savedId = credentials['id'];
     final savedPw = credentials['password'];
 
     _logAutoLoginCheck(isAutoLogin, savedId, savedPw);
 
-    if (isAutoLogin && savedId != null && savedPw != null) {
+    if (isAutoLogin == true && savedId != null && savedPw != null) {
       await _performAutoLogin(savedId, savedPw);
     } else {
       _navigateToLogin();
     }
   }
 
-  /// FCM 토큰 초기화
   Future<void> _initializeFcmToken() async {
     try {
       fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
@@ -213,7 +215,6 @@ class _SplashScreenState extends State<SplashScreen>
         fcmToken = await FirebaseMessaging.instance.getToken() ?? StringConstants.emptyString;
       }
 
-      // ✅ 토큰 일부 + 길이값 함께 표시
       if (fcmToken.isNotEmpty) {
         final preview = fcmToken.substring(0, math.min(20, fcmToken.length));
         AppLogger.d('FCM 토큰 초기화 완료: $preview... (길이: ${fcmToken.length})');
@@ -221,23 +222,20 @@ class _SplashScreenState extends State<SplashScreen>
         AppLogger.e('FCM 토큰 초기화 실패');
       }
 
-      widget.prefs.setString(StringConstants.firebaseTokenKey, fcmToken);
+      widget.prefs.setString('fcm_token', fcmToken);
     } catch (e) {
       AppLogger.e('FCM 토큰 가져오기 실패: $e');
       fcmToken = StringConstants.emptyString;
     }
   }
 
-  /// 자동 로그인 체크 로그 출력
   void _logAutoLoginCheck(bool? isAutoLogin, String? savedId, String? savedPw) {
     AppLogger.d(LogMessages.autoLoginCheck);
     AppLogger.d('자동 로그인 상태: $isAutoLogin');
-    // ✅ 보안: 계정 정보 존재 여부만 표시
     AppLogger.d('저장된 계정 정보: ${savedId != null && savedPw != null ? "존재" : "없음"}');
     AppLogger.d(LogMessages.separator);
   }
 
-  /// 자동 로그인 수행 (재시도 로직 포함)
   Future<void> _performAutoLogin(String userId, String password, {int retryCount = 0}) async {
     try {
       AppLogger.d(LogMessages.autoLoginStart);
@@ -260,13 +258,15 @@ class _SplashScreenState extends State<SplashScreen>
 
       AppLogger.d(LogMessages.firebaseAuthSuccess);
 
-      // ✅ Firebase 토큰도 일부만 표시
       if (firebaseToken.isNotEmpty) {
         final tokenPreview = firebaseToken.substring(0, math.min(20, firebaseToken.length));
         AppLogger.d('Firebase 토큰 획득: $tokenPreview... (길이: ${firebaseToken.length})');
       }
 
-      await widget.prefs.setString(StringConstants.firebaseTokenKey, firebaseToken);
+      await _secureStorage.saveSessionData(
+        firebaseToken: firebaseToken,
+        uuid: uuid ?? '',
+      );
 
       final pureUserId = _extractPureUserId(userId);
       final response = await _callLoginApi(pureUserId, password, firebaseToken, uuid);
@@ -278,7 +278,6 @@ class _SplashScreenState extends State<SplashScreen>
       final role = roleData[StringConstants.roleKey]?.toString();
 
       AppLogger.d('사용자 정보 조회 완료');
-      // ✅ MMSI는 공개 정보이므로 표시 가능
       AppLogger.d('MMSI: $mmsi, Role: $role');
 
       await _updateUserState(role, mmsi);
@@ -288,7 +287,6 @@ class _SplashScreenState extends State<SplashScreen>
 
       _logSuccessAndNavigate(pureUserId);
     } on FirebaseAuthException catch (e) {
-      // 네트워크 에러이고 재시도 횟수가 남아있으면 재시도
       if (_isNetworkError(e.code) && retryCount < _AutoLoginRetryConfig.maxRetries) {
         AppLogger.w('네트워크 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
         await Future.delayed(_AutoLoginRetryConfig.retryDelay);
@@ -296,7 +294,6 @@ class _SplashScreenState extends State<SplashScreen>
       }
       _handleFirebaseAuthError(e, retryCount);
     } on DioException catch (e) {
-      // Dio 네트워크 에러도 재시도
       if (_isDioNetworkError(e) && retryCount < _AutoLoginRetryConfig.maxRetries) {
         AppLogger.w('서버 통신 에러 감지 - 재시도 예정 (${retryCount + 1}/${_AutoLoginRetryConfig.maxRetries})');
         await Future.delayed(_AutoLoginRetryConfig.retryDelay);
@@ -308,14 +305,12 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  /// Firebase 에러가 네트워크 관련 에러인지 확인
   bool _isNetworkError(String errorCode) {
     return errorCode == 'network-request-failed' ||
         errorCode == 'unknown' ||
         errorCode == 'timeout';
   }
 
-  /// Dio 에러가 네트워크 관련 에러인지 확인
   bool _isDioNetworkError(DioException e) {
     return e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
@@ -323,19 +318,16 @@ class _SplashScreenState extends State<SplashScreen>
         e.type == DioExceptionType.connectionError;
   }
 
-  /// Firebase 이메일 형식 생성
   String _buildFirebaseEmail(String userId) {
     return userId.contains('@')
         ? userId
         : '$userId${StringConstants.emailDomain}';
   }
 
-  /// 순수 사용자 ID 추출
   String _extractPureUserId(String userId) {
     return userId.contains('@') ? userId.split('@')[0] : userId;
   }
 
-  /// 서버 로그인 API 호출
   Future<Response> _callLoginApi(
       String userId,
       String password,
@@ -359,7 +351,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// API 응답 검증
   void _validateApiResponse(Response response) {
     AppLogger.d('로그인 API 응답: ${response.statusCode}');
 
@@ -372,7 +363,6 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  /// 사용자 권한 정보 조회
   Future<Map<String, dynamic>> _fetchUserRole(String userId) async {
     final roleResponse = await dioRequest.dio.post(
       apiUrl2,
@@ -393,7 +383,6 @@ class _SplashScreenState extends State<SplashScreen>
     return roleData;
   }
 
-  /// Provider에 사용자 정보 업데이트
   Future<void> _updateUserState(String? role, int mmsi) async {
     if (!mounted) return;
 
@@ -414,7 +403,6 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  /// 성공 로그 출력 및 메인 화면 이동
   void _logSuccessAndNavigate(String userId) {
     AppLogger.d(LogMessages.separator);
     AppLogger.d('자동 로그인 성공! ${LogMessages.navigateToMain}');
@@ -434,25 +422,19 @@ class _SplashScreenState extends State<SplashScreen>
     AppLogger.d(LogMessages.autoLoginComplete);
   }
 
-  /// Firebase 인증 에러 처리
   void _handleFirebaseAuthError(FirebaseAuthException e, int retryCount) {
     AppLogger.e(LogMessages.autoLoginFailed);
-    // ✅ 보안: 에러 코드만 표시, 메시지는 제외
     AppLogger.e('Firebase 인증 실패 - 에러 코드: ${e.code}');
 
-    // 재시도 횟수 정보 로그
     if (retryCount > 0) {
       AppLogger.e('총 $retryCount회 재시도했으나 실패');
     }
 
-    // 네트워크 에러인 경우
     if (_isNetworkError(e.code)) {
       AppLogger.e('네트워크 연결 문제로 인한 실패');
     }
 
-    // 잘못된 자격 증명인 경우만 자동 로그인 데이터 삭제
-    if (e.code == FirebaseErrorCodes.userNotFound ||
-        e.code == FirebaseErrorCodes.wrongPassword) {
+    if (e.code == 'user-not-found' || e.code == 'wrong-password') {
       _clearAutoLoginData();
     }
 
@@ -460,7 +442,6 @@ class _SplashScreenState extends State<SplashScreen>
     _navigateToLogin();
   }
 
-  /// Dio 통신 에러 처리
   void _handleDioError(DioException e) {
     AppLogger.e(LogMessages.autoLoginFailed);
     AppLogger.e('서버 통신 실패 - 타입: ${e.type}');
@@ -471,7 +452,6 @@ class _SplashScreenState extends State<SplashScreen>
     _navigateToLogin();
   }
 
-  /// 일반 에러 처리
   void _handleGeneralError(dynamic e) {
     AppLogger.e(LogMessages.autoLoginFailed);
     AppLogger.e('예상치 못한 에러가 발생했습니다');
@@ -479,7 +459,6 @@ class _SplashScreenState extends State<SplashScreen>
     _navigateToLogin();
   }
 
-  /// 역할 응답 데이터 파싱
   Map<String, dynamic>? _parseRoleResponse(dynamic responseData) {
     if (responseData is List &&
         responseData.isNotEmpty &&
@@ -491,7 +470,6 @@ class _SplashScreenState extends State<SplashScreen>
     return null;
   }
 
-  /// MMSI 값 추출
   int _extractMmsi(Map<String, dynamic> data) {
     final mmsiValue = data['mmsi'];
     if (mmsiValue == null) return NumericConstants.zeroValue;
@@ -499,16 +477,12 @@ class _SplashScreenState extends State<SplashScreen>
     return int.tryParse(mmsiValue.toString()) ?? NumericConstants.zeroValue;
   }
 
-  /// 자동 로그인 데이터 삭제
   Future<void> _clearAutoLoginData() async {
-    // ✅ SecureStorage 먼저 삭제 (가장 중요!)
-    await _secureStorage.clearAll();
-    // SharedPreferences 플래그 정리
+    await _secureStorage.deleteCredentials();
     await widget.prefs.setBool(StringConstants.autoLoginKey, false);
     AppLogger.d(LogMessages.autoLoginDataCleared);
   }
 
-  /// 로그인 화면으로 이동
   void _navigateToLogin() {
     if (!mounted) return;
     AppLogger.d(LogMessages.navigateToLogin);
@@ -518,7 +492,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Firestore에 FCM 토큰 업데이트
   Future<void> _updateFirebaseToken(String userId) async {
     try {
       AppLogger.d('${LogMessages.firebaseTokenUpdate} 시작');
@@ -544,11 +517,12 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  // ✅ 스플래시 화면 UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
