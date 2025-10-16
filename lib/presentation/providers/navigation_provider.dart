@@ -76,35 +76,42 @@ class NavigationProvider extends BaseProvider {
     final cacheKey = 'ros_list_${startDate ?? "none"}_${endDate ?? "none"}_'
         '${mmsi ?? "all"}_${shipName ?? "none"}';
 
-    // 캐시 확인 (LRU 자동 적용)
+    // ✅ 캐시 확인 (로딩 상태 없이)
     final cachedData = _cache.get<List<NavigationModel>>(cacheKey);
     if (cachedData != null) {
       AppLogger.d('✅ [캐시 HIT] 항행이력 리스트');
       _rosList = cachedData;
       safeNotifyListeners();
-      return;
+      return; // 캐시 히트 시 즉시 리턴
     }
 
-    AppLogger.d('[캐시 MISS] 항행이력 리스트 API 호출');
+    AppLogger.d('🔄 [캐시 MISS] 항행이력 리스트 API 호출');
 
-    final result = await executeAsync(() async {
-      return await _getNavigationHistory.execute(
-        startDate: startDate,
-        endDate: endDate,
-        mmsi: mmsi,
-        shipName: shipName,
-      );
-    }, errorMessage: ErrorMessages.navigationLoadFailed);
+    // ✅ API 호출만 executeAsync로 감싸기
+    final result = await executeAsync<List<NavigationModel>>(
+      () async {
+        return await _getNavigationHistory.execute(
+          startDate: startDate,
+          endDate: endDate,
+          mmsi: mmsi,
+          shipName: shipName,
+        );
+      },
+      errorMessage: ErrorMessages.navigationLoadFailed,
+      showLoading: true,
+    );
 
-    if (result != null) {
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (result != null && result.isNotEmpty) {
       _rosList = result;
 
       // LRU 캐시 저장 (1시간)
       _cache.put(cacheKey, result, AppDurations.hours1);
-      AppLogger.d('[캐시 저장] 항행이력 ${result.length}개 (1시간 유효)');
+      AppLogger.d('💾 [캐시 저장] 항행이력 ${result.length}개 (1시간 유효)');
 
       safeNotifyListeners();
     } else {
+      AppLogger.w('[WARNING] API 응답이 null이거나 비어있습니다');
       _rosList = [];
       safeNotifyListeners();
     }
@@ -114,51 +121,59 @@ class NavigationProvider extends BaseProvider {
   Future<void> getWeatherInfo() async {
     const cacheKey = 'weather_info';
 
-    // 캐시 확인
+    // ✅ 캐시 확인 (로딩 상태 없이)
     final cachedData = _cache.get<Map<String, double>>(cacheKey);
     if (cachedData != null) {
-      AppLogger.d('[캐시 HIT] 기상정보');
+      AppLogger.d('✅ [캐시 HIT] 기상정보');
       _applyWeatherData(cachedData);
       safeNotifyListeners();
-      return;
+      return; // 캐시 히트 시 즉시 리턴
     }
 
-    AppLogger.d('[캐시 MISS] 기상정보 API 호출');
+    AppLogger.d('🔄 [캐시 MISS] 기상정보 API 호출');
 
-    await executeAsync(() async {
-      final result = await _getWeatherInfo.execute();
+    // ✅ API 호출만 executeAsync로 감싸기
+    final result = await executeAsync<WeatherInfo?>(
+      () async {
+        return await _getWeatherInfo.execute();
+      },
+      errorMessage: ErrorMessages.weatherInfoLoadFailed,
+      showLoading: false,
+    );
 
-      if (result != null) {
-        wave = result.wave ?? NumericConstants.zeroValue.toDouble();
-        visibility = result.visibility ?? NumericConstants.zeroValue.toDouble();
-        walm1 = result.walm1 ?? 0.0;
-        walm2 = result.walm2 ?? 0.0;
-        walm3 = result.walm3 ?? 0.0;
-        walm4 = result.walm4 ?? 0.0;
-        valm1 = result.valm1 ?? 0.0;
-        valm2 = result.valm2 ?? 0.0;
-        valm3 = result.valm3 ?? 0.0;
-        valm4 = result.valm4 ?? 0.0;
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (result != null) {
+      wave = result.wave ?? NumericConstants.zeroValue.toDouble();
+      visibility = result.visibility ?? NumericConstants.zeroValue.toDouble();
+      walm1 = result.walm1 ?? 0.0;
+      walm2 = result.walm2 ?? 0.0;
+      walm3 = result.walm3 ?? 0.0;
+      walm4 = result.walm4 ?? 0.0;
+      valm1 = result.valm1 ?? 0.0;
+      valm2 = result.valm2 ?? 0.0;
+      valm3 = result.valm3 ?? 0.0;
+      valm4 = result.valm4 ?? 0.0;
 
-        // LRU 캐시 저장 (30분)
-        final weatherData = {
-          'wave': wave,
-          'visibility': visibility,
-          'walm1': walm1,
-          'walm2': walm2,
-          'walm3': walm3,
-          'walm4': walm4,
-          'valm1': valm1,
-          'valm2': valm2,
-          'valm3': valm3,
-          'valm4': valm4,
-        };
-        _cache.put(cacheKey, weatherData, AppDurations.minutes30);
-        AppLogger.d('[캐시 저장] 기상정보 (30분 유효)');
+      // LRU 캐시 저장 (30분)
+      final weatherData = {
+        'wave': wave,
+        'visibility': visibility,
+        'walm1': walm1,
+        'walm2': walm2,
+        'walm3': walm3,
+        'walm4': walm4,
+        'valm1': valm1,
+        'valm2': valm2,
+        'valm3': valm3,
+        'valm4': valm4,
+      };
+      _cache.put(cacheKey, weatherData, AppDurations.minutes30);
+      AppLogger.d('💾 [캐시 저장] 기상정보 (30분 유효)');
 
-        safeNotifyListeners();
-      }
-    }, errorMessage: ErrorMessages.weatherInfoLoadFailed, showLoading: false);
+      safeNotifyListeners();
+    } else {
+      AppLogger.w('[WARNING] 기상정보 응답이 null입니다');
+    }
   }
 
   /// 캐시된 기상 데이터 적용
@@ -179,35 +194,40 @@ class NavigationProvider extends BaseProvider {
   Future<void> getNavigationWarnings() async {
     const cacheKey = 'navigation_warnings';
 
-    // 캐시 확인
+    // ✅ 캐시 확인 (로딩 상태 없이)
     final cachedData = _cache.get<List<String>>(cacheKey);
     if (cachedData != null) {
-      AppLogger.d('[캐시 HIT] 항행경보');
+      AppLogger.d('✅ [캐시 HIT] 항행경보');
       _navigationWarnings = cachedData;
       safeNotifyListeners();
-      return;
+      return; // 캐시 히트 시 즉시 리턴
     }
 
     AppLogger.d('🔄 [캐시 MISS] 항행경보 API 호출');
 
-    await executeAsync(() async {
-      final result = await _getNavigationWarnings.execute();
+    // ✅ API 호출만 executeAsync로 감싸기
+    final result = await executeAsync<List<String>?>(
+      () async {
+        return await _getNavigationWarnings.execute();
+      },
+      errorMessage: ErrorMessages.navigationWarningsLoadFailed,
+      showLoading: false,
+    );
 
-      if (result != null && result.isNotEmpty) {
-        _navigationWarnings = result;
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (result != null && result.isNotEmpty) {
+      _navigationWarnings = result;
 
-        // LRU 캐시 저장 (1시간)
-        _cache.put(cacheKey, result, AppDurations.hours1);
-        AppLogger.d('[캐시 저장] 항행경보 ${result.length}개 (1시간 유효)');
+      // LRU 캐시 저장 (1시간)
+      _cache.put(cacheKey, result, AppDurations.hours1);
+      AppLogger.d('💾 [캐시 저장] 항행경보 ${result.length}개 (1시간 유효)');
 
-        safeNotifyListeners();
-      } else {
-        _navigationWarnings = [];
-        safeNotifyListeners();
-      }
-    },
-        errorMessage: ErrorMessages.navigationWarningsLoadFailed,
-        showLoading: false);
+      safeNotifyListeners();
+    } else {
+      AppLogger.d('[INFO] 항행경보가 없거나 응답이 null입니다');
+      _navigationWarnings = [];
+      safeNotifyListeners();
+    }
   }
 
   // ========== UI Helper 메서드들 ==========

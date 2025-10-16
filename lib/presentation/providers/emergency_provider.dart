@@ -11,12 +11,19 @@ import 'package:vms_app/core/constants/constants.dart';
 
 /// 긴급 상황 관리 Provider
 /// EmergencyService 기능을 통합한 단일 Provider
+///
+/// ⚠️ 이 Provider는 BaseProvider를 상속하지 않습니다.
+/// 위치 추적, 전화 걸기 등 특수한 시스템 기능을 다루기 때문에
+/// ChangeNotifier를 직접 상속하는 구조를 유지합니다.
 class EmergencyProvider extends ChangeNotifier {
   // Constants
   static const String _emergencyHistoryKey = 'emergency_history';
   static const String _lastEmergencyKey = 'last_emergency';
   static const int _maxHistoryCount = 50;
   static const int _maxLocationHistory = 100;
+
+  // Dispose 상태 추적
+  bool _isDisposed = false;
 
   // 상태 변수들
   EmergencyStatus _status = EmergencyStatus.idle;
@@ -55,56 +62,68 @@ class EmergencyProvider extends ChangeNotifier {
     await updateCurrentLocation();
   }
 
+  /// 안전한 notifyListeners 호출
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      try {
+        notifyListeners();
+      } catch (e) {
+        AppLogger.e('Error in notifyListeners: $e');
+      }
+    }
+  }
+
   // ============================================
   // 위치 관련 메서드들
   // ============================================
 
   /// 현재 위치 가져오기
   Future<void> updateCurrentLocation() async {
+    if (_isDisposed) return;
+
     try {
       _errorMessage = null;
 
-      // 위치 서비스 활성화 확인
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         _errorMessage = ErrorMessages.locationServiceDisabled;
-        notifyListeners();
+        _safeNotifyListeners();
         return;
       }
 
-      // 위치 권한 확인
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
           _errorMessage = ErrorMessages.locationPermissionDenied;
-          notifyListeners();
+          _safeNotifyListeners();
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
         _errorMessage = ErrorMessages.locationPermissionDeniedForever;
-        notifyListeners();
+        _safeNotifyListeners();
         return;
       }
 
-      // 현재 위치 가져오기
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 10),
       );
 
+      if (_isDisposed) return;
+
       _currentPosition = position;
       _addLocationToHistory(position);
 
-      notifyListeners();
+      _safeNotifyListeners();
       AppLogger.d(
           '${InfoMessages.locationUpdate}: ${position.latitude}, ${position.longitude}');
     } catch (e) {
       _errorMessage = '${ErrorMessages.locationGetFailed}: $e';
       AppLogger.e('${ErrorMessages.locationUpdateFailed}: $e');
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -119,7 +138,7 @@ class EmergencyProvider extends ChangeNotifier {
 
   /// 실시간 위치 추적 시작
   void startLocationTracking() {
-    if (_isLocationTracking) return;
+    if (_isLocationTracking || _isDisposed) return;
 
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -130,21 +149,23 @@ class EmergencyProvider extends ChangeNotifier {
       locationSettings: locationSettings,
     ).listen(
       (Position position) {
+        if (_isDisposed) return;
+
         _currentPosition = position;
         _addLocationToHistory(position);
-        notifyListeners();
+        _safeNotifyListeners();
         AppLogger.d(
             '${InfoMessages.locationUpdate}: ${position.latitude}, ${position.longitude}');
       },
       onError: (error) {
         AppLogger.e('${ErrorMessages.locationTrackingFailed}: $error');
         _errorMessage = ErrorMessages.locationTrackingError;
-        notifyListeners();
+        _safeNotifyListeners();
       },
     );
 
     _isLocationTracking = true;
-    notifyListeners();
+    _safeNotifyListeners();
     AppLogger.d(InfoMessages.locationTrackingStarted);
   }
 
@@ -155,7 +176,7 @@ class EmergencyProvider extends ChangeNotifier {
     _positionStreamSubscription?.cancel();
     _positionStreamSubscription = null;
     _isLocationTracking = false;
-    notifyListeners();
+    _safeNotifyListeners();
     AppLogger.d(InfoMessages.locationTrackingStopped);
   }
 
@@ -181,6 +202,8 @@ class EmergencyProvider extends ChangeNotifier {
     required String? ship_nm,
     int countdownSeconds = 5,
   }) {
+    if (_isDisposed) return;
+
     if (_status == EmergencyStatus.preparing ||
         _status == EmergencyStatus.active) {
       AppLogger.w(ErrorMessages.emergencyAlreadyActive);
@@ -205,7 +228,7 @@ class EmergencyProvider extends ChangeNotifier {
       startLocationTracking();
     }
 
-    notifyListeners();
+    _safeNotifyListeners();
     _startCountdown();
   }
 
@@ -214,9 +237,14 @@ class EmergencyProvider extends ChangeNotifier {
     _countdownTimer?.cancel();
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isDisposed) {
+        timer.cancel();
+        return;
+      }
+
       if (_countdownSeconds > 0) {
         _countdownSeconds--;
-        notifyListeners();
+        _safeNotifyListeners();
 
         if (_countdownSeconds == 0) {
           timer.cancel();
@@ -230,6 +258,8 @@ class EmergencyProvider extends ChangeNotifier {
 
   /// 긴급신고 활성화 (실제 전화 연결)
   Future<void> activateEmergency() async {
+    if (_isDisposed) return;
+
     _countdownTimer?.cancel();
     _status = EmergencyStatus.active;
 
@@ -265,16 +295,20 @@ class EmergencyProvider extends ChangeNotifier {
       await loadEmergencyHistory();
     }
 
-    notifyListeners();
+    _safeNotifyListeners();
     AppLogger.d(SuccessMessages.emergencyActivated);
 
     Future.delayed(const Duration(seconds: 3), () {
-      resetEmergency();
+      if (!_isDisposed) {
+        resetEmergency();
+      }
     });
   }
 
   /// 긴급신고 취소
   void cancelEmergency() {
+    if (_isDisposed) return;
+
     _countdownTimer?.cancel();
     _countdownSeconds = 0;
 
@@ -286,23 +320,27 @@ class EmergencyProvider extends ChangeNotifier {
     }
 
     _status = EmergencyStatus.cancelled;
-    notifyListeners();
+    _safeNotifyListeners();
 
     AppLogger.d(SuccessMessages.emergencyCancelled);
 
     Future.delayed(const Duration(seconds: 2), () {
-      resetEmergency();
+      if (!_isDisposed) {
+        resetEmergency();
+      }
     });
   }
 
   /// 상태 초기화
   void resetEmergency() {
+    if (_isDisposed) return;
+
     _countdownTimer?.cancel();
     _status = EmergencyStatus.idle;
     _countdownSeconds = 0;
     _currentEmergency = null;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotifyListeners();
 
     AppLogger.d(SuccessMessages.emergencyReset);
   }
@@ -311,7 +349,6 @@ class EmergencyProvider extends ChangeNotifier {
   // 전화/SMS 기능
   // ============================================
 
-  /// 긴급신고 전화 걸기
   Future<bool> _makeEmergencyCall(String phoneNumber) async {
     try {
       final Uri launchUri = Uri(
@@ -334,7 +371,6 @@ class EmergencyProvider extends ChangeNotifier {
     }
   }
 
-  /// SMS 발송
   Future<bool> _sendEmergencySMS({
     required String phoneNumber,
     required String message,
@@ -360,7 +396,6 @@ class EmergencyProvider extends ChangeNotifier {
     }
   }
 
-  /// 긴급 정보 문자열 생성
   String _generateEmergencyMessage(EmergencyData data) {
     String message = '🚨 긴급신고\n';
 
@@ -386,7 +421,6 @@ class EmergencyProvider extends ChangeNotifier {
   // 데이터 저장/로드
   // ============================================
 
-  /// 긴급 상황 데이터 저장
   Future<void> _saveEmergencyData(EmergencyData data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -394,55 +428,56 @@ class EmergencyProvider extends ChangeNotifier {
       await prefs.setString(_lastEmergencyKey, jsonEncode(data.toJson()));
 
       List<String> history = prefs.getStringList(_emergencyHistoryKey) ?? [];
+
       history.insert(0, jsonEncode(data.toJson()));
 
       if (history.length > _maxHistoryCount) {
-        history = history.take(_maxHistoryCount).toList();
+        history = history.sublist(0, _maxHistoryCount);
       }
 
       await prefs.setStringList(_emergencyHistoryKey, history);
-      AppLogger.d(SuccessMessages.emergencyDataSaved);
+
+      AppLogger.d(
+          '${SuccessMessages.emergencyDataSaved}: ${data.emergency_id}');
     } catch (e) {
       AppLogger.e('${ErrorMessages.emergencyDataSaveFailed}: $e');
     }
   }
 
-  /// 긴급 히스토리 로드
   Future<void> loadEmergencyHistory() async {
+    if (_isDisposed) return;
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> history =
-          prefs.getStringList(_emergencyHistoryKey) ?? [];
+      final List<String>? history = prefs.getStringList(_emergencyHistoryKey);
 
-      _emergencyHistory = history
-          .map((jsonStr) {
-            try {
-              return EmergencyData.fromJson(jsonDecode(jsonStr));
-            } catch (e) {
-              AppLogger.e(
-                  '${ErrorMessages.emergencyHistoryItemParseError}: $e');
-              return null;
-            }
-          })
-          .whereType<EmergencyData>()
-          .toList();
+      if (history != null) {
+        _emergencyHistory = history.map((jsonStr) {
+          return EmergencyData.fromJson(jsonDecode(jsonStr));
+        }).toList();
 
-      notifyListeners();
-      AppLogger.d(
-          '${InfoMessages.emergencyHistoryLoaded}: ${_emergencyHistory.length}건');
+        AppLogger.d(
+            '${InfoMessages.emergencyHistoryLoaded}: ${_emergencyHistory.length}개');
+      } else {
+        _emergencyHistory = [];
+      }
+
+      _safeNotifyListeners();
     } catch (e) {
       AppLogger.e('${ErrorMessages.emergencyHistoryLoadFailed}: $e');
+      _emergencyHistory = [];
     }
   }
 
-  /// 긴급 히스토리 삭제
   Future<void> clearHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_emergencyHistoryKey);
       await prefs.remove(_lastEmergencyKey);
+
       _emergencyHistory = [];
-      notifyListeners();
+      _safeNotifyListeners();
+
       AppLogger.d(SuccessMessages.emergencyHistoryCleared);
     } catch (e) {
       AppLogger.e('${ErrorMessages.emergencyHistoryClearFailed}: $e');
@@ -450,28 +485,44 @@ class EmergencyProvider extends ChangeNotifier {
   }
 
   // ============================================
-  // 유틸리티 메서드
+  // Helper 메서드들
   // ============================================
 
-  /// 날짜 포맷
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-'
         '${dateTime.day.toString().padLeft(2, '0')} '
         '${dateTime.hour.toString().padLeft(2, '0')}:'
-        '${dateTime.minute.toString().padLeft(2, '0')}';
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
   }
 
-  /// 오류 메시지 지우기
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
+  // ============================================
+  // Dispose
+  // ============================================
 
   @override
   void dispose() {
+    if (_isDisposed) {
+      AppLogger.w('EmergencyProvider already disposed');
+      return;
+    }
+
+    _isDisposed = true;
+    AppLogger.d('Disposing EmergencyProvider...');
+
     _countdownTimer?.cancel();
-    _positionStreamSubscription?.cancel();
+    _countdownTimer = null;
+
+    stopLocationTracking();
+
     _locationHistory.clear();
+    _emergencyHistory.clear();
+
+    _currentEmergency = null;
+    _currentPosition = null;
+    _errorMessage = null;
+
+    AppLogger.d('EmergencyProvider disposed');
     super.dispose();
   }
 }

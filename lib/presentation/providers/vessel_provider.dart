@@ -41,47 +41,57 @@ class VesselProvider extends BaseProvider {
     int? mmsi,
     bool forceRefresh = false,
   }) async {
-    await executeAsync<void>(
+    // 캐시 키 생성
+    final cacheKey = _generateCacheKey(regDt, mmsi);
+
+    // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (로딩 상태 없이)
+    if (!forceRefresh) {
+      final cachedData = _cache.get<List<VesselSearchModel>>(cacheKey);
+      if (cachedData != null) {
+        _cacheHits++;
+        AppLogger.d('✅ [캐시 HIT] 선박 목록 (hits: $_cacheHits)');
+        AppLogger.d('📊 캐시된 선박: ${cachedData.length}개');
+
+        _vessels = cachedData;
+        safeNotifyListeners();
+        return; // 캐시 히트 시 즉시 리턴
+      }
+    }
+
+    // ✅ 캐시 미스 또는 강제 새로고침 - API 호출만 executeAsync로 감싸기
+    _cacheMisses++;
+    AppLogger.d('🔄 [캐시 MISS] 선박 목록 API 호출 (misses: $_cacheMisses)');
+
+    final vessels = await executeAsync<List<VesselSearchModel>>(
       () async {
-        // 캐시 키 생성
-        final cacheKey = _generateCacheKey(regDt, mmsi);
-
-        // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (LRU 자동 적용)
-        if (!forceRefresh) {
-          final cachedData = _cache.get<List<VesselSearchModel>>(cacheKey);
-          if (cachedData != null) {
-            _cacheHits++;
-            AppLogger.d('✅ [캐시 HIT] 선박 목록 (hits: $_cacheHits)');
-            AppLogger.d('📊 캐시된 선박: ${cachedData.length}개');
-
-            _vessels = cachedData;
-            safeNotifyListeners();
-            return;
-          }
-        }
-
-        // ✅ 캐시 미스 또는 강제 새로고침
-        _cacheMisses++;
-        AppLogger.d('🔄 [캐시 MISS] 선박 목록 API 호출 (misses: $_cacheMisses)');
-
-        _vessels = await _vesselRepository.getVesselList(
+        return await _vesselRepository.getVesselList(
           regDt: regDt,
           mmsi: mmsi,
         );
-
-        // ✅ LRU 캐시 저장 (5분, 자동 메모리 관리)
-        _cache.put(cacheKey, _vessels, AppDurations.minutes5);
-        AppLogger.d('💾 [캐시 저장] 선박 ${_vessels.length}개 (5분 유효)');
-
-        safeNotifyListeners();
       },
       errorMessage: ErrorMessages.vesselListLoadFailed,
+      showLoading: true,
       onError: (error) {
         if (error is AuthException) {
           setError('다시 로그인해주세요');
         }
       },
     );
+
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (vessels != null) {
+      _vessels = vessels;
+
+      // LRU 캐시 저장 (5분, 자동 메모리 관리)
+      _cache.put(cacheKey, vessels, AppDurations.minutes5);
+      AppLogger.d('💾 [캐시 저장] 선박 ${vessels.length}개 (5분 유효)');
+
+      safeNotifyListeners();
+    } else {
+      AppLogger.w('[WARNING] API 응답이 null입니다');
+      _vessels = [];
+      safeNotifyListeners();
+    }
   }
 
   /// 캐시 키 생성
@@ -110,9 +120,18 @@ class VesselProvider extends BaseProvider {
     try {
       return _vessels.firstWhere((vessel) => vessel.mmsi == mmsi);
     } catch (e) {
-      AppLogger.w('MMSI $mmsi 선박을 찾을 수 없음');
       return null;
     }
+  }
+
+  /// 선박명으로 검색
+  List<VesselSearchModel> searchByName(String query) {
+    if (query.isEmpty) return _vessels;
+
+    return _vessels.where((vessel) {
+      final shipName = vessel.ship_nm?.toLowerCase() ?? '';
+      return shipName.contains(query.toLowerCase());
+    }).toList();
   }
 
   /// 선박 개수
@@ -140,7 +159,7 @@ class VesselProvider extends BaseProvider {
     };
   }
 
-  /// ✅ 캐시 상태 디버그 출력
+  /// 캐시 상태 디버그 출력
   void printCacheStats() {
     final stats = getCacheStatistics();
     AppLogger.d('📊 VesselProvider 캐시 통계:');

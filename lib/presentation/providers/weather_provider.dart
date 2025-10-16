@@ -46,7 +46,7 @@ class WeatherProvider extends BaseProvider {
     final cacheKey =
         'wid_list_${now.year}${now.month}${now.day}_${now.hour}_${now.minute ~/ 30}';
 
-    // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (LRU 자동 적용)
+    // ✅ 강제 새로고침이 아닐 때만 캐시 확인 (로딩 상태 없이)
     if (!forceRefresh) {
       final cachedData = _cache.get<List<WidModel>>(cacheKey);
       if (cachedData != null) {
@@ -57,26 +57,35 @@ class WeatherProvider extends BaseProvider {
         _widList = cachedData;
         _processWindData(cachedData);
         safeNotifyListeners();
-        return;
+        return; // 캐시 히트 시 즉시 리턴
       }
     }
 
-    // ✅ 캐시 미스 또는 강제 새로고침
+    // ✅ 캐시 미스 또는 강제 새로고침 - API 호출만 executeAsync로 감싸기
     _cacheMisses++;
     AppLogger.d('🔄 [캐시 MISS] 기상정보 API 호출 (misses: $_cacheMisses)');
 
-    final result = await executeAsync(() async {
-      return await _widRepository.getWidList();
-    }, errorMessage: '기상 정보 로드 중 오류 발생');
+    final result = await executeAsync<List<WidModel>>(
+      () async {
+        return await _widRepository.getWidList();
+      },
+      errorMessage: '기상 정보 로드 중 오류 발생',
+      showLoading: true,
+    );
 
-    if (result != null) {
+    // ✅ 응답 처리 (executeAsync 밖에서)
+    if (result != null && result.isNotEmpty) {
       _widList = result;
       _processWindData(result);
 
-      // ✅ LRU 캐시 저장 (30분, 자동 메모리 관리)
+      // LRU 캐시 저장 (30분, 자동 메모리 관리)
       _cache.put(cacheKey, result, AppDurations.minutes30);
       AppLogger.d('💾 [캐시 저장] 기상정보 ${result.length}개 (30분 유효)');
 
+      safeNotifyListeners();
+    } else {
+      AppLogger.w('[WARNING] API 응답이 null이거나 비어있습니다');
+      _widList = null;
       safeNotifyListeners();
     }
   }
