@@ -104,7 +104,7 @@ class _CmdViewState extends State<LoginView> {
     final password = passwordController.text.trim();
 
     if (idController.text.trim().isEmpty || password.isEmpty) {
-      showTopSnackBar(context, '아이디 비밀번호를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.idPasswordRequired);
       return;
     }
 
@@ -116,7 +116,7 @@ class _CmdViewState extends State<LoginView> {
       String? uuid = userCredential.user?.uid;
 
       if (firebaseToken == null) {
-        showTopSnackBar(context, 'Firebase 토큰을 가져올 수 없습니다.');
+        showTopSnackBar(context, ErrorMessages.firebaseTokenMissing);
         return;
       }
 
@@ -131,7 +131,6 @@ class _CmdViewState extends State<LoginView> {
       AppLogger.d('API URL: $apiUrl');
 
       Response response = await _dioRequest.dio.post(
-        // ✅ 수정
         apiUrl,
         data: {
           'user_id': id,
@@ -167,7 +166,6 @@ class _CmdViewState extends State<LoginView> {
         }
 
         Response roleResponse = await _dioRequest.dio.post(
-          // ✅ 수정
           apiUrl2,
           data: {'user_id': username},
         );
@@ -214,36 +212,36 @@ class _CmdViewState extends State<LoginView> {
             );
           }
         } else {
-          showTopSnackBar(context, '사용자 역할 정보를 불러오지 못했습니다.');
+          showTopSnackBar(context, ErrorMessages.roleInfoLoadFailed);
         }
       } else {
-        showTopSnackBar(context, '로그인에 실패했습니다.');
+        showTopSnackBar(context, ErrorMessages.loginFailed);
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
         case 'user-not-found':
-          errorMessage = '등록되지 않은 사용자입니다.';
+          errorMessage = ErrorMessages.userNotFound;
           break;
         case 'wrong-password':
-          errorMessage = '비밀번호가 올바르지 않습니다.';
+          errorMessage = ErrorMessages.wrongPassword;
           break;
         case 'invalid-email':
-          errorMessage = '이메일 형식이 올바르지 않습니다.';
+          errorMessage = ErrorMessages.invalidEmail;
           break;
         case 'user-disabled':
-          errorMessage = '비활성화된 계정입니다.';
+          errorMessage = ErrorMessages.userDisabled;
           break;
         case 'too-many-requests':
-          errorMessage = '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.';
+          errorMessage = ErrorMessages.tooManyRequestsAuth;
           break;
         default:
-          errorMessage = '로그인 중 오류가 발생했습니다: ${e.code}';
+          errorMessage = '${ErrorMessages.loginError}: ${e.code}';
       }
       showTopSnackBar(context, errorMessage);
       AppLogger.e('Firebase Auth Error: ${e.code}', e);
     } catch (e) {
-      showTopSnackBar(context, '로그인 중 오류가 발생했습니다.');
+      showTopSnackBar(context, ErrorMessages.loginError);
       AppLogger.e('Login Error', e);
     }
   }

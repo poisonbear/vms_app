@@ -122,55 +122,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _validateForm() {
     // 아이디 검증
     if (_idController.text.trim().isEmpty) {
-      showTopSnackBar(context, '아이디를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.idRequired);
       return false;
     }
 
     if (_isIdAvailable != ValidationRules.idAvailable) {
-      showTopSnackBar(context, '아이디 중복확인을 해주세요.');
+      showTopSnackBar(context, ErrorMessages.idDuplicateCheck);
       return false;
     }
 
     // 비밀번호 검증
     if (_passwordController.text.isEmpty) {
-      showTopSnackBar(context, '비밀번호를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.passwordRequired);
       return false;
     }
 
     if (_confirmPasswordController.text.isEmpty) {
-      showTopSnackBar(context, '비밀번호 확인을 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.passwordConfirmRequired);
       return false;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      showTopSnackBar(context, '비밀번호가 일치하지 않습니다.');
+      showTopSnackBar(context, ErrorMessages.passwordMismatch);
       return false;
     }
 
     if (!ValidationRules.isValidPassword(_passwordController.text)) {
-      showTopSnackBar(context, '비밀번호는 6-12자리, 영문, 숫자, 특수문자를 포함해야 합니다.');
+      showTopSnackBar(context, ErrorMessages.passwordFormat);
       return false;
     }
 
     // MMSI 검증
     if (_mmsiController.text.trim().isEmpty) {
-      showTopSnackBar(context, 'MMSI를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.mmsiRequired);
       return false;
     }
 
     if (!ValidationRules.isValidMmsi(_mmsiController.text)) {
-      showTopSnackBar(context, 'MMSI는 9자리 숫자여야 합니다.');
+      showTopSnackBar(context, ErrorMessages.mmsiInvalid);
       return false;
     }
 
     // 전화번호 검증
     if (_phoneController.text.trim().isEmpty) {
-      showTopSnackBar(context, '전화번호를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.phoneRequired);
       return false;
     }
 
     if (!ValidationRules.isValidPhone(_phoneController.text)) {
-      showTopSnackBar(context, '올바른 전화번호 형식이 아닙니다.');
+      showTopSnackBar(context, ErrorMessages.phoneInvalid);
       return false;
     }
 
@@ -179,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailAddrController.text.trim().isNotEmpty) {
       if (_emailController.text.trim().isEmpty ||
           _emailAddrController.text.trim().isEmpty) {
-        showTopSnackBar(context, '이메일을 완전히 입력해주세요.');
+        showTopSnackBar(context, ErrorMessages.emailRequired);
         return false;
       }
     }
@@ -194,12 +194,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final id = _idController.text.trim();
 
     if (id.isEmpty) {
-      showTopSnackBar(context, '아이디를 입력해주세요.');
+      showTopSnackBar(context, ErrorMessages.idRequired);
       return;
     }
 
     if (!ValidationRules.isValidId(id)) {
-      showTopSnackBar(context, '아이디는 영문과 숫자만 사용 가능합니다.');
+      showTopSnackBar(context, ErrorMessages.idInvalid);
       return;
     }
 
@@ -231,12 +231,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       final message = _isIdAvailable == ValidationRules.idAvailable
-          ? '사용 가능한 아이디입니다.'
-          : '이미 사용 중인 아이디입니다.';
+          ? SuccessMessages.idAvailable
+          : SuccessMessages.idDuplicate;
       showTopSnackBar(context, message);
     } catch (e) {
       AppLogger.e('ID 중복 확인 실패: $e');
-      showTopSnackBar(context, '아이디 중복 확인에 실패했습니다.');
+      showTopSnackBar(context, ErrorMessages.idDuplicateCheckFailed);
     }
   }
 
@@ -291,25 +291,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } else {
         // Firebase 계정 삭제
         await userCredential.user?.delete();
-        showTopSnackBar(context, '회원가입에 실패했습니다. 다시 시도해주세요.');
+        showTopSnackBar(context, ErrorMessages.registerFailed);
       }
     } catch (e) {
       AppLogger.e('회원가입 실패: $e');
 
       if (e is FirebaseAuthException) {
+        String errorMessage;
         if (e.code == 'email-already-in-use') {
-          showTopSnackBar(context, '이미 사용 중인 아이디입니다.');
+          errorMessage = SuccessMessages.idDuplicate;
         } else if (e.code == 'weak-password') {
-          showTopSnackBar(context, '비밀번호가 너무 약합니다.');
+          errorMessage = ErrorMessages.passwordShort;
         } else {
-          showTopSnackBar(context, '회원가입에 실패했습니다. ${e.message}');
+          errorMessage = '${ErrorMessages.registerFailed} ${e.message}';
         }
+        showTopSnackBar(context, errorMessage);
       } else if (e is DioException) {
         // Firebase 계정이 생성되었다면 삭제
         try {
           await FirebaseAuth.instance.currentUser?.delete();
         } catch (e) {
-          // Ignored error
           AppLogger.d("Ignored: $e");
         }
 
@@ -325,10 +326,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             );
           }
         } else {
-          showTopSnackBar(context, '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          showTopSnackBar(context, ErrorMessages.server);
         }
       } else {
-        showTopSnackBar(context, '회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        showTopSnackBar(context, ErrorMessages.registerFailed);
       }
     } finally {
       if (mounted) {

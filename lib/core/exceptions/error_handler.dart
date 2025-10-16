@@ -1,17 +1,16 @@
-import 'dart:async';
-import 'dart:io';
+// lib/core/exceptions/error_handler.dart
+
 import 'package:dio/dio.dart';
 import 'package:vms_app/core/exceptions/app_exceptions.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/constants/app_messages.dart';
 
-/// 통합된 에러 핸들러
+/// 에러 핸들러
 class ErrorHandler {
   ErrorHandler._();
 
   /// 에러를 AppException으로 변환
   static AppException handleError(dynamic error) {
-    AppLogger.e('Handling error: ${error.runtimeType} - $error');
-
     if (error is AppException) {
       return error;
     }
@@ -20,42 +19,34 @@ class ErrorHandler {
       return _handleDioError(error);
     }
 
-    if (error is SocketException) {
-      return NetworkException(
-        '인터넷 연결을 확인해주세요',
+    if (error is TypeError) {
+      return BusinessException(
+        ErrorMessages.dataFormat,
         originalError: error,
       );
     }
 
     if (error is FormatException) {
-      return ValidationException(
-        '잘못된 데이터 형식입니다',
+      return BusinessException(
+        ErrorMessages.dataFormat,
         originalError: error,
       );
     }
 
-    if (error is TimeoutException) {
-      return NetworkException(
-        '요청 시간이 초과되었습니다',
-        originalError: error,
-      );
-    }
-
-    // 기본 에러
     return BusinessException(
-      error?.toString() ?? '알 수 없는 오류가 발생했습니다',
+      error.toString(),
       originalError: error,
     );
   }
 
-  /// DioException 처리
+  /// Dio 에러 처리
   static AppException _handleDioError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
         return NetworkException(
-          '연결 시간이 초과되었습니다',
+          ErrorMessages.timeout,
           originalError: error,
         );
 
@@ -63,41 +54,25 @@ class ErrorHandler {
         return _handleResponseError(error.response);
 
       case DioExceptionType.cancel:
-        return NetworkException(
+        return BusinessException(
           '요청이 취소되었습니다',
           originalError: error,
         );
 
-      case DioExceptionType.unknown:
-        if (error.error is SocketException) {
-          return NetworkException(
-            '인터넷 연결을 확인해주세요',
-            originalError: error,
-          );
-        }
-        return NetworkException(
-          '네트워크 오류가 발생했습니다',
-          originalError: error,
-        );
-
-      case DioExceptionType.badCertificate:
-        return SecurityException(
-          '보안 인증서 오류가 발생했습니다',
-          originalError: error,
-        );
-
       case DioExceptionType.connectionError:
+      case DioExceptionType.unknown:
+      default:
         return NetworkException(
-          '서버 연결에 실패했습니다',
+          ErrorMessages.network,
           originalError: error,
         );
     }
   }
 
-  /// Response 에러 처리
+  /// HTTP 응답 에러 처리
   static AppException _handleResponseError(Response? response) {
     if (response == null) {
-      return const ServerException('서버 응답이 없습니다');
+      return const ServerException(ErrorMessages.noServerResponse);
     }
 
     final statusCode = response.statusCode ?? 0;
@@ -150,7 +125,7 @@ class ErrorHandler {
 
     if (statusCode == 429) {
       return ServerException(
-        '너무 많은 요청입니다. 잠시 후 다시 시도해주세요.',
+        ErrorMessages.tooManyRequestsRetry,
         statusCode: statusCode,
         code: '429',
         originalError: response.data,
@@ -214,30 +189,30 @@ class ErrorHandler {
   static String _getDefaultMessageForStatusCode(int statusCode) {
     switch (statusCode) {
       case 400:
-        return '잘못된 요청입니다';
+        return ErrorMessages.badRequest;
       case 401:
-        return '인증이 필요합니다';
+        return ErrorMessages.unauthorized;
       case 403:
-        return '접근 권한이 없습니다';
+        return ErrorMessages.forbidden;
       case 404:
-        return '요청한 정보를 찾을 수 없습니다';
+        return ErrorMessages.notFound;
       case 408:
-        return '요청 시간이 초과되었습니다';
+        return ErrorMessages.requestTimeout;
       case 429:
-        return '너무 많은 요청입니다';
+        return ErrorMessages.tooManyRequests;
       case 500:
-        return '서버 내부 오류가 발생했습니다';
+        return ErrorMessages.internalServerError;
       case 502:
-        return '게이트웨이 오류가 발생했습니다';
+        return ErrorMessages.badGateway;
       case 503:
-        return '서비스를 일시적으로 사용할 수 없습니다';
+        return ErrorMessages.serviceUnavailable;
       default:
         if (statusCode >= 500) {
-          return '서버 오류가 발생했습니다';
+          return ErrorMessages.serverError;
         } else if (statusCode >= 400) {
-          return '요청 처리 중 오류가 발생했습니다';
+          return ErrorMessages.requestProcessError;
         }
-        return '알 수 없는 오류가 발생했습니다';
+        return ErrorMessages.unknownError;
     }
   }
 
@@ -247,44 +222,48 @@ class ErrorHandler {
     if (exception is NetworkException) {
       return exception.message.isNotEmpty
           ? exception.message
-          : '네트워크 연결을 확인해주세요';
+          : ErrorMessages.network;
     }
 
     if (exception is AuthException) {
-      return exception.message.isNotEmpty ? exception.message : '로그인이 필요합니다';
+      return exception.message.isNotEmpty
+          ? exception.message
+          : ErrorMessages.authRequired;
     }
 
     if (exception is ValidationException) {
       return exception.message.isNotEmpty
           ? exception.message
-          : '입력한 정보를 확인해주세요';
+          : ErrorMessages.inputValidation;
     }
 
     if (exception is PermissionException) {
-      return exception.message.isNotEmpty ? exception.message : '필요한 권한이 없습니다';
+      return exception.message.isNotEmpty
+          ? exception.message
+          : ErrorMessages.permissionRequired;
     }
 
     if (exception is LocationException) {
       return exception.message.isNotEmpty
           ? exception.message
-          : '위치 정보를 가져올 수 없습니다';
+          : ErrorMessages.locationError;
     }
 
     if (exception is ServerException) {
       return exception.message.isNotEmpty
           ? exception.message
-          : '서버와의 통신 중 문제가 발생했습니다';
+          : ErrorMessages.server;
     }
 
     if (exception is CacheException) {
       return exception.message.isNotEmpty
           ? exception.message
-          : '캐시 처리 중 문제가 발생했습니다';
+          : ErrorMessages.cacheError;
     }
 
     return exception.message.isNotEmpty
         ? exception.message
-        : '알 수 없는 오류가 발생했습니다';
+        : ErrorMessages.unknownError;
   }
 
   /// 에러 코드별 HTTP 상태 코드 반환
