@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/core/services/services.dart';
+import 'package:vms_app/core/infrastructure/network_client.dart'; // ✅ 추가
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
@@ -37,6 +38,7 @@ class _CmdViewState extends State<LoginView> {
       FlutterLocalNotificationsPlugin();
   late String fcmToken;
   final _secureStorage = SecureStorageService();
+  final _dioRequest = DioRequest();
 
   @override
   void dispose() {
@@ -128,7 +130,8 @@ class _CmdViewState extends State<LoginView> {
       AppLogger.i('로그인 API 호출 시작');
       AppLogger.d('API URL: $apiUrl');
 
-      Response response = await Dio().post(
+      Response response = await _dioRequest.dio.post(
+        // ✅ 수정
         apiUrl,
         data: {
           'user_id': id,
@@ -163,7 +166,8 @@ class _CmdViewState extends State<LoginView> {
           AppLogger.i('로그인 정보가 안전하게 저장되었습니다');
         }
 
-        Response roleResponse = await Dio().post(
+        Response roleResponse = await _dioRequest.dio.post(
+          // ✅ 수정
           apiUrl2,
           data: {'user_id': username},
         );
@@ -320,8 +324,8 @@ class _CmdViewState extends State<LoginView> {
                           BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: inputWidget(
-                      AppSizes.i266,
-                      AppSizes.i48,
+                      AppSizes.s266,
+                      AppSizes.s48,
                       idController,
                       '아이디 입력',
                       AppColors.grayType7,
@@ -339,8 +343,8 @@ class _CmdViewState extends State<LoginView> {
                           BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: inputWidget(
-                      AppSizes.i266,
-                      AppSizes.i48,
+                      AppSizes.s266,
+                      AppSizes.s48,
                       passwordController,
                       '비밀번호 입력',
                       AppColors.grayType7,
@@ -488,6 +492,40 @@ class _CmdViewState extends State<LoginView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget inputWidget(
+    double width,
+    double height,
+    TextEditingController controller,
+    String hintText,
+    Color hintColor, {
+    bool obscureText = false,
+  }) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        style: const TextStyle(
+          fontSize: 14,
+          color: AppColors.blackType2,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(
+            fontSize: 14,
+            color: hintColor,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
       ),
     );
   }
