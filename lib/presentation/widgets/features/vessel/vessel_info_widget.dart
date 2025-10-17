@@ -1,3 +1,5 @@
+// lib/presentation/widgets/features/vessel/vessel_info_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
@@ -20,10 +22,10 @@ class VesselInfoTable extends StatelessWidget {
     }
 
     return Container(
-      padding: EdgeInsets.all(AppSizes.s16.toDouble()),
+      padding: const EdgeInsets.all(AppSizes.s16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.s12.toDouble()),
+        borderRadius: BorderRadius.circular(AppSizes.s12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -72,22 +74,22 @@ class VesselInfoTable extends StatelessWidget {
     return TableRow(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: AppSizes.s14.toDouble(),
+            style: const TextStyle(
+              fontSize: AppSizes.s14,
               fontWeight: FontWeights.w500,
               color: AppColors.grayType6,
             ),
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(vertical: AppSizes.s8.toDouble()),
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: AppSizes.s14.toDouble(),
+            style: const TextStyle(
+              fontSize: AppSizes.s14,
               fontWeight: FontWeights.w600,
               color: AppColors.blackType2,
             ),
@@ -99,6 +101,7 @@ class VesselInfoTable extends StatelessWidget {
 }
 
 /// 선박 목록 위젯
+/// ✅ 최적화: ListView.builder에 ValueKey 추가
 class VesselListWidget extends StatelessWidget {
   final List<VesselSearchModel> vessels;
   final int? selectedMmsi;
@@ -129,10 +132,15 @@ class VesselListWidget extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             itemCount: vessels.length,
-            itemBuilder: (context, index) => _buildVesselCard(
-              context,
-              vessels[index],
-            ),
+            // ✅ 최적화: ValueKey 추가
+            itemBuilder: (context, index) {
+              final vessel = vessels[index];
+              return _buildVesselCard(
+                context,
+                vessel,
+                key: ValueKey('vessel_${vessel.mmsi}'),
+              );
+            },
           ),
         ),
       ],
@@ -141,13 +149,13 @@ class VesselListWidget extends StatelessWidget {
 
   Widget _buildSearchBar(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppSizes.s16.toDouble()),
+      padding: const EdgeInsets.all(AppSizes.s16),
       child: TextField(
         decoration: InputDecoration(
           hintText: '선박명 또는 MMSI 검색',
           prefixIcon: const Icon(Icons.search),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppSizes.s8.toDouble()),
+            borderRadius: BorderRadius.circular(AppSizes.s8),
           ),
         ),
         onChanged: (value) {
@@ -157,13 +165,19 @@ class VesselListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVesselCard(BuildContext context, VesselSearchModel vessel) {
+  // ✅ 최적화: Key 파라미터 추가
+  Widget _buildVesselCard(
+    BuildContext context,
+    VesselSearchModel vessel, {
+    Key? key,
+  }) {
     final isSelected = vessel.mmsi == selectedMmsi;
 
     return Card(
-      margin: EdgeInsets.symmetric(
-        horizontal: AppSizes.s8.toDouble(),
-        vertical: AppSizes.s4.toDouble(),
+      key: key, // ✅ Key 적용
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSizes.s8,
+        vertical: AppSizes.s4,
       ),
       elevation: isSelected ? 4 : 1,
       color:
@@ -200,19 +214,10 @@ class VesselListWidget extends StatelessWidget {
   }
 
   Widget? _buildVesselTrailing(VesselSearchModel vessel) {
-    if (vessel.lttd != null && vessel.lntd != null) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${vessel.lttd!.toStringAsFixed(4)}°',
-            style: TextStyle(fontSize: AppSizes.s11.toDouble()),
-          ),
-          Text(
-            '${vessel.lntd!.toStringAsFixed(4)}°',
-            style: TextStyle(fontSize: AppSizes.s11.toDouble()),
-          ),
-        ],
+    if (vessel.mmsi == selectedMmsi) {
+      return const Icon(
+        Icons.check_circle,
+        color: AppColors.primary,
       );
     }
     return null;

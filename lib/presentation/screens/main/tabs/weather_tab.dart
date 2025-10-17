@@ -299,8 +299,10 @@ class _WeatherBottomSheetState extends State<_WeatherBottomSheet> {
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
+            // ✅ 최적화: ValueKey 추가
             children: List.generate(widList.length, (i) {
               return _WeatherDataColumn(
+                key: ValueKey('weather_$i'), // ✅ Key 추가
                 data: widList[i],
                 index: i,
                 provider: provider,
@@ -320,6 +322,7 @@ class _WeatherDataColumn extends StatelessWidget {
   final WidWeatherInfoViewModel provider;
 
   const _WeatherDataColumn({
+    super.key, // ✅ Key 파라미터 추가
     required this.data,
     required this.index,
     required this.provider,
