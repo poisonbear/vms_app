@@ -61,9 +61,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Controllers & Services
   // ==========================================
   late MainScreenController _controller;
-  late FCMService _fcmService;
   late LocationServiceManager _locationManager;
   late VesselDataManager _vesselDataManager;
+  FCMService? _fcmService;
 
   // ==========================================
   // UI Controllers
@@ -148,7 +148,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       },
     );
 
-    await _fcmService.initializeToken();
+    await _fcmService?.initializeToken();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadInitialData();
@@ -161,7 +161,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _loadInitialData() async {
     await _vesselDataManager.loadVesselDataAndUpdateMap(context);
-    _fcmService.registerFCMListener(context);
+    _fcmService?.registerFCMListener(context);
   }
 
   void _setupPeriodicUpdates() {

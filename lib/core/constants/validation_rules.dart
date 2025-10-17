@@ -8,7 +8,7 @@ class ValidationRules {
   // ID 검증
   // ============================================
   static const int idMinLength = 8;
-  static const int idMaxLength = 12;
+  static const int idMaxLength = 20;
   static const String idPattern = r'^[a-zA-Z0-9]{8,12}$';
   static final RegExp idRegExp = RegExp(idPattern);
 
@@ -18,7 +18,7 @@ class ValidationRules {
   // 비밀번호 검증
   // ============================================
   static const int passwordMinLength = 6;
-  static const int passwordMaxLength = 12;
+  static const int passwordMaxLength = 20;
 
   // 단순 패턴 (영문, 숫자, 특수문자 허용)
   static const String passwordSimplePattern =

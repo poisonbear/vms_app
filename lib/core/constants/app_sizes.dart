@@ -61,6 +61,7 @@ class AppSizes {
   static const double s96 = 96.0;
   static const double s100 = 100.0;
   static const double s120 = 120.0;
+  static const double s127 = 127.0;
   static const double s133 = 133.0;
   static const double s134 = 134.0;
   static const double s150 = 150.0;
@@ -132,6 +133,7 @@ class AppSizes {
   static const int i96 = 96;
   static const int i100 = 100;
   static const int i120 = 120;
+  static const int i127 = 127;
   static const int i133 = 133;
   static const int i134 = 134;
   static const int i150 = 150;

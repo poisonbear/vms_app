@@ -1,3 +1,5 @@
+// lib/presentation/screens/auth/login_screen.dart
+
 import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,22 +27,52 @@ class LoginView extends StatefulWidget {
 }
 
 class _CmdViewState extends State<LoginView> {
+  // ========================================
+  // Controllers
+  // ========================================
   final TextEditingController idController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  // ========================================
+  // Constants
+  // ========================================
   final String apiUrl = ApiConfig.authLogin;
   final String apiUrl2 = ApiConfig.authRole;
-  bool auto_login = false;
-  bool save_id = false;
-  late FirebaseMessaging messaging;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  late String fcmToken;
   final _secureStorage = SecureStorageService();
+
+  late final FirebaseMessaging messaging;
+  String? fcmToken;
+
+  // ========================================
+  // State Variables
+  // ========================================
+  bool auto_login = false;
+  bool save_id = false;
 
   // Rate Limiting
   int _loginAttempts = 0;
   DateTime? _lastAttemptTime;
   bool _isProcessing = false;
+
+  // ========================================
+  // Lifecycle Methods
+  // ========================================
+
+  @override
+  void initState() {
+    super.initState();
+    messaging = FirebaseMessaging.instance;
+    _initializeAsync();
+  }
+
+  Future<void> _initializeAsync() async {
+    await Future.wait([
+      initFcmToken(),
+      loadSavedId(),
+    ]);
+  }
 
   @override
   void dispose() {
@@ -51,21 +83,31 @@ class _CmdViewState extends State<LoginView> {
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    messaging = FirebaseMessaging.instance;
-    initFcmToken();
-    loadSavedId();
-  }
+  // ========================================
+  // FCM 토큰 초기화
+  // ========================================
 
   Future<void> initFcmToken() async {
     try {
-      fcmToken = await messaging.getToken() ?? '';
+      fcmToken = await messaging.getToken();
+
+      // ✅ 로깅 개선
+      if (fcmToken != null && fcmToken!.isNotEmpty) {
+        final preview =
+            fcmToken!.length > 20 ? fcmToken!.substring(0, 20) : fcmToken!;
+        AppLogger.d('FCM 토큰 초기화 성공: $preview...');
+      } else {
+        AppLogger.w('FCM 토큰이 null이거나 비어있습니다.');
+      }
     } catch (e) {
-      fcmToken = '';
+      AppLogger.e('FCM 토큰 초기화 실패', e);
+      fcmToken = null;
     }
   }
+
+  // ========================================
+  // ID 저장/불러오기
+  // ========================================
 
   Future<void> loadSavedId() async {
     try {
@@ -74,10 +116,12 @@ class _CmdViewState extends State<LoginView> {
       final String? savedId = prefs.getString('saved_user_id');
 
       if (savedIdFlag == true && savedId != null) {
-        setState(() {
-          save_id = true;
-          idController.text = savedId.replaceAll('@kdn.vms.com', '');
-        });
+        if (mounted) {
+          setState(() {
+            save_id = true;
+            idController.text = savedId.replaceAll('@kdn.vms.com', '');
+          });
+        }
         AppLogger.d('저장된 ID 불러오기 성공');
       }
     } catch (e) {
@@ -102,6 +146,10 @@ class _CmdViewState extends State<LoginView> {
       AppLogger.e('ID 저장 처리 실패', e);
     }
   }
+
+  // ========================================
+  // Validation Methods
+  // ========================================
 
   bool _checkRateLimit() {
     if (_loginAttempts >= 5) {
@@ -143,17 +191,23 @@ class _CmdViewState extends State<LoginView> {
     return '${data.substring(0, 5)}...${data.substring(data.length - 5)}';
   }
 
+  // ========================================
+  // 로그인 처리
+  // ========================================
+
   Future<void> submitForm() async {
     if (_isProcessing) return;
 
     final idInput = idController.text.trim();
     final password = passwordController.text.trim();
 
+    // Rate limit 체크
     if (!_checkRateLimit()) {
       showTopSnackBar(context, '로그인 시도 횟수를 초과했습니다. 5분 후 다시 시도해주세요.');
       return;
     }
 
+    // 입력값 검증
     final validationError = _validateInput(idInput, password);
     if (validationError != null) {
       showTopSnackBar(context, validationError);
@@ -168,6 +222,7 @@ class _CmdViewState extends State<LoginView> {
     final id = '$idInput@kdn.vms.com';
 
     try {
+      // Firebase 로그인
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: id, password: password);
 
@@ -179,6 +234,7 @@ class _CmdViewState extends State<LoginView> {
         return;
       }
 
+      // 세션 데이터 저장
       await _secureStorage.saveSessionData(
         firebaseToken: firebaseToken,
         uuid: uuid ?? '',
@@ -192,13 +248,14 @@ class _CmdViewState extends State<LoginView> {
         AppLogger.d('UUID: ${_maskSensitiveData(uuid ?? '')}');
       }
 
+      // ✅ 로그인 API 호출 (fcmToken null 처리 개선)
       Response response = await Dio().post(
         apiUrl,
         data: {
           'user_id': id,
           'user_pwd': password,
           'auto_login': auto_login,
-          'fcm_tkn': fcmToken,
+          'fcm_tkn': fcmToken ?? '',
           'uuid': uuid
         },
         options: Options(
@@ -209,6 +266,7 @@ class _CmdViewState extends State<LoginView> {
       AppLogger.d('로그인 응답 상태: ${response.statusCode}');
 
       if (response.statusCode == 200) {
+        // 로그인 성공
         _loginAttempts = 0;
         _lastAttemptTime = null;
 
@@ -216,10 +274,9 @@ class _CmdViewState extends State<LoginView> {
         await prefs.setString('username', username);
         await saveUserId(id);
 
-        // ✅ 자동 로그인 설정 (사용자가 체크했을 때만)
+        // 자동 로그인 설정
         await prefs.setBool('auto_login', auto_login);
 
-        // ✅ 자동 로그인을 위한 자격증명 저장 (SecureStorage 사용)
         if (auto_login) {
           await _secureStorage.saveCredentials(
             id: id,
@@ -227,11 +284,11 @@ class _CmdViewState extends State<LoginView> {
           );
           AppLogger.i('자동 로그인 정보가 안전하게 저장되었습니다');
         } else {
-          // 자동 로그인 해제 시 자격증명 삭제
           await _secureStorage.deleteCredentials();
           AppLogger.i('자동 로그인 정보가 삭제되었습니다');
         }
 
+        // 역할 정보 조회
         Response roleResponse = await Dio().post(
           apiUrl2,
           data: {'user_id': username},
@@ -242,41 +299,45 @@ class _CmdViewState extends State<LoginView> {
           String role = roleResponse.data['role'];
           int? mmsi = roleResponse.data['mmsi'];
 
-          context.read<UserState>().setRole(role);
+          if (mounted) {
+            context.read<UserState>().setRole(role);
 
-          if (mmsi != null && mmsi != 0) {
-            context.read<UserState>().setMmsi(mmsi);
-          } else {
-            try {
-              final user = FirebaseAuth.instance.currentUser;
-              if (user != null) {
-                final doc = await FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(user.uid)
-                    .get();
+            if (mmsi != null && mmsi != 0) {
+              context.read<UserState>().setMmsi(mmsi);
+            } else {
+              // Firestore에서 MMSI 복구 시도
+              try {
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  final doc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .get();
 
-                if (doc.exists) {
-                  final firestoreMmsi = doc.data()?['mmsi'] as int?;
-                  if (firestoreMmsi != null && firestoreMmsi != 0) {
-                    context.read<UserState>().setMmsi(firestoreMmsi);
-                    AppLogger.d('Firestore에서 MMSI 복구');
+                  if (doc.exists) {
+                    final firestoreMmsi = doc.data()?['mmsi'] as int?;
+                    if (firestoreMmsi != null && firestoreMmsi != 0) {
+                      context.read<UserState>().setMmsi(firestoreMmsi);
+                      AppLogger.d('Firestore에서 MMSI 복구');
+                    }
                   }
                 }
+              } catch (e) {
+                AppLogger.e('Firestore MMSI 조회 실패', e);
               }
-            } catch (e) {
-              AppLogger.e('Firestore MMSI 조회 실패', e);
             }
           }
 
+          // FCM 토큰 업데이트
           await updateFirebaseToken(username);
 
-          // ✅ autoFocusLocation 파라미터 추가
+          // 메인 화면으로 이동
           if (mounted) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => MainScreen(
                   username: username,
-                  autoFocusLocation: true, // ✅ 오토포커싱 활성화
+                  autoFocusLocation: true,
                 ),
               ),
               (Route<dynamic> route) => false,
@@ -324,10 +385,16 @@ class _CmdViewState extends State<LoginView> {
     }
   }
 
+  // ========================================
+  // FCM 토큰 업데이트
+  // ========================================
+
   Future<void> updateFirebaseToken(String username) async {
     try {
-      if (fcmToken.isEmpty) {
-        AppLogger.w('FCM 토큰이 비어있어 업데이트를 건너뜁니다.');
+      // local variable + null 체크
+      final token = fcmToken;
+      if (token == null || token.isEmpty) {
+        AppLogger.w('FCM 토큰이 없어 업데이트를 건너뜁니다.');
         return;
       }
 
@@ -337,11 +404,12 @@ class _CmdViewState extends State<LoginView> {
         return;
       }
 
+      // 여기서는 token이 확실히 non-null
       await FirebaseFirestore.instance
           .collection('firebase_App')
           .doc('userToken')
           .set({
-        username: fcmToken,
+        username: token,
       }, SetOptions(merge: true));
 
       AppLogger.d('FCM 토큰이 Firestore에 업데이트되었습니다.');
@@ -349,6 +417,10 @@ class _CmdViewState extends State<LoginView> {
       AppLogger.e('FCM 토큰 업데이트 실패', e);
     }
   }
+
+  // ========================================
+  // Build Method
+  // ========================================
 
   @override
   Widget build(BuildContext context) {
@@ -411,7 +483,7 @@ class _CmdViewState extends State<LoginView> {
 
                 // 비밀번호 입력
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s12),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -431,18 +503,18 @@ class _CmdViewState extends State<LoginView> {
 
                 // ID 저장 & 자동 로그인 체크박스
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s12),
                   child: SizedBox(
                     width: AppSizes.s266,
                     child: Column(
                       children: [
-                        // ID 저장
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
+                            // ID 저장 체크박스
                             SizedBox(
-                              width: 24,
-                              height: 24,
+                              width: AppSizes.s24,
+                              height: AppSizes.s24,
                               child: Checkbox(
                                 value: save_id,
                                 onChanged: (bool? value) {
@@ -456,23 +528,24 @@ class _CmdViewState extends State<LoginView> {
                                   color: save_id
                                       ? AppColors.skyType2
                                       : AppColors.grayType3,
-                                  width: 2,
+                                  width: AppSizes.s2,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: AppSizes.s8),
                             const Text(
                               'ID 저장',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: DesignConstants.fontSizeS,
                                 color: AppColors.blackType2,
                               ),
                             ),
-                            const SizedBox(width: 20),
-                            // 자동 로그인
+                            const SizedBox(width: AppSizes.s20),
+
+                            // 자동 로그인 체크박스
                             SizedBox(
-                              width: 24,
-                              height: 24,
+                              width: AppSizes.s24,
+                              height: AppSizes.s24,
                               child: Checkbox(
                                 value: auto_login,
                                 onChanged: (bool? value) {
@@ -486,15 +559,15 @@ class _CmdViewState extends State<LoginView> {
                                   color: auto_login
                                       ? AppColors.skyType2
                                       : AppColors.grayType3,
-                                  width: 2,
+                                  width: AppSizes.s2,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: AppSizes.s8),
                             const Text(
                               '자동 로그인',
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: DesignConstants.fontSizeS,
                                 color: AppColors.blackType2,
                               ),
                             ),
@@ -507,13 +580,13 @@ class _CmdViewState extends State<LoginView> {
 
                 // 로그인 & 회원가입 버튼
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: AppSizes.s12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // 로그인 버튼
                       SizedBox(
-                        width: 127,
+                        width: AppSizes.s127,
                         height: AppSizes.s48,
                         child: ElevatedButton(
                           onPressed: _isProcessing ? null : submitForm,
@@ -529,10 +602,10 @@ class _CmdViewState extends State<LoginView> {
                           ),
                           child: _isProcessing
                               ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
+                                  width: AppSizes.s20,
+                                  height: AppSizes.s20,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                    strokeWidth: AppSizes.s2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Colors.white),
                                   ),
@@ -540,7 +613,7 @@ class _CmdViewState extends State<LoginView> {
                               : const Text(
                                   '로그인',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: DesignConstants.fontSizeM,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -548,11 +621,11 @@ class _CmdViewState extends State<LoginView> {
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSizes.s12),
 
                       // 회원가입 버튼
                       SizedBox(
-                        width: 127,
+                        width: AppSizes.s127,
                         height: AppSizes.s48,
                         child: ElevatedButton(
                           onPressed: _isProcessing
@@ -579,7 +652,7 @@ class _CmdViewState extends State<LoginView> {
                           child: const Text(
                             '회원가입',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: DesignConstants.fontSizeM,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -595,7 +668,7 @@ class _CmdViewState extends State<LoginView> {
 
           // 하단 로고
           Positioned(
-            bottom: 20,
+            bottom: AppSizes.s20,
             left: 0,
             right: 0,
             child: Column(
@@ -619,8 +692,8 @@ class _CmdViewState extends State<LoginView> {
                 const SizedBox(height: AppSizes.spacing8),
                 SvgPicture.asset(
                   'assets/kdn/usm/img/login_footer_logo.svg',
-                  height: 20.0,
-                  width: 150.0,
+                  height: AppSizes.s20,
+                  width: AppSizes.s150,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -630,6 +703,10 @@ class _CmdViewState extends State<LoginView> {
       ),
     );
   }
+
+  // ========================================
+  // Input Widget
+  // ========================================
 
   Widget inputWidget(
     double width,
@@ -647,19 +724,19 @@ class _CmdViewState extends State<LoginView> {
         obscureText: obscureText,
         enabled: !_isProcessing,
         style: const TextStyle(
-          fontSize: 14,
+          fontSize: DesignConstants.fontSizeS,
           color: AppColors.blackType2,
         ),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(
-            fontSize: 14,
+            fontSize: DesignConstants.fontSizeS,
             color: hintColor,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+            horizontal: AppSizes.s16,
+            vertical: AppSizes.s12,
           ),
         ),
       ),
