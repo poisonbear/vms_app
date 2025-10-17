@@ -11,7 +11,7 @@ import 'package:vms_app/presentation/widgets/widgets.dart';
 
 // ============================================
 // 선박 정보 데이터 클래스
-// ============================================
+// ============================================ch
 class _VesselInfo {
   final String? shipName;
   final double? latitude;
