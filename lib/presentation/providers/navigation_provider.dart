@@ -76,18 +76,18 @@ class NavigationProvider extends BaseProvider {
     final cacheKey = 'ros_list_${startDate ?? "none"}_${endDate ?? "none"}_'
         '${mmsi ?? "all"}_${shipName ?? "none"}';
 
-    // ✅ 캐시 확인 (로딩 상태 없이)
+    // 캐시 확인 (로딩 상태 없이)
     final cachedData = _cache.get<List<NavigationModel>>(cacheKey);
     if (cachedData != null) {
       AppLogger.d('✅ [캐시 HIT] 항행이력 리스트');
       _rosList = cachedData;
       safeNotifyListeners();
-      return; // 캐시 히트 시 즉시 리턴
+      return;
     }
 
     AppLogger.d('🔄 [캐시 MISS] 항행이력 리스트 API 호출');
 
-    // ✅ API 호출만 executeAsync로 감싸기
+    // API 호출
     final result = await executeAsync<List<NavigationModel>>(
       () async {
         return await _getNavigationHistory.execute(
@@ -101,7 +101,7 @@ class NavigationProvider extends BaseProvider {
       showLoading: true,
     );
 
-    // ✅ 응답 처리 (executeAsync 밖에서)
+    // 응답 처리
     if (result != null && result.isNotEmpty) {
       _rosList = result;
 
@@ -121,18 +121,18 @@ class NavigationProvider extends BaseProvider {
   Future<void> getWeatherInfo() async {
     const cacheKey = 'weather_info';
 
-    // ✅ 캐시 확인 (로딩 상태 없이)
+    // 캐시 확인
     final cachedData = _cache.get<Map<String, double>>(cacheKey);
     if (cachedData != null) {
       AppLogger.d('✅ [캐시 HIT] 기상정보');
       _applyWeatherData(cachedData);
       safeNotifyListeners();
-      return; // 캐시 히트 시 즉시 리턴
+      return;
     }
 
     AppLogger.d('🔄 [캐시 MISS] 기상정보 API 호출');
 
-    // ✅ API 호출만 executeAsync로 감싸기
+    // API 호출
     final result = await executeAsync<WeatherInfo?>(
       () async {
         return await _getWeatherInfo.execute();
@@ -141,7 +141,7 @@ class NavigationProvider extends BaseProvider {
       showLoading: false,
     );
 
-    // ✅ 응답 처리 (executeAsync 밖에서)
+    // 응답 처리
     if (result != null) {
       wave = result.wave ?? NumericConstants.zeroValue.toDouble();
       visibility = result.visibility ?? NumericConstants.zeroValue.toDouble();
@@ -194,18 +194,18 @@ class NavigationProvider extends BaseProvider {
   Future<void> getNavigationWarnings() async {
     const cacheKey = 'navigation_warnings';
 
-    // ✅ 캐시 확인 (로딩 상태 없이)
+    // 캐시 확인
     final cachedData = _cache.get<List<String>>(cacheKey);
     if (cachedData != null) {
       AppLogger.d('✅ [캐시 HIT] 항행경보');
       _navigationWarnings = cachedData;
       safeNotifyListeners();
-      return; // 캐시 히트 시 즉시 리턴
+      return;
     }
 
     AppLogger.d('🔄 [캐시 MISS] 항행경보 API 호출');
 
-    // ✅ API 호출만 executeAsync로 감싸기
+    // API 호출
     final result = await executeAsync<List<String>?>(
       () async {
         return await _getNavigationWarnings.execute();
@@ -214,13 +214,16 @@ class NavigationProvider extends BaseProvider {
       showLoading: false,
     );
 
-    // ✅ 응답 처리 (executeAsync 밖에서)
+    // 응답 처리 및 데이터 가공 (Key 제거)
     if (result != null && result.isNotEmpty) {
-      _navigationWarnings = result;
+      // 각 항목에서 Key를 제거하고 순수 메시지만 추출
+      _navigationWarnings = result.map((item) {
+        return _extractWarningMessage(item);
+      }).toList();
 
       // LRU 캐시 저장 (1시간)
-      _cache.put(cacheKey, result, AppDurations.hours1);
-      AppLogger.d('💾 [캐시 저장] 항행경보 ${result.length}개 (1시간 유효)');
+      _cache.put(cacheKey, _navigationWarnings, AppDurations.hours1);
+      AppLogger.d('💾 [캐시 저장] 항행경보 ${_navigationWarnings.length}개 (1시간 유효)');
 
       safeNotifyListeners();
     } else {
@@ -228,6 +231,69 @@ class NavigationProvider extends BaseProvider {
       _navigationWarnings = [];
       safeNotifyListeners();
     }
+  }
+
+  /// 항행경보 메시지에서 Key 제거
+  String _extractWarningMessage(dynamic item) {
+    // 이미 문자열인 경우
+    if (item is String) {
+      // 문자열에 중괄호가 포함되어 있으면 Map.toString() 형태
+      if (item.contains('{') && item.contains('}')) {
+        // 정규식으로 message 필드 값 추출
+        final messagePattern = RegExp(r'message[:\s]+([^,}]+)');
+        final match = messagePattern.firstMatch(item);
+
+        if (match != null && match.group(1) != null) {
+          return match.group(1)!.trim();
+        }
+
+        // message가 없으면 첫 번째 값 추출
+        final valuePattern = RegExp(r':\s*([^,}]+)');
+        final matches = valuePattern.allMatches(item);
+
+        if (matches.isNotEmpty) {
+          return matches.first.group(1)?.trim() ?? item;
+        }
+      }
+      // 정상적인 문자열이면 그대로 반환
+      return item;
+    }
+
+    // Map 형식인 경우 - 실제 API 응답
+    if (item is Map) {
+      // 우선순위: message > area_nm > title > subject > content
+      final message = item['message'] ??
+          item['area_nm'] ??
+          item['title'] ??
+          item['subject'] ??
+          item['content'] ??
+          item['text'] ??
+          item['description'];
+
+      if (message != null && message.toString().isNotEmpty) {
+        return message.toString();
+      }
+
+      // Map의 첫 번째 값 사용 (fallback)
+      if (item.values.isNotEmpty) {
+        return item.values.first?.toString() ?? '항행경보';
+      }
+    }
+
+    // Model 객체인 경우 (getter 시도)
+    try {
+      if (item.message != null) return item.message.toString();
+      if (item.area_nm != null) return item.area_nm.toString();
+      if (item.title != null) return item.title.toString();
+      if (item.subject != null) return item.subject.toString();
+      if (item.content != null) return item.content.toString();
+    } catch (e) {
+      // getter가 없으면 무시
+      AppLogger.d('항행경보 메시지 추출 실패: $e');
+    }
+
+    // 모든 시도가 실패하면 기본 메시지
+    return '항행경보';
   }
 
   // ========== UI Helper 메서드들 ==========
