@@ -4,105 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 
-/// 선박 정보 테이블 위젯
-class VesselInfoTable extends StatelessWidget {
-  final VesselSearchModel? vessel;
-  final bool showExtendedInfo;
-
-  const VesselInfoTable({
-    super.key,
-    this.vessel,
-    this.showExtendedInfo = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (vessel == null) {
-      return const Center(child: Text('선박 정보 없음'));
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(AppSizes.s16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.s12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Table(
-        columnWidths: const {
-          0: FixedColumnWidth(80),
-          1: FlexColumnWidth(),
-        },
-        children: [
-          _buildInfoRow('선박명', vessel!.ship_nm ?? '-'),
-          _buildInfoRow('MMSI', vessel!.mmsi?.toString() ?? '-'),
-          _buildInfoRow('선종', vessel!.ship_knd ?? '-'),
-          if (showExtendedInfo) ...[
-            _buildInfoRow(
-                '흘수', vessel!.draft != null ? '${vessel!.draft} m' : '-'),
-            _buildInfoRow(
-                '속력',
-                vessel!.sog != null
-                    ? '${vessel!.sog!.toStringAsFixed(1)} kn'
-                    : '-'),
-            _buildInfoRow(
-                '침로',
-                vessel!.cog != null
-                    ? '${vessel!.cog!.toStringAsFixed(1)}°'
-                    : '-'),
-            _buildInfoRow('위치', _formatPosition()),
-          ],
-        ],
-      ),
-    );
-  }
-
-  String _formatPosition() {
-    if (vessel?.lttd != null && vessel?.lntd != null) {
-      return '${vessel!.lttd!.toStringAsFixed(4)}°, ${vessel!.lntd!.toStringAsFixed(4)}°';
-    }
-    return '-';
-  }
-
-  TableRow _buildInfoRow(String label, String value) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: AppSizes.s14,
-              fontWeight: FontWeights.w500,
-              color: AppColors.grayType6,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.s8),
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: AppSizes.s14,
-              fontWeight: FontWeights.w600,
-              color: AppColors.blackType2,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// 선박 목록 위젯
-/// ✅ 최적화: ListView.builder에 ValueKey 추가
-class VesselListWidget extends StatelessWidget {
+class VesselListWidget extends StatefulWidget {
   final List<VesselSearchModel> vessels;
   final int? selectedMmsi;
   final ValueChanged<VesselSearchModel> onVesselSelected;
@@ -119,22 +22,107 @@ class VesselListWidget extends StatelessWidget {
   });
 
   @override
+  State<VesselListWidget> createState() => _VesselListWidgetState();
+}
+
+class _VesselListWidgetState extends State<VesselListWidget> {
+  // ✅ 검색 기능을 위한 상태 변수
+  String _searchQuery = '';
+  List<VesselSearchModel> _filteredVessels = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredVessels = widget.vessels;
+  }
+
+  @override
+  void didUpdateWidget(VesselListWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // vessels 목록이 변경되면 필터 재적용
+    if (oldWidget.vessels != widget.vessels) {
+      _applyFilter(_searchQuery);
+    }
+  }
+
+  /// ✅ 검색 필터 적용
+  void _applyFilter(String query) {
+    setState(() {
+      _searchQuery = query;
+
+      if (query.isEmpty) {
+        // 검색어가 없으면 전체 목록 표시
+        _filteredVessels = widget.vessels;
+      } else {
+        // 선박명 또는 MMSI로 검색
+        _filteredVessels = widget.vessels.where((vessel) {
+          final shipName = vessel.ship_nm?.toLowerCase() ?? '';
+          final mmsiStr = vessel.mmsi?.toString() ?? '';
+          final lowerQuery = query.toLowerCase();
+
+          return shipName.contains(lowerQuery) || mmsiStr.contains(lowerQuery);
+        }).toList();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (vessels.isEmpty) {
-      return Center(
-        child: Text(emptyMessage ?? '등록된 선박이 없습니다.'),
+    // 필터링된 목록이 비어있을 때
+    if (_filteredVessels.isEmpty) {
+      return Column(
+        children: [
+          if (widget.showSearchBar) _buildSearchBar(context),
+          Expanded(
+            child: Center(
+              child: Text(
+                _searchQuery.isEmpty
+                    ? (widget.emptyMessage ?? '등록된 선박이 없습니다.')
+                    : '검색 결과가 없습니다.',
+                style: const TextStyle(
+                  fontSize: AppSizes.s16,
+                  color: AppColors.grayType6,
+                ),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
     return Column(
       children: [
-        if (showSearchBar) _buildSearchBar(context),
+        if (widget.showSearchBar) _buildSearchBar(context),
+
+        // ✅ 검색 결과 개수 표시 (검색 중일 때만)
+        if (_searchQuery.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.s16,
+              vertical: AppSizes.s8,
+            ),
+            color: AppColors.grayType9.withOpacity(0.3),
+            child: Row(
+              children: [
+                const Icon(Icons.search,
+                    size: AppSizes.s16, color: AppColors.grayType6),
+                const SizedBox(width: AppSizes.s8),
+                Text(
+                  '검색 결과: ${_filteredVessels.length}건',
+                  style: const TextStyle(
+                    fontSize: AppSizes.s14,
+                    color: AppColors.grayType6,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         Expanded(
           child: ListView.builder(
-            itemCount: vessels.length,
-            // ✅ 최적화: ValueKey 추가
+            itemCount: _filteredVessels.length,
             itemBuilder: (context, index) {
-              final vessel = vessels[index];
+              final vessel = _filteredVessels[index];
               return _buildVesselCard(
                 context,
                 vessel,
@@ -147,34 +135,55 @@ class VesselListWidget extends StatelessWidget {
     );
   }
 
+  /// ✅ 검색바 (검색 기능 구현 완료)
   Widget _buildSearchBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.s16),
       child: TextField(
         decoration: InputDecoration(
           hintText: '선박명 또는 MMSI 검색',
-          prefixIcon: const Icon(Icons.search),
+          hintStyle: const TextStyle(color: AppColors.grayType6),
+          prefixIcon: const Icon(Icons.search, color: AppColors.grayType6),
+          // ✅ 검색어가 있을 때 X 버튼 표시
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, color: AppColors.grayType6),
+                  onPressed: () => _applyFilter(''),
+                )
+              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSizes.s8),
+            borderSide: const BorderSide(color: AppColors.grayType8),
           ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSizes.s8),
+            borderSide: const BorderSide(color: AppColors.grayType8),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSizes.s8),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor,
+              width: 2,
+            ),
+          ),
+          filled: true,
+          fillColor: AppColors.whiteType1,
         ),
-        onChanged: (value) {
-          // TODO: 검색 기능 구현
-        },
+        onChanged: _applyFilter, // ✅ 입력할 때마다 필터 적용
       ),
     );
   }
 
-  // ✅ 최적화: Key 파라미터 추가
+  /// 선박 카드 생성
   Widget _buildVesselCard(
     BuildContext context,
     VesselSearchModel vessel, {
     Key? key,
   }) {
-    final isSelected = vessel.mmsi == selectedMmsi;
+    final isSelected = vessel.mmsi == widget.selectedMmsi;
 
     return Card(
-      key: key, // ✅ Key 적용
+      key: key,
       margin: const EdgeInsets.symmetric(
         horizontal: AppSizes.s8,
         vertical: AppSizes.s4,
@@ -196,7 +205,7 @@ class VesselListWidget extends StatelessWidget {
         ),
         subtitle: _buildVesselSubtitle(vessel),
         trailing: _buildVesselTrailing(vessel),
-        onTap: () => onVesselSelected(vessel),
+        onTap: () => widget.onVesselSelected(vessel),
       ),
     );
   }
@@ -214,12 +223,20 @@ class VesselListWidget extends StatelessWidget {
   }
 
   Widget? _buildVesselTrailing(VesselSearchModel vessel) {
-    if (vessel.mmsi == selectedMmsi) {
-      return const Icon(
-        Icons.check_circle,
-        color: AppColors.primary,
-      );
-    }
-    return null;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (vessel.cog != null)
+          Text(
+            '${vessel.cog!.toStringAsFixed(0)}°',
+            style: const TextStyle(
+              fontSize: AppSizes.s12,
+              color: AppColors.grayType6,
+            ),
+          ),
+        const Icon(Icons.chevron_right, color: AppColors.grayType7),
+      ],
+    );
   }
 }
