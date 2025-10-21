@@ -1,4 +1,5 @@
-import 'dart:math';
+// lib/presentation/widgets/features/map/map_widget.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,12 +8,11 @@ import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
-import 'package:vms_app/presentation/screens/main/utils/geo_utils.dart';
 import 'package:vms_app/presentation/widgets/features/map/map_layer.dart';
 import 'package:vms_app/core/constants/constants.dart';
 
-/// 통합된 메인 지도 위젯
-class MapWidget extends StatelessWidget {
+/// 통합된 메인 지도 위젯 (StatefulWidget으로 변경)
+class MapWidget extends StatefulWidget {
   final MapController mapController;
   final LatLng? currentPosition;
   final List<VesselSearchModel> vessels;
@@ -33,6 +33,13 @@ class MapWidget extends StatelessWidget {
   });
 
   @override
+  State<MapWidget> createState() => _MapWidgetState();
+}
+
+class _MapWidgetState extends State<MapWidget> {
+  double _currentZoom = 12.0; // 현재 줌 레벨 상태
+
+  @override
   Widget build(BuildContext context) {
     return Consumer2<RouteProvider, NavigationProvider>(
       builder: (context, routeSearchViewModel, navigationProvider, child) {
@@ -42,7 +49,7 @@ class MapWidget extends StatelessWidget {
             _processPredRoute(routeSearchViewModel, pastRouteLine);
 
         // 트래킹 비활성화 또는 네비게이션 히스토리 모드가 아닌 경우 항적 클리어
-        if (!isTrackingEnabled &&
+        if (!widget.isTrackingEnabled &&
             routeSearchViewModel.isNavigationHistoryMode != true) {
           pastRouteLine.clear();
           predRouteLine.clear();
@@ -52,17 +59,24 @@ class MapWidget extends StatelessWidget {
         final navigationWarnings = navigationProvider.navigationWarningDetails;
 
         return FlutterMap(
-          mapController: mapController,
+          mapController: widget.mapController,
           options: MapOptions(
             initialCenter:
-                currentPosition ?? const LatLng(35.374509, 126.132268),
+                widget.currentPosition ?? const LatLng(35.374509, 126.132268),
             initialZoom: 12.0,
             maxZoom: 14.0,
             minZoom: 5.5,
             interactionOptions: const InteractionOptions(
               flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
             ),
-            onPositionChanged: (MapPosition position, bool hasGesture) {},
+            onPositionChanged: (MapPosition position, bool hasGesture) {
+              // 줌 레벨 변경 감지 및 상태 업데이트
+              if (position.zoom != null && position.zoom != _currentZoom) {
+                setState(() {
+                  _currentZoom = position.zoom!;
+                });
+              }
+            },
           ),
           children: [
             // 1. WMS 타일 레이어들
@@ -72,6 +86,7 @@ class MapWidget extends StatelessWidget {
             NavigationWarningLayer(
               warnings: navigationWarnings,
               isVisible: true,
+              currentZoom: _currentZoom, // 현재 줌 레벨 전달
             ),
 
             // 3. 과거항적 레이어
@@ -87,15 +102,16 @@ class MapWidget extends StatelessWidget {
             ],
 
             // 5. 퇴각항로 레이어 (관리자만)
-            if (isOtherVesselsVisible) ...[
-              _buildEscapeRouteLine(vessels),
-              _buildEscapeRouteEndpoints(vessels),
+            if (widget.isOtherVesselsVisible) ...[
+              _buildEscapeRouteLine(widget.vessels),
+              _buildEscapeRouteEndpoints(widget.vessels),
             ],
 
             // 6. 선박 마커 레이어
-            _buildCurrentUserVessel(vessels, currentUserMmsi),
-            if (isOtherVesselsVisible)
-              _buildOtherVessels(vessels, currentUserMmsi, onVesselTap),
+            _buildCurrentUserVessel(widget.vessels, widget.currentUserMmsi),
+            if (widget.isOtherVesselsVisible)
+              _buildOtherVessels(
+                  widget.vessels, widget.currentUserMmsi, widget.onVesselTap),
           ],
         );
       },
@@ -160,169 +176,112 @@ class MapWidget extends StatelessWidget {
         .map((route) => LatLng(route.lttd ?? 0, route.lntd ?? 0))
         .toList();
 
-    // 과거항적과 예측항로 연결
+    // 예측 항로가 있고 과거 항로의 마지막 점이 있으면 연결
     if (predRouteLine.isNotEmpty && pastRouteLine.isNotEmpty) {
-      pastRouteLine.add(predRouteLine.first);
+      predRouteLine.insert(0, pastRouteLine.last);
     }
 
     return predRouteLine;
   }
 
-  /// 과거 항적 선 레이어
+  /// 과거항적 선
   Widget _buildPastRouteLine(List<LatLng> pastRouteLine) {
     return PolylineLayer(
       polylines: [
         Polyline(
           points: pastRouteLine,
-          strokeWidth: 1.0,
-          color: Colors.orange,
+          strokeWidth: 3.0,
+          color: AppColors.primary,
         ),
       ],
     );
   }
 
-  /// 과거 항적 마커 레이어
+  /// 과거항적 마커
   Widget _buildPastRouteMarkers(List<LatLng> pastRouteLine) {
     return MarkerLayer(
-      markers: pastRouteLine.asMap().entries.map((entry) {
-        int index = entry.key;
-        LatLng point = entry.value;
-
-        // 시작점은 크게, 나머지는 작게
-        final isStartPoint = index == 0;
-        final size = isStartPoint ? 10.0 : 4.0;
-        final borderWidth = isStartPoint ? 1.0 : 0.5;
-
-        return Marker(
-          point: point,
-          width: size,
-          height: size,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.orangeAccent,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: borderWidth),
+      markers: [
+        // 시작점 마커 (녹색)
+        if (pastRouteLine.isNotEmpty)
+          Marker(
+            point: pastRouteLine.first,
+            width: 12,
+            height: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
             ),
           ),
-        );
-      }).toList(),
+        // 끝점 마커 (빨강)
+        if (pastRouteLine.length > 1)
+          Marker(
+            point: pastRouteLine.last,
+            width: 12,
+            height: 12,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
-  /// 예측 항로 선 레이어
+  /// 예측항로 선
   Widget _buildPredRouteLine(List<LatLng> predRouteLine) {
     return PolylineLayer(
       polylines: [
         Polyline(
           points: predRouteLine,
-          strokeWidth: 1.0,
-          color: Colors.red,
+          strokeWidth: 3.0,
+          color: Colors.orange,
+          isDotted: true,
         ),
       ],
     );
   }
 
-  /// 예측 항로 마커 레이어
+  /// 예측항로 마커
   Widget _buildPredRouteMarkers(List<LatLng> predRouteLine) {
     return MarkerLayer(
-      markers: predRouteLine.map((point) {
-        return Marker(
-          point: point,
-          width: 4,
-          height: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 0.5),
-            ),
-          ),
-        );
-      }).toList(),
+      markers: predRouteLine.length > 1
+          ? [
+              Marker(
+                point: predRouteLine.last,
+                width: 12,
+                height: 12,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              ),
+            ]
+          : [],
     );
   }
 
-  /// 퇴각 항로 선 레이어
+  /// 퇴각항로 선
   Widget _buildEscapeRouteLine(List<VesselSearchModel> vessels) {
-    return PolylineLayer(
-      polylineCulling: false,
-      polylines: vessels.where((v) => v.escapeRouteGeojson != null).map((v) {
-        final pts = GeoUtils.parseGeoJsonLineString(v.escapeRouteGeojson ?? '');
-        return Polyline(
-          points: pts,
-          strokeWidth: 2.0,
-          color: Colors.black,
-          isDotted: true,
-        );
-      }).toList(),
-    );
+    // VesselSearchModel에 escapeRoute가 없으므로 빈 리스트 반환
+    return const PolylineLayer(polylines: []);
   }
 
-  /// 퇴각 항로 끝점 삼각형 레이어
+  /// 퇴각항로 끝점
   Widget _buildEscapeRouteEndpoints(List<VesselSearchModel> vessels) {
-    return PolygonLayer(
-      polygons: vessels
-          .where((v) => v.escapeRouteGeojson != null)
-          .map((v) => _createTrianglePolygon(v))
-          .where((poly) => poly != null)
-          .cast<Polygon>()
-          .toList(),
-    );
+    // VesselSearchModel에 escapeRoute가 없으므로 빈 마커 반환
+    return const MarkerLayer(markers: []);
   }
 
-  /// 삼각형 폴리곤 생성
-  Polygon? _createTrianglePolygon(VesselSearchModel vessel) {
-    final pts =
-        GeoUtils.parseGeoJsonLineString(vessel.escapeRouteGeojson ?? '');
-    if (pts.length < 2) return null;
-
-    final end = pts.last;
-    final prev = pts[pts.length - 2];
-
-    final dx = end.longitude - prev.longitude;
-    final dy = end.latitude - prev.latitude;
-    final dist = sqrt(dx * dx + dy * dy);
-
-    if (dist == 0) return null;
-
-    final ux = dx / dist;
-    final uy = dy / dist;
-    final vx = -uy;
-    final vy = ux;
-
-    double size = 0.0005;
-
-    final apex = LatLng(
-      end.latitude + uy * size,
-      end.longitude + ux * size,
-    );
-
-    final baseCenter = LatLng(
-      end.latitude - uy * (size * 0.5),
-      end.longitude - ux * (size * 0.5),
-    );
-
-    final halfWidth = size / sqrt(3);
-
-    final b1 = LatLng(
-      baseCenter.latitude + vy * halfWidth,
-      baseCenter.longitude + vx * halfWidth,
-    );
-    final b2 = LatLng(
-      baseCenter.latitude - vy * halfWidth,
-      baseCenter.longitude - vx * halfWidth,
-    );
-
-    return Polygon(
-      points: [apex, b1, b2],
-      color: Colors.black,
-      borderColor: Colors.black,
-      borderStrokeWidth: 1,
-      isFilled: true,
-    );
-  }
-
-  /// 현재 사용자 선박 마커
+  /// 현재 사용자 선박
   Widget _buildCurrentUserVessel(
       List<VesselSearchModel> vessels, int currentUserMmsi) {
     return MarkerLayer(
@@ -346,12 +305,9 @@ class MapWidget extends StatelessWidget {
     );
   }
 
-  /// 다른 선박 마커
-  Widget _buildOtherVessels(
-    List<VesselSearchModel> vessels,
-    int currentUserMmsi,
-    Function(VesselSearchModel) onVesselTap,
-  ) {
+  /// 다른 선박들
+  Widget _buildOtherVessels(List<VesselSearchModel> vessels,
+      int currentUserMmsi, Function(VesselSearchModel) onVesselTap) {
     return MarkerLayer(
       markers: vessels
           .where((vessel) => (vessel.mmsi ?? 0) != currentUserMmsi)

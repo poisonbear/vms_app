@@ -1,3 +1,5 @@
+// lib/presentation/widgets/features/map/map_layer.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,15 +27,12 @@ class VesselMarkersLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 내 선박 마커
         _buildCurrentUserVesselLayer(),
-        // 다른 선박 마커
         _buildOtherVesselsLayer(),
       ],
     );
   }
 
-  /// 현재 사용자 선박 레이어
   Widget _buildCurrentUserVesselLayer() {
     return MarkerLayer(
       markers: vessels
@@ -47,7 +46,6 @@ class VesselMarkersLayer extends StatelessWidget {
     );
   }
 
-  /// 다른 선박 레이어
   Widget _buildOtherVesselsLayer() {
     return Opacity(
       opacity: isOtherVesselsVisible ? 1.0 : 0.0,
@@ -67,7 +65,6 @@ class VesselMarkersLayer extends StatelessWidget {
     );
   }
 
-  /// 선박 마커 생성
   Marker _buildVesselMarker({
     required VesselSearchModel vessel,
     required String svgPath,
@@ -119,7 +116,6 @@ class RouteTrackWidget extends StatelessWidget {
 
     return Stack(
       children: [
-        // 항로 선
         PolylineLayer(
           polylines: [
             Polyline(
@@ -130,7 +126,6 @@ class RouteTrackWidget extends StatelessWidget {
             ),
           ],
         ),
-        // 항로 마커 (옵션)
         if (showMarkers)
           MarkerLayer(
             markers: _buildRouteMarkers(),
@@ -139,7 +134,6 @@ class RouteTrackWidget extends StatelessWidget {
     );
   }
 
-  /// 항로 포인트 마커 생성
   List<Marker> _buildRouteMarkers() {
     return routePoints.asMap().entries.map((entry) {
       final index = entry.key;
@@ -177,11 +171,13 @@ class RouteTrackWidget extends StatelessWidget {
 class NavigationWarningLayer extends StatelessWidget {
   final List<NavigationWarningModel> warnings;
   final bool isVisible;
+  final double currentZoom;
 
   const NavigationWarningLayer({
     super.key,
     required this.warnings,
     this.isVisible = true,
+    this.currentZoom = 12.0,
   });
 
   @override
@@ -192,17 +188,13 @@ class NavigationWarningLayer extends StatelessWidget {
 
     return Stack(
       children: [
-        // 1. 다각형 구역 레이어
         _buildPolygonLayer(),
-        // 2. 원형 구역 레이어
         _buildCircleLayer(),
-        // 3. 라벨 레이어
         _buildLabelLayer(),
       ],
     );
   }
 
-  /// 다각형 구역 레이어
   Widget _buildPolygonLayer() {
     final polygonWarnings = warnings.where(
       (w) => w.shapeType == MapConstants.warningShapePolygon,
@@ -216,19 +208,17 @@ class NavigationWarningLayer extends StatelessWidget {
       polygons: polygonWarnings.map((warning) {
         return Polygon(
           points: warning.polygonPoints,
-          color: Color(warning.warningColor)
-              .withOpacity(MapConstants.warningFillOpacity),
+          color: Colors.transparent,
           borderColor: Color(warning.warningColor)
               .withOpacity(MapConstants.warningBorderOpacity),
           borderStrokeWidth: MapConstants.warningBorderWidth,
           isFilled: true,
-          isDotted: true,
+          isDotted: false,
         );
       }).toList(),
     );
   }
 
-  /// 원형 구역 레이어
   Widget _buildCircleLayer() {
     final circleWarnings = warnings.where(
       (w) => w.shapeType == MapConstants.warningShapeCircle,
@@ -244,16 +234,14 @@ class NavigationWarningLayer extends StatelessWidget {
             final center = warning.circleCenter;
             if (center == null) return null;
 
-            // NM을 위도 단위로 변환
             final radiusInDegrees =
                 warning.radiusNM * MapConstants.nmToDegreesLat;
 
             return CircleMarker(
               point: center,
-              radius: radiusInDegrees * 111320, // 위도 1도 = 약 111.32km
+              radius: radiusInDegrees * 111320,
               useRadiusInMeter: true,
-              color: Color(warning.warningColor)
-                  .withOpacity(MapConstants.warningFillOpacity),
+              color: Colors.transparent,
               borderColor: Color(warning.warningColor)
                   .withOpacity(MapConstants.warningBorderOpacity),
               borderStrokeWidth: MapConstants.warningBorderWidth,
@@ -264,7 +252,6 @@ class NavigationWarningLayer extends StatelessWidget {
     );
   }
 
-  /// 라벨 레이어 (구역명 + 시간)
   Widget _buildLabelLayer() {
     return MarkerLayer(
       markers: warnings
@@ -272,11 +259,13 @@ class NavigationWarningLayer extends StatelessWidget {
             final center = warning.labelCenter;
             if (center == null) return null;
 
+            final scale = _calculateScale(currentZoom);
+
             return Marker(
               point: center,
-              width: 200,
-              height: 60,
-              child: _buildLabel(warning),
+              width: 200 * scale,
+              height: 60 * scale,
+              child: _buildLabel(warning, scale),
             );
           })
           .whereType<Marker>()
@@ -284,39 +273,57 @@ class NavigationWarningLayer extends StatelessWidget {
     );
   }
 
-  /// 라벨 위젯 생성
-  Widget _buildLabel(NavigationWarningModel warning) {
+  double _calculateScale(double zoom) {
+    const baseZoom = 12.0;
+    final scale = 0.6 + ((zoom - 10.0) * 0.2);
+    return scale.clamp(0.4, 1.6);
+  }
+
+  Widget _buildLabel(NavigationWarningModel warning, double scale) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: MapConstants.warningLabelPaddingHorizontal,
-        vertical: MapConstants.warningLabelPaddingVertical,
+      alignment: Alignment.center,
+      padding: EdgeInsets.symmetric(
+        horizontal: MapConstants.warningLabelPaddingHorizontal * scale,
+        vertical: MapConstants.warningLabelPaddingVertical * scale,
       ),
       decoration: BoxDecoration(
-        color: const Color(MapConstants.warningLabelBackgroundColor),
-        borderRadius: BorderRadius.circular(
-          MapConstants.warningLabelBorderRadius,
-        ),
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(4 * scale),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             warning.areaNm,
-            style: const TextStyle(
-              color: Color(MapConstants.warningLabelTextColor),
-              fontSize: MapConstants.warningLabelFontSize,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: MapConstants.warningLabelFontSize * scale,
               fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 2 * scale,
+                  offset: Offset(1 * scale, 1 * scale),
+                ),
+              ],
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2 * scale),
           Text(
             warning.ntiHh,
-            style: const TextStyle(
-              color: Color(MapConstants.warningLabelTextColor),
-              fontSize: MapConstants.warningLabelFontSizeSmall,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: MapConstants.warningLabelFontSizeSmall * scale,
+              shadows: [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 2 * scale,
+                  offset: Offset(1 * scale, 1 * scale),
+                ),
+              ],
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
