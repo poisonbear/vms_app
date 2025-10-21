@@ -1,3 +1,5 @@
+// lib/data/models/vessel_model.dart
+
 // ===== 공통 헬퍼 함수 =====
 double? _parseDouble(dynamic value) {
   if (value == null) return null;
@@ -19,10 +21,10 @@ class VesselModel {
   double? lttd;
   String? shiptype;
   String? shiptype_nm;
-  double? sog; // 속도 (추가)
-  double? cog; // 침로 - double 타입으로 변경
-  double? draft; // 흘수 (추가)
-  String? escapeRouteGeojson; // 대피 경로 GeoJSON (추가)
+  double? sog; // Speed Over Ground (대지속도)
+  double? cog; // Course Over Ground (대지침로)
+  double? draft; // 흘수
+  String? escapeRouteGeojson; // 대피 경로 GeoJSON
 
   VesselModel({
     this.mmsi,
@@ -49,8 +51,8 @@ class VesselModel {
       ship_knd: json['ship_knd']?.toString() ?? json['ship_kdn']?.toString(),
       psng_auth: json['psng_auth']?.toString(),
       psng_auth_cd: json['psng_auth_cd']?.toString(),
-      lntd: _parseDouble(json['lntd']), // rcv_loc_lntd가 아닌 lntd
-      lttd: _parseDouble(json['lttd']), // rcv_loc_lttd가 아닌 lttd
+      lntd: _parseDouble(json['lntd']),
+      lttd: _parseDouble(json['lttd']),
       shiptype: json['shiptype']?.toString(),
       shiptype_nm: json['shiptype_nm']?.toString(),
       sog: _parseDouble(json['sog']),
@@ -92,11 +94,17 @@ class PastRouteModel {
   int? mmsi;
   double? lntd;
   double? lttd;
-  double? spd;
-  double? cog;
+  double? sog; // ✅ spd → sog로 변경 (Speed Over Ground)
+  double? cog; // ✅ Course Over Ground
 
-  PastRouteModel(
-      {this.regDt, this.mmsi, this.lntd, this.lttd, this.spd, this.cog});
+  PastRouteModel({
+    this.regDt,
+    this.mmsi,
+    this.lntd,
+    this.lttd,
+    this.sog,
+    this.cog,
+  });
 
   factory PastRouteModel.fromJson(Map<String, dynamic> json) {
     return PastRouteModel(
@@ -106,8 +114,8 @@ class PastRouteModel {
       mmsi: json['mmsi'] != null ? int.tryParse(json['mmsi'].toString()) : null,
       lntd: _parseDouble(json['rcv_loc_lntd']),
       lttd: _parseDouble(json['rcv_loc_lttd']),
-      spd: _parseDouble(json['spd']),
-      cog: _parseDouble(json['course']),
+      sog: _parseDouble(json['sog']), // ✅ API 필드명과 일치
+      cog: _parseDouble(json['cog']), // ✅ API 필드명과 일치
     );
   }
 
@@ -117,14 +125,14 @@ class PastRouteModel {
       'mmsi': mmsi,
       'lntd': lntd,
       'lttd': lttd,
-      'spd': spd,
+      'sog': sog, // ✅ sog로 통일
       'cog': cog,
     };
   }
 
   @override
   String toString() {
-    return 'PastRouteModel(regDt: $regDt, mmsi: $mmsi, lntd: $lntd, lttd: $lttd, spd: $spd, cog: $cog)';
+    return 'PastRouteModel(regDt: $regDt, mmsi: $mmsi, lntd: $lntd, lttd: $lttd, sog: $sog, cog: $cog)';
   }
 }
 
@@ -133,9 +141,14 @@ class PredRouteModel {
   int? pdcthh;
   double? lntd;
   double? lttd;
-  double? spd;
+  double? sog; // ✅ spd → sog로 변경
 
-  PredRouteModel({this.pdcthh, this.lntd, this.lttd, this.spd});
+  PredRouteModel({
+    this.pdcthh,
+    this.lntd,
+    this.lttd,
+    this.sog,
+  });
 
   factory PredRouteModel.fromJson(Map<String, dynamic> json) {
     return PredRouteModel(
@@ -144,7 +157,7 @@ class PredRouteModel {
           : null,
       lntd: _parseDouble(json['pdct_lntd']),
       lttd: _parseDouble(json['pdct_lttd']),
-      spd: _parseDouble(json['pdct_sog']),
+      sog: _parseDouble(json['pdct_sog']), // ✅ 예측 데이터도 sog
     );
   }
 
@@ -153,13 +166,13 @@ class PredRouteModel {
       'pdcthh': pdcthh,
       'lntd': lntd,
       'lttd': lttd,
-      'spd': spd,
+      'sog': sog, // ✅ sog로 통일
     };
   }
 
   @override
   String toString() {
-    return 'PredRouteModel(pdcthh: $pdcthh, lntd: $lntd, lttd: $lttd, spd: $spd)';
+    return 'PredRouteModel(pdcthh: $pdcthh, lntd: $lntd, lttd: $lttd, sog: $sog)';
   }
 }
 
@@ -168,7 +181,10 @@ class VesselRouteResponse {
   final List<PredRouteModel> pred;
   final List<PastRouteModel> past;
 
-  VesselRouteResponse({required this.pred, required this.past});
+  VesselRouteResponse({
+    required this.pred,
+    required this.past,
+  });
 
   factory VesselRouteResponse.fromJson(Map<String, dynamic> json) {
     final List<dynamic> predList = json['pred'] ?? [];

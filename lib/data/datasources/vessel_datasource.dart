@@ -7,7 +7,7 @@ import 'package:vms_app/core/exceptions/error_handler.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 
-/// 선박 및 항로 데이터소스 (통합)
+/// 선박 및 항로 데이터소스
 class VesselDataSource {
   final dioRequest = DioRequest();
 

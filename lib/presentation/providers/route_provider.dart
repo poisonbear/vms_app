@@ -100,7 +100,7 @@ class RouteProvider extends BaseProvider {
                     mmsi: item['mmsi'],
                     lntd: item['lntd'],
                     lttd: item['lttd'],
-                    spd: item['spd'],
+                    sog: item['sog'],
                     cog: item['cog'],
                   ))
               .toList() ??
@@ -111,7 +111,7 @@ class RouteProvider extends BaseProvider {
                     pdcthh: item['pdcthh'],
                     lntd: item['lntd'],
                     lttd: item['lttd'],
-                    spd: item['spd'],
+                    sog: item['sog'],
                   ))
               .toList() ??
           [];
@@ -135,7 +135,7 @@ class RouteProvider extends BaseProvider {
                   'mmsi': route.mmsi,
                   'lntd': route.lntd,
                   'lttd': route.lttd,
-                  'spd': route.spd,
+                  'sog': route.sog,
                   'cog': route.cog,
                 })
             .toList(),
@@ -144,7 +144,7 @@ class RouteProvider extends BaseProvider {
                   'pdcthh': route.pdcthh,
                   'lntd': route.lntd,
                   'lttd': route.lttd,
-                  'spd': route.spd,
+                  'sog': route.sog,
                 })
             .toList(),
       };
