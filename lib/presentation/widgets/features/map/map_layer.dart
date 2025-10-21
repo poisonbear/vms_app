@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:vms_app/data/models//vessel_model.dart';
+import 'package:vms_app/data/models/vessel_model.dart';
+import 'package:vms_app/data/models/navigation_model.dart';
+import 'package:vms_app/core/constants/constants.dart';
 
 /// 선박 마커 레이어 위젯
 class VesselMarkersLayer extends StatelessWidget {
@@ -168,5 +170,160 @@ class RouteTrackWidget extends StatelessWidget {
         ),
       );
     }).toList();
+  }
+}
+
+/// 항행경보 표시 레이어 위젯
+class NavigationWarningLayer extends StatelessWidget {
+  final List<NavigationWarningModel> warnings;
+  final bool isVisible;
+
+  const NavigationWarningLayer({
+    super.key,
+    required this.warnings,
+    this.isVisible = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isVisible || warnings.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Stack(
+      children: [
+        // 1. 다각형 구역 레이어
+        _buildPolygonLayer(),
+        // 2. 원형 구역 레이어
+        _buildCircleLayer(),
+        // 3. 라벨 레이어
+        _buildLabelLayer(),
+      ],
+    );
+  }
+
+  /// 다각형 구역 레이어
+  Widget _buildPolygonLayer() {
+    final polygonWarnings = warnings.where(
+      (w) => w.shapeType == MapConstants.warningShapePolygon,
+    );
+
+    if (polygonWarnings.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return PolygonLayer(
+      polygons: polygonWarnings.map((warning) {
+        return Polygon(
+          points: warning.polygonPoints,
+          color: Color(warning.warningColor)
+              .withOpacity(MapConstants.warningFillOpacity),
+          borderColor: Color(warning.warningColor)
+              .withOpacity(MapConstants.warningBorderOpacity),
+          borderStrokeWidth: MapConstants.warningBorderWidth,
+          isFilled: true,
+          isDotted: true,
+        );
+      }).toList(),
+    );
+  }
+
+  /// 원형 구역 레이어
+  Widget _buildCircleLayer() {
+    final circleWarnings = warnings.where(
+      (w) => w.shapeType == MapConstants.warningShapeCircle,
+    );
+
+    if (circleWarnings.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return CircleLayer(
+      circles: circleWarnings
+          .map((warning) {
+            final center = warning.circleCenter;
+            if (center == null) return null;
+
+            // NM을 위도 단위로 변환
+            final radiusInDegrees =
+                warning.radiusNM * MapConstants.nmToDegreesLat;
+
+            return CircleMarker(
+              point: center,
+              radius: radiusInDegrees * 111320, // 위도 1도 = 약 111.32km
+              useRadiusInMeter: true,
+              color: Color(warning.warningColor)
+                  .withOpacity(MapConstants.warningFillOpacity),
+              borderColor: Color(warning.warningColor)
+                  .withOpacity(MapConstants.warningBorderOpacity),
+              borderStrokeWidth: MapConstants.warningBorderWidth,
+            );
+          })
+          .whereType<CircleMarker>()
+          .toList(),
+    );
+  }
+
+  /// 라벨 레이어 (구역명 + 시간)
+  Widget _buildLabelLayer() {
+    return MarkerLayer(
+      markers: warnings
+          .map((warning) {
+            final center = warning.labelCenter;
+            if (center == null) return null;
+
+            return Marker(
+              point: center,
+              width: 200,
+              height: 60,
+              child: _buildLabel(warning),
+            );
+          })
+          .whereType<Marker>()
+          .toList(),
+    );
+  }
+
+  /// 라벨 위젯 생성
+  Widget _buildLabel(NavigationWarningModel warning) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: MapConstants.warningLabelPaddingHorizontal,
+        vertical: MapConstants.warningLabelPaddingVertical,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(MapConstants.warningLabelBackgroundColor),
+        borderRadius: BorderRadius.circular(
+          MapConstants.warningLabelBorderRadius,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            warning.areaNm,
+            style: const TextStyle(
+              color: Color(MapConstants.warningLabelTextColor),
+              fontSize: MapConstants.warningLabelFontSize,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            warning.ntiHh,
+            style: const TextStyle(
+              color: Color(MapConstants.warningLabelTextColor),
+              fontSize: MapConstants.warningLabelFontSizeSmall,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
   }
 }

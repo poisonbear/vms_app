@@ -27,7 +27,6 @@ class NavigationRepository implements domain.NavigationRepository {
 
     return result.fold(
       onSuccess: (list) {
-        // 타입 확인
         AppLogger.d(
             'NavigationRepository: Returning ${list.length} NavigationModel items');
         return list;
@@ -62,6 +61,24 @@ class NavigationRepository implements domain.NavigationRepository {
       onSuccess: (warnings) => warnings,
       onFailure: (error) {
         AppLogger.e('Navigation Warnings Repository Error: $error');
+        return [];
+      },
+    );
+  }
+
+  /// 항행 경보 상세 데이터 조회 (지도 표시용)
+  @override
+  Future<List<NavigationWarningModel>> getNavigationWarningDetails() async {
+    final result = await _dataSource.getNavigationWarningDetails();
+
+    return result.fold(
+      onSuccess: (warnings) {
+        AppLogger.d(
+            'NavigationRepository: Returning ${warnings.length} NavigationWarningModel items');
+        return warnings;
+      },
+      onFailure: (error) {
+        AppLogger.e('Navigation Warning Details Repository Error: $error');
         return [];
       },
     );

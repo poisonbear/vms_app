@@ -14,6 +14,7 @@ class NavigationProvider extends BaseProvider {
   late final GetNavigationHistory _getNavigationHistory;
   late final GetWeatherInfo _getWeatherInfo;
   late final GetNavigationWarnings _getNavigationWarnings;
+  late final GetNavigationWarningDetails _getNavigationWarningDetails;
   late final NavigationRepository _navigationRepository;
 
   final _cache = MemoryCache();
@@ -22,6 +23,7 @@ class NavigationProvider extends BaseProvider {
   List<NavigationModel> _rosList = [];
   bool _isInitialized = false;
   List<String> _navigationWarnings = [];
+  List<NavigationWarningModel> _navigationWarningDetails = [];
 
   // Weather data
   double wave = 0;
@@ -39,6 +41,8 @@ class NavigationProvider extends BaseProvider {
   List<NavigationModel> get rosList => _rosList;
   bool get isInitialized => _isInitialized;
   List<String> get navigationWarnings => _navigationWarnings;
+  List<NavigationWarningModel> get navigationWarningDetails =>
+      _navigationWarningDetails;
 
   String get combinedNavigationWarnings {
     if (_navigationWarnings.isEmpty) {
@@ -53,10 +57,12 @@ class NavigationProvider extends BaseProvider {
       _getNavigationHistory = getIt<GetNavigationHistory>();
       _getWeatherInfo = getIt<GetWeatherInfo>();
       _getNavigationWarnings = getIt<GetNavigationWarnings>();
+      _getNavigationWarningDetails = getIt<GetNavigationWarningDetails>();
 
       // 초기 데이터 로드
       getWeatherInfo();
       getNavigationWarnings();
+      getNavigationWarningDetails();
     } catch (e) {
       AppLogger.e('NavigationProvider 초기화 실패: $e');
       setError(ErrorMessages.initializationFailed);
@@ -76,16 +82,16 @@ class NavigationProvider extends BaseProvider {
     final cacheKey = 'ros_list_${startDate ?? "none"}_${endDate ?? "none"}_'
         '${mmsi ?? "all"}_${shipName ?? "none"}';
 
-    // 캐시 확인 (로딩 상태 없이)
+    // 캐시 확인
     final cachedData = _cache.get<List<NavigationModel>>(cacheKey);
     if (cachedData != null) {
-      AppLogger.d('✅ [캐시 HIT] 항행이력 리스트');
+      AppLogger.d('✅ [캐시 HIT] ROS 리스트');
       _rosList = cachedData;
       safeNotifyListeners();
       return;
     }
 
-    AppLogger.d('🔄 [캐시 MISS] 항행이력 리스트 API 호출');
+    AppLogger.d('🔄 [캐시 MISS] ROS 리스트 API 호출');
 
     // API 호출
     final result = await executeAsync<List<NavigationModel>>(
@@ -98,86 +104,76 @@ class NavigationProvider extends BaseProvider {
         );
       },
       errorMessage: ErrorMessages.navigationLoadFailed,
-      showLoading: true,
-    );
-
-    // 응답 처리
-    if (result != null && result.isNotEmpty) {
-      _rosList = result;
-
-      // LRU 캐시 저장 (1시간)
-      _cache.put(cacheKey, result, AppDurations.hours1);
-      AppLogger.d('💾 [캐시 저장] 항행이력 ${result.length}개 (1시간 유효)');
-
-      safeNotifyListeners();
-    } else {
-      AppLogger.w('[WARNING] API 응답이 null이거나 비어있습니다');
-      _rosList = [];
-      safeNotifyListeners();
-    }
-  }
-
-  /// 기상정보 조회 (시정/파고)
-  Future<void> getWeatherInfo() async {
-    const cacheKey = 'weather_info';
-
-    // 캐시 확인
-    final cachedData = _cache.get<Map<String, double>>(cacheKey);
-    if (cachedData != null) {
-      AppLogger.d('✅ [캐시 HIT] 기상정보');
-      _applyWeatherData(cachedData);
-      safeNotifyListeners();
-      return;
-    }
-
-    AppLogger.d('🔄 [캐시 MISS] 기상정보 API 호출');
-
-    // API 호출
-    final result = await executeAsync<WeatherInfo?>(
-      () async {
-        return await _getWeatherInfo.execute();
-      },
-      errorMessage: ErrorMessages.weatherInfoLoadFailed,
       showLoading: false,
     );
 
-    // 응답 처리
     if (result != null) {
-      wave = result.wave ?? NumericConstants.zeroValue.toDouble();
-      visibility = result.visibility ?? NumericConstants.zeroValue.toDouble();
-      walm1 = result.walm1 ?? 0.0;
-      walm2 = result.walm2 ?? 0.0;
-      walm3 = result.walm3 ?? 0.0;
-      walm4 = result.walm4 ?? 0.0;
-      valm1 = result.valm1 ?? 0.0;
-      valm2 = result.valm2 ?? 0.0;
-      valm3 = result.valm3 ?? 0.0;
-      valm4 = result.valm4 ?? 0.0;
-
-      // LRU 캐시 저장 (30분)
-      final weatherData = {
-        'wave': wave,
-        'visibility': visibility,
-        'walm1': walm1,
-        'walm2': walm2,
-        'walm3': walm3,
-        'walm4': walm4,
-        'valm1': valm1,
-        'valm2': valm2,
-        'valm3': valm3,
-        'valm4': valm4,
-      };
-      _cache.put(cacheKey, weatherData, AppDurations.minutes30);
-      AppLogger.d('💾 [캐시 저장] 기상정보 (30분 유효)');
-
+      _rosList = result;
+      // LRU 캐시 저장 (10분)
+      _cache.put(cacheKey, _rosList, AppDurations.minutes10);
+      AppLogger.d('💾 [캐시 저장] ROS 리스트 ${_rosList.length}개 (10분 유효)');
       safeNotifyListeners();
-    } else {
-      AppLogger.w('[WARNING] 기상정보 응답이 null입니다');
     }
   }
 
-  /// 캐시된 기상 데이터 적용
-  void _applyWeatherData(Map<String, double> data) {
+  /// 파고/시정 데이터 조회
+  Future<void> getWeatherInfo() async {
+    AppLogger.d('🌊 getWeatherInfo() 호출됨');
+
+    const cacheKey = 'weather_info';
+
+    // 캐시 확인
+    final cachedData = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cachedData != null) {
+      AppLogger.d('✅ [캐시 HIT] 파고/시정 정보');
+      _applyWeatherData(cachedData);
+      notifyListeners(); // 즉시 UI 업데이트
+      return;
+    }
+
+    AppLogger.d('🔄 [캐시 MISS] 파고/시정 API 호출');
+
+    try {
+      // API 호출 (executeAsync 사용하지 않고 직접 호출)
+      final result = await _getWeatherInfo.execute();
+
+      if (result != null) {
+        AppLogger.d(
+            '✅ API 응답 받음: wave=${result.wave}, visibility=${result.visibility}');
+
+        final weatherData = {
+          'wave': result.wave,
+          'visibility': result.visibility,
+          'walm1': result.walm1,
+          'walm2': result.walm2,
+          'walm3': result.walm3,
+          'walm4': result.walm4,
+          'valm1': result.valm1,
+          'valm2': result.valm2,
+          'valm3': result.valm3,
+          'valm4': result.valm4,
+        };
+
+        // 데이터 적용
+        _applyWeatherData(weatherData);
+
+        // LRU 캐시 저장 (10분)
+        _cache.put(cacheKey, weatherData, AppDurations.minutes10);
+        AppLogger.d('💾 [캐시 저장] 파고/시정 정보 (10분 유효)');
+
+        // 즉시 UI 업데이트
+        notifyListeners();
+        AppLogger.d('🔔 notifyListeners() 호출됨');
+      } else {
+        AppLogger.w('⚠️ API 응답이 null입니다');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.e('❌ getWeatherInfo 오류: $e');
+      AppLogger.e('Stack trace: $stackTrace');
+    }
+  }
+
+  void _applyWeatherData(Map<String, dynamic> data) {
     wave = data['wave'] ?? 0.0;
     visibility = data['visibility'] ?? 0.0;
     walm1 = data['walm1'] ?? 0.0;
@@ -188,9 +184,15 @@ class NavigationProvider extends BaseProvider {
     valm2 = data['valm2'] ?? 0.0;
     valm3 = data['valm3'] ?? 0.0;
     valm4 = data['valm4'] ?? 0.0;
+
+    AppLogger.d('📊 Applied Weather Data:');
+    AppLogger.d('  🌊 Wave: ${wave}m');
+    AppLogger.d('  👁️ Visibility: ${visibility}m');
+    AppLogger.d('  🌊 Wave alarms: [$walm1, $walm2, $walm3, $walm4]');
+    AppLogger.d('  👁️ Visibility alarms: [$valm1, $valm2, $valm3, $valm4]');
   }
 
-  /// 항행경보 조회
+  /// 항행경보 조회 (메시지)
   Future<void> getNavigationWarnings() async {
     const cacheKey = 'navigation_warnings';
 
@@ -229,6 +231,57 @@ class NavigationProvider extends BaseProvider {
     } else {
       AppLogger.d('[INFO] 항행경보가 없거나 응답이 null입니다');
       _navigationWarnings = [];
+      safeNotifyListeners();
+    }
+  }
+
+  /// 항행경보 상세 데이터 조회 (지도 표시용)
+  Future<void> getNavigationWarningDetails() async {
+    const cacheKey = 'navigation_warning_details';
+
+    // 캐시 확인
+    final cachedData = _cache.get<List<NavigationWarningModel>>(cacheKey);
+    if (cachedData != null) {
+      AppLogger.d('✅ [캐시 HIT] 항행경보 상세');
+      _navigationWarningDetails = cachedData;
+      safeNotifyListeners();
+      return;
+    }
+
+    AppLogger.d('🔄 [캐시 MISS] 항행경보 상세 API 호출');
+
+    // API 호출
+    final result = await executeAsync<List<NavigationWarningModel>>(
+      () async {
+        return await _getNavigationWarningDetails.execute();
+      },
+      errorMessage: '항행경보 상세 정보를 불러오는데 실패했습니다',
+      showLoading: false,
+    );
+
+    if (result != null) {
+      _navigationWarningDetails = result;
+
+      AppLogger.d('📍 항행경보 상세 데이터 확인:');
+      for (var warning in _navigationWarningDetails) {
+        AppLogger.d('  - ${warning.areaNm}: ${warning.shapeType}');
+        if (warning.shapeType == MapConstants.warningShapeCircle) {
+          AppLogger.d(
+              '    중심: ${warning.circleCenter}, 반경: ${warning.radiusNM} NM');
+        } else {
+          AppLogger.d('    좌표 개수: ${warning.polygonPoints.length}');
+        }
+      }
+
+      // LRU 캐시 저장 (1시간)
+      _cache.put(cacheKey, _navigationWarningDetails, AppDurations.hours1);
+      AppLogger.d(
+          '💾 [캐시 저장] 항행경보 상세 ${_navigationWarningDetails.length}개 (1시간 유효)');
+
+      safeNotifyListeners();
+    } else {
+      AppLogger.d('[INFO] 항행경보 상세가 없거나 응답이 null입니다');
+      _navigationWarningDetails = [];
       safeNotifyListeners();
     }
   }
@@ -368,6 +421,7 @@ class NavigationProvider extends BaseProvider {
   void dispose() {
     _rosList.clear();
     _navigationWarnings.clear();
+    _navigationWarningDetails.clear();
     clearCache();
     AppLogger.d('NavigationProvider disposed');
     super.dispose();

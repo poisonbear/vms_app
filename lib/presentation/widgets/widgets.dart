@@ -1,13 +1,6 @@
 // lib/presentation/widgets/widgets.dart
 
 /// VMS App 위젯 라이브러리
-///
-/// 앱에서 사용되는 모든 커스텀 위젯들을 포함합니다.
-///
-/// 사용 예시:
-/// ```dart
-/// import 'package:vms_app/presentation/widgets/widgets.dart';
-/// ```
 library vms_widgets;
 
 // Base Widgets - 기본 UI 컴포넌트
@@ -30,13 +23,13 @@ export 'features/navigation/bottom_navigation_widget.dart';
 export 'features/weather/weather_control_widget.dart';
 export 'features/weather/weather_info_widget.dart';
 
-// 🆕 선박 관련 위젯 (확장)
+// 선박 관련 위젯 (확장)
 export 'features/vessel/vessel_info_widget.dart';
 export 'features/vessel/vessel_dialog.dart';
 export 'features/vessel/vessel_info_card.dart';
 export 'features/vessel/vessel_dialog_actions.dart';
 
-// 🆕 알림 관련 위젯
+// 알림 관련 위젯
 export 'features/notification/navigation_warning_banner.dart';
 
 // 버튼 위젯

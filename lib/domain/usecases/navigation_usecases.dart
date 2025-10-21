@@ -31,6 +31,11 @@ class NavigationUseCases {
   Future<List<String>?> getNavigationWarnings() async {
     return await _repository.getNavigationWarnings();
   }
+
+  /// 항행 경보 상세 데이터 조회 (지도 표시용)
+  Future<List<NavigationWarningModel>> getNavigationWarningDetails() async {
+    return await _repository.getNavigationWarningDetails();
+  }
 }
 
 // ===== 개별 UseCase 클래스들 (기존 호환성 유지) =====
@@ -76,6 +81,17 @@ class GetNavigationWarnings {
 
   Future<List<String>?> execute() async {
     return await repository.getNavigationWarnings();
+  }
+}
+
+/// 항행 경보 상세 데이터 조회 UseCase (지도 표시용)
+class GetNavigationWarningDetails {
+  final NavigationRepository repository;
+
+  GetNavigationWarningDetails(this.repository);
+
+  Future<List<NavigationWarningModel>> execute() async {
+    return await repository.getNavigationWarningDetails();
   }
 }
 

@@ -6,8 +6,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_app/data/models/vessel_model.dart';
 import 'package:vms_app/presentation/providers/route_provider.dart';
+import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/screens/main/utils/geo_utils.dart';
-
+import 'package:vms_app/presentation/widgets/features/map/map_layer.dart';
 import 'package:vms_app/core/constants/constants.dart';
 
 /// 통합된 메인 지도 위젯
@@ -33,8 +34,8 @@ class MapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RouteProvider>(
-      builder: (context, routeSearchViewModel, child) {
+    return Consumer2<RouteProvider, NavigationProvider>(
+      builder: (context, routeSearchViewModel, navigationProvider, child) {
         // 항적 데이터 처리
         final pastRouteLine = _processPastRoute(routeSearchViewModel);
         final predRouteLine =
@@ -46,6 +47,9 @@ class MapWidget extends StatelessWidget {
           pastRouteLine.clear();
           predRouteLine.clear();
         }
+
+        // 항행경보 데이터
+        final navigationWarnings = navigationProvider.navigationWarningDetails;
 
         return FlutterMap(
           mapController: mapController,
@@ -64,25 +68,31 @@ class MapWidget extends StatelessWidget {
             // 1. WMS 타일 레이어들
             ..._buildWMSLayers(),
 
-            // 2. 과거항적 레이어
+            // 2. 항행경보 레이어 (지도 배경 위, 다른 레이어 아래)
+            NavigationWarningLayer(
+              warnings: navigationWarnings,
+              isVisible: true,
+            ),
+
+            // 3. 과거항적 레이어
             if (pastRouteLine.isNotEmpty) ...[
               _buildPastRouteLine(pastRouteLine),
               _buildPastRouteMarkers(pastRouteLine),
             ],
 
-            // 3. 예측항로 레이어
+            // 4. 예측항로 레이어
             if (predRouteLine.isNotEmpty) ...[
               _buildPredRouteLine(predRouteLine),
               _buildPredRouteMarkers(predRouteLine),
             ],
 
-            // 4. 퇴각항로 레이어 (관리자만)
+            // 5. 퇴각항로 레이어 (관리자만)
             if (isOtherVesselsVisible) ...[
               _buildEscapeRouteLine(vessels),
               _buildEscapeRouteEndpoints(vessels),
             ],
 
-            // 5. 선박 마커 레이어
+            // 6. 선박 마커 레이어
             _buildCurrentUserVessel(vessels, currentUserMmsi),
             if (isOtherVesselsVisible)
               _buildOtherVessels(vessels, currentUserMmsi, onVesselTap),

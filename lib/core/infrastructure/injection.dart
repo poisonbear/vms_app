@@ -169,6 +169,10 @@ void _registerUseCases() {
     () => GetNavigationWarnings(getIt<domain.NavigationRepository>()),
   );
 
+  getIt.registerFactory<GetNavigationWarningDetails>(
+    () => GetNavigationWarningDetails(getIt<domain.NavigationRepository>()),
+  );
+
   // Vessel UseCases
   getIt.registerFactory<SearchVessel>(
     () => SearchVessel(getIt<domain.VesselRepository>()),
