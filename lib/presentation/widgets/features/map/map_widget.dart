@@ -11,7 +11,7 @@ import 'package:vms_app/presentation/providers/route_provider.dart';
 import 'package:vms_app/presentation/providers/navigation_provider.dart';
 import 'package:vms_app/presentation/widgets/features/map/map_layer.dart';
 
-/// 통합된 메인 지도 위젯 (StatefulWidget으로 변경)
+/// 통합된 메인 지도 위젯
 class MapWidget extends StatefulWidget {
   final MapController mapController;
   final LatLng? currentPosition;
@@ -96,11 +96,6 @@ class _MapWidgetState extends State<MapWidget> {
                       setState(() {
                         _currentZoom = position.zoom!;
                       });
-                    }
-
-                    // 지도 이동 시 팝업 닫기
-                    if (hasGesture && _selectedMarkerIndex != null) {
-                      _closePopup();
                     }
                   },
                   onTap: (tapPosition, point) {
@@ -222,95 +217,165 @@ class _MapWidgetState extends State<MapWidget> {
     return predRouteLine;
   }
 
-  /// 과거항적 선 - 주황색으로 변경
+  /// 과거항적 선 - 시간 흐름에 따른 색상 그라디언트
+  /// 구간별로 색상이 변하는 여러 Polyline 생성
   Widget _buildPastRouteLine(List<LatLng> pastRouteLine) {
-    return PolylineLayer(
-      polylines: [
+    if (pastRouteLine.length < 2) {
+      return const PolylineLayer(polylines: []);
+    }
+
+    List<Polyline> polylines = [];
+
+    // 구간별 색상 계산 (초록 → 노랑 → 주황 → 빨강)
+    for (int i = 0; i < pastRouteLine.length - 1; i++) {
+      final progress = i / (pastRouteLine.length - 1);
+      final color = _getGradientColor(progress);
+
+      polylines.add(
         Polyline(
-          points: pastRouteLine,
-          strokeWidth: 2.0, // 3.0의 2/3
-          color: Colors.orange, // 주황색으로 변경
+          points: [pastRouteLine[i], pastRouteLine[i + 1]],
+          strokeWidth: 2.0,
+          color: color,
         ),
-      ],
-    );
+      );
+    }
+
+    return PolylineLayer(polylines: polylines);
   }
 
-  /// 과거항적 마커 - 중간 포인트 추가 (속도 3노트 초과만 표시)
+  /// 진행 상황에 따른 그라디언트 색상 계산
+  Color _getGradientColor(double progress) {
+    if (progress < 0.33) {
+      return Color.lerp(Colors.green, Colors.yellow, progress / 0.33)!;
+    } else if (progress < 0.66) {
+      return Color.lerp(
+          Colors.yellow, Colors.orange, (progress - 0.33) / 0.33)!;
+    } else {
+      return Color.lerp(Colors.orange, Colors.red, (progress - 0.66) / 0.34)!;
+    }
+  }
+
+  /// 과거항적 마커
   Widget _buildPastRouteMarkers(
       List<LatLng> pastRouteLine, RouteProvider viewModel) {
     List<Marker> markers = [];
 
-    // 시작점 마커 (초록색) - 크기 키움
-    if (pastRouteLine.isNotEmpty) {
+    if (viewModel.pastRoutes.isEmpty) return MarkerLayer(markers: markers);
+
+    // ✅ 시작점 마커 (초록색)
+    if (pastRouteLine.isNotEmpty && viewModel.pastRoutes.isNotEmpty) {
+      final startRoute = viewModel.pastRoutes.first;
+      final isSelected = _selectedMarkerIndex == 0;
+
       markers.add(
         Marker(
           point: pastRouteLine.first,
-          width: 14,
-          height: 14,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2.5),
+          width: isSelected ? 32 : 24,
+          height: isSelected ? 32 : 24,
+          child: GestureDetector(
+            onTap: () {
+              _showTrackPointPopup(0, startRoute);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Center(
+              // ✅ AnimatedContainer 대신 일반 Container 사용
+              child: Container(
+                width: isSelected ? 18 : 14,
+                height: isSelected ? 18 : 14,
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: isSelected ? 3.0 : 2.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.5),
+                            blurRadius: 10.0,
+                            spreadRadius: 3.0,
+                          ),
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 20.0,
+                            spreadRadius: 5.0,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
             ),
           ),
         ),
       );
     }
 
-    // 중간 포인트 마커 (속도 3노트 초과만 표시)
+    // 중간 포인트 마커
     if (pastRouteLine.length > 2) {
       int cnt = viewModel.pastRoutes.length <= 20 ? 1 : 20;
 
-      int totalPoints = 0;
-      int filteredPoints = 0;
-      int nullSogPoints = 0;
-
       for (int i = 1; i < viewModel.pastRoutes.length - 1; i++) {
         if (i % cnt == 0) {
-          totalPoints++;
           final route = viewModel.pastRoutes[i];
-          final sog = route.sog; // ✅ API 필드명과 일치
+          final sog = route.sog;
 
-          // 디버깅: 속도 데이터 확인
-          if (sog == null) {
-            nullSogPoints++;
-          }
-
-          // 속도가 null이거나 3노트 이하인 경우 제외
           if (sog == null || sog <= 3.0) {
-            filteredPoints++;
             continue;
           }
 
           final point = LatLng(route.lttd ?? 0, route.lntd ?? 0);
           final markerIndex = i;
+          final isSelected = _selectedMarkerIndex == markerIndex;
+
+          // 시간 진행률 계산
+          final progress = i / (viewModel.pastRoutes.length - 1);
+          final markerColor = _getGradientColor(progress);
 
           markers.add(
             Marker(
               point: point,
-              width: 24, // ✅ 터치 영역 확대 (8 → 24)
-              height: 24,
+              width: isSelected ? 32 : 24,
+              height: isSelected ? 32 : 24,
               child: GestureDetector(
                 onTap: () {
                   _showTrackPointPopup(markerIndex, route);
                 },
-                behavior: HitTestBehavior.opaque, // ✅ 투명 영역도 터치 감지
+                behavior: HitTestBehavior.opaque,
                 child: Center(
+                  // ✅ AnimatedContainer 대신 일반 Container 사용
                   child: Container(
-                    width: 8, // 실제 마커는 8x8 유지
-                    height: 8,
+                    width: isSelected ? 12 : 8,
+                    height: isSelected ? 12 : 8,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.orange, width: 1.5),
+                      border: Border.all(
+                        color: markerColor,
+                        width: isSelected ? 2.0 : 1.5,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: markerColor.withOpacity(0.5),
+                                blurRadius: 8.0,
+                                spreadRadius: 2.0,
+                              ),
+                              BoxShadow(
+                                color: markerColor.withOpacity(0.3),
+                                blurRadius: 16.0,
+                                spreadRadius: 4.0,
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Center(
+                      // ✅ 내부 컨테이너도 일반 Container로
                       child: Container(
-                        width: 3,
-                        height: 3,
-                        decoration: const BoxDecoration(
-                          color: Colors.orange,
+                        width: isSelected ? 5 : 3,
+                        height: isSelected ? 5 : 3,
+                        decoration: BoxDecoration(
+                          color: markerColor,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -322,41 +387,52 @@ class _MapWidgetState extends State<MapWidget> {
           );
         }
       }
-
-      // 디버깅 로그 출력
-      if (totalPoints > 0) {
-        print('📊 [항적 마커 디버깅]');
-        print('  - 전체 샘플링 포인트: $totalPoints개');
-        print('  - 속도(SOG) null인 포인트: $nullSogPoints개');
-        print('  - 필터링된 포인트 (3노트 이하): $filteredPoints개');
-        print('  - 표시된 마커: ${totalPoints - filteredPoints}개');
-
-        // 샘플 데이터 출력 (처음 3개)
-        print('  - 샘플 데이터 (처음 3개):');
-        int sampleCount = 0;
-        for (int i = 1;
-            i < viewModel.pastRoutes.length - 1 && sampleCount < 3;
-            i += cnt) {
-          final route = viewModel.pastRoutes[i];
-          print(
-              '    [$i] SOG: ${route.sog ?? "null"} knots, COG: ${route.cog ?? "null"}°');
-          sampleCount++;
-        }
-      }
     }
 
-    // 끝점 마커 (빨강색) - 크기 키움
-    if (pastRouteLine.length > 1) {
+    // ✅ 끝점 마커 (빨강색)
+    if (pastRouteLine.length > 1 && viewModel.pastRoutes.isNotEmpty) {
+      final endRoute = viewModel.pastRoutes.last;
+      final endIndex = viewModel.pastRoutes.length - 1;
+      final isSelected = _selectedMarkerIndex == endIndex;
+
       markers.add(
         Marker(
           point: pastRouteLine.last,
-          width: 14,
-          height: 14,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2.5),
+          width: isSelected ? 32 : 24,
+          height: isSelected ? 32 : 24,
+          child: GestureDetector(
+            onTap: () {
+              _showTrackPointPopup(endIndex, endRoute);
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Center(
+              // ✅ AnimatedContainer 대신 일반 Container 사용
+              child: Container(
+                width: isSelected ? 18 : 14,
+                height: isSelected ? 18 : 14,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: isSelected ? 3.0 : 2.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.5),
+                            blurRadius: 10.0,
+                            spreadRadius: 3.0,
+                          ),
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.3),
+                            blurRadius: 20.0,
+                            spreadRadius: 5.0,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
             ),
           ),
         ),
@@ -385,9 +461,12 @@ class _MapWidgetState extends State<MapWidget> {
     final route = viewModel.pastRoutes[_selectedMarkerIndex!];
     final screenSize = MediaQuery.of(context).size;
 
+    print('🔍 regDt 원본 값: ${route.regDt}');
+    print('🔍 포맷팅 결과: ${_formatRegDt(route.regDt)}');
+
     // 팝업 크기
     const popupWidth = 220.0;
-    const popupHeight = 160.0; // 침로 제거로 높이 감소
+    const popupHeight = 160.0;
 
     // 팝업 위치 계산 (화면 밖으로 나가지 않도록)
     double left = (_popupPosition?.dx ?? 0) - popupWidth / 2;
@@ -423,7 +502,7 @@ class _MapWidgetState extends State<MapWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 헤더 (항행이력 탭 스타일)
+              // 헤더
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -474,7 +553,7 @@ class _MapWidgetState extends State<MapWidget> {
                 ),
               ),
 
-              // 본문 (항행이력 탭 스타일)
+              // 본문
               Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
@@ -558,41 +637,84 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   /// regDt 포맷팅 (int? -> String)
+  /// regDt는 Unix timestamp (milliseconds) 또는 YYYYMMDDHHmmss 형식일 수 있음
   String _formatRegDt(int? regDt) {
     if (regDt == null) return '-';
 
-    // regDt는 YYYYMMDDHHmmss 형식의 정수
     final regDtStr = regDt.toString();
 
-    // 길이 체크: 최소 8자리(YYYYMMDD) 이상이어야 함
-    if (regDtStr.length < 8) return regDtStr;
-
     try {
-      final year = regDtStr.substring(0, 4);
-      final month = regDtStr.substring(4, 6);
-      final day = regDtStr.substring(6, 8);
+      // ✅ STEP 1: Unix timestamp 확인 (길이가 10자리 이상이면서 큰 숫자)
+      // Unix timestamp는 1970년 이후의 밀리초 또는 초 단위
+      // 현재 시간 기준 약 1700000000000 (13자리) 이상
 
-      // 시간 정보가 있는 경우 (14자리: YYYYMMDDHHmmss)
-      if (regDtStr.length >= 14) {
-        final hour = regDtStr.substring(8, 10);
-        final minute = regDtStr.substring(10, 12);
-        return '$year.$month.$day $hour:$minute';
+      // Unix timestamp (밀리초)인지 확인 (13자리)
+      if (regDtStr.length == 13) {
+        final dateTime = DateTime.fromMillisecondsSinceEpoch(regDt);
+        return '${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
       }
-      // 시간 정보가 부족한 경우 (12자리: YYYYMMDDHHmm)
-      else if (regDtStr.length >= 12) {
-        final hour = regDtStr.substring(8, 10);
-        final minute = regDtStr.substring(10, 12);
-        return '$year.$month.$day $hour:$minute';
+
+      // Unix timestamp (초)인지 확인 (10자리이면서 큰 값)
+      // 2000년 이후: 946684800 이상
+      if (regDtStr.length == 10 && regDt > 946684800) {
+        final dateTime = DateTime.fromMillisecondsSinceEpoch(regDt * 1000);
+        return '${dateTime.year}.${dateTime.month.toString().padLeft(2, '0')}.${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
       }
-      // 시간 정보가 부족한 경우 (10자리: YYYYMMDDHH)
-      else if (regDtStr.length >= 10) {
-        final hour = regDtStr.substring(8, 10);
-        return '$year.$month.$day $hour:00';
+
+      // ✅ STEP 2: YYYYMMDDHHmmss 형식 확인 (날짜/시간 형식)
+      // 이 형식은 연도가 1900~2100 범위여야 함
+
+      // YYYYMMDDHHmmss 형식인 경우 (14자리)
+      if (regDtStr.length == 14) {
+        final yearInt = int.tryParse(regDtStr.substring(0, 4));
+        if (yearInt != null && yearInt >= 1900 && yearInt <= 2100) {
+          final year = regDtStr.substring(0, 4);
+          final month = regDtStr.substring(4, 6);
+          final day = regDtStr.substring(6, 8);
+          final hour = regDtStr.substring(8, 10);
+          final minute = regDtStr.substring(10, 12);
+          return '$year.$month.$day $hour:$minute';
+        }
       }
-      // 날짜만 있는 경우 (8자리: YYYYMMDD)
-      else {
-        return '$year.$month.$day';
+
+      // YYYYMMDDHHmm 형식인 경우 (12자리)
+      if (regDtStr.length == 12) {
+        final yearInt = int.tryParse(regDtStr.substring(0, 4));
+        if (yearInt != null && yearInt >= 1900 && yearInt <= 2100) {
+          final year = regDtStr.substring(0, 4);
+          final month = regDtStr.substring(4, 6);
+          final day = regDtStr.substring(6, 8);
+          final hour = regDtStr.substring(8, 10);
+          final minute = regDtStr.substring(10, 12);
+          return '$year.$month.$day $hour:$minute';
+        }
       }
+
+      // YYYYMMDDHH 형식인 경우 (10자리 - timestamp가 아닌 경우)
+      if (regDtStr.length == 10) {
+        final yearInt = int.tryParse(regDtStr.substring(0, 4));
+        if (yearInt != null && yearInt >= 1900 && yearInt <= 2100) {
+          final year = regDtStr.substring(0, 4);
+          final month = regDtStr.substring(4, 6);
+          final day = regDtStr.substring(6, 8);
+          final hour = regDtStr.substring(8, 10);
+          return '$year.$month.$day $hour:00';
+        }
+      }
+
+      // YYYYMMDD 형식인 경우 (8자리)
+      if (regDtStr.length == 8) {
+        final yearInt = int.tryParse(regDtStr.substring(0, 4));
+        if (yearInt != null && yearInt >= 1900 && yearInt <= 2100) {
+          final year = regDtStr.substring(0, 4);
+          final month = regDtStr.substring(4, 6);
+          final day = regDtStr.substring(6, 8);
+          return '$year.$month.$day';
+        }
+      }
+
+      // 그 외의 경우 원본 문자열 반환
+      return regDtStr;
     } catch (e) {
       // 파싱 실패 시 원본 문자열 반환
       return regDtStr;
