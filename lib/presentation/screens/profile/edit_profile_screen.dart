@@ -24,7 +24,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController mmsiController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -202,7 +202,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
 
       if (data.containsKey('user_id') && data['user_id'] != null) {
         final serverUserId =
-            data['user_id'].toString().replaceAll('@kdn.vms.com', '');
+        data['user_id'].toString().replaceAll('@kdn.vms.com', '');
         idController.text = serverUserId;
         AppLogger.d('사용자 ID 동기화: $serverUserId');
       }
@@ -374,8 +374,8 @@ class _MembershipviewState extends State<MemberInformationChange> {
         errorMessage = responseData is Map && responseData['message'] != null
             ? responseData['message']
             : statusCode == null
-                ? ErrorMessages.serverConnection
-                : ErrorMessages.processingError;
+            ? ErrorMessages.serverConnection
+            : ErrorMessages.processingError;
       }
     } else {
       errorMessage = '${ErrorMessages.generalError}: $e';
@@ -470,11 +470,74 @@ class _MembershipviewState extends State<MemberInformationChange> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 아이디 섹션
-                    _buildSectionCard(
-                      icon: Icons.account_circle_outlined,
-                      title: '아이디',
-                      child: _buildDisabledInput(idController),
+                    // ============================================
+                    // 수정 1: 아이디 섹션 - 한줄 표시 (도메인 제거)
+                    // ============================================
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.whiteType1,
+                        borderRadius: BorderRadius.circular(DesignConstants.radiusL),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.blackOpacity(0.05),
+                            blurRadius: DesignConstants.radiusM,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSizes.s20),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(AppSizes.s8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary
+                                    .withOpacity(DesignConstants.opacity10),
+                                borderRadius: BorderRadius.circular(AppSizes.s8),
+                              ),
+                              child: const Icon(
+                                Icons.account_circle_outlined,
+                                size: AppSizes.s20,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.s12),
+                            const Text(
+                              '아이디',
+                              style: TextStyle(
+                                fontSize: DesignConstants.fontSizeM,
+                                fontWeight: FontWeights.w700,
+                                color: AppColors.grayType8,
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.s16),
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(DesignConstants.radiusM),
+                                  border: Border.all(color: AppColors.grayType10, width: 1.5),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSizes.s16, vertical: AppSizes.s14),
+                                  child: Text(
+                                    // Firebase의 email에서 도메인 제거하여 표시
+                                    FirebaseAuth.instance.currentUser?.email?.split('@')[0] ??
+                                        (idController.text.isNotEmpty ? idController.text : ''),
+                                    style: const TextStyle(
+                                      fontSize: DesignConstants.fontSizeS,
+                                      color: Colors.black,
+                                      fontWeight: FontWeights.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: AppSizes.s16),
@@ -517,7 +580,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                             onToggleVisibility: () {
                               setState(() {
                                 _isConfirmPasswordVisible =
-                                    !_isConfirmPasswordVisible;
+                                !_isConfirmPasswordVisible;
                               });
                             },
                           ),
@@ -555,7 +618,9 @@ class _MembershipviewState extends State<MemberInformationChange> {
 
                     const SizedBox(height: AppSizes.s16),
 
-                    // 이메일 섹션
+                    // ============================================
+                    // 수정 2: 이메일 섹션 - 도메인 라벨 길이 증가 (flex: 2 → 3)
+                    // ============================================
                     _buildSectionCard(
                       icon: Icons.email_outlined,
                       title: '이메일',
@@ -584,7 +649,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                             ),
                           ),
                           Expanded(
-                            flex: 2,
+                            flex: 3,  // 수정: 2에서 3으로 변경하여 도메인 라벨 길이 증가
                             child: _buildEmailDomainSelector(),
                           ),
                         ],
@@ -663,28 +728,6 @@ class _MembershipviewState extends State<MemberInformationChange> {
     );
   }
 
-  Widget _buildDisabledInput(TextEditingController controller) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.grayType14,
-        borderRadius: BorderRadius.circular(DesignConstants.radiusM),
-        border: Border.all(color: AppColors.grayType10),
-      ),
-      child: TextField(
-        controller: controller,
-        enabled: false,
-        style: const TextStyle(
-          fontSize: DesignConstants.fontSizeS,
-          color: AppColors.grayType2,
-        ),
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.symmetric(
-              horizontal: AppSizes.s16, vertical: AppSizes.s14),
-          border: InputBorder.none,
-        ),
-      ),
-    );
-  }
 
   Widget _buildInput({
     required TextEditingController controller,
@@ -846,7 +889,7 @@ class _MembershipviewState extends State<MemberInformationChange> {
                     color: AppColors.whiteType1,
                     shape: RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(DesignConstants.radiusM),
+                      BorderRadius.circular(DesignConstants.radiusM),
                       side: const BorderSide(color: AppColors.grayType10),
                     ),
                     elevation: 8,
@@ -943,22 +986,22 @@ class _MembershipviewState extends State<MemberInformationChange> {
           child: Center(
             child: isSubmitting
                 ? const SizedBox(
-                    width: AppSizes.s24,
-                    height: AppSizes.s24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.whiteType1),
-                    ),
-                  )
+              width: AppSizes.s24,
+              height: AppSizes.s24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor:
+                AlwaysStoppedAnimation<Color>(AppColors.whiteType1),
+              ),
+            )
                 : const Text(
-                    '수정 완료',
-                    style: TextStyle(
-                      fontSize: DesignConstants.fontSizeM,
-                      fontWeight: FontWeights.w700,
-                      color: AppColors.whiteType1,
-                    ),
-                  ),
+              '수정 완료',
+              style: TextStyle(
+                fontSize: DesignConstants.fontSizeM,
+                fontWeight: FontWeights.w700,
+                color: AppColors.whiteType1,
+              ),
+            ),
           ),
         ),
       ),
