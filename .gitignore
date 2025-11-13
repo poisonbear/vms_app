@@ -1,0 +1,6 @@
+*.zip
+*.apk
+*.ipa
+build/
+.dart_tool/
+.packages

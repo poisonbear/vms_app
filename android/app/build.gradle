@@ -1,0 +1,116 @@
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id 'com.google.gms.google-services'
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+android {
+    namespace 'kr.go.kdn.vms'
+    compileSdk 35
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    defaultConfig {
+        applicationId "kr.go.kdn.vms"
+        minSdkVersion 23
+        targetSdkVersion 35
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            signingConfig signingConfigs.debug
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lint {
+        disable 'InvalidPackage'
+        checkReleaseBuilds false
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def version = variant.versionName
+            def buildType = variant.buildType.name
+
+            if (buildType == "release") {
+                outputFileName = "K-VMS.v${version}.apk"
+            } else {
+                outputFileName = "K-VMS.v${version}-${buildType}.apk"
+            }
+        }
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    // Firebase BOM을 명시적 버전으로 고정
+    implementation platform('com.google.firebase:firebase-bom:32.5.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-messaging'
+
+    // Play Services 버전 명시적 지정
+    implementation 'com.google.android.gms:play-services-measurement:21.5.0'
+    implementation 'com.google.android.gms:play-services-measurement-api:21.5.0'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
+
+// APK 파일을 flutter-apk 폴더로 자동 복사
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('assembleDebug') || task.name.contains('assembleRelease')) {
+        task.doLast {
+            def buildType = task.name.contains('Debug') ? 'debug' : 'release'
+            def apkDir = file("${buildDir}/outputs/apk/${buildType}")
+            def flutterApkDir = file("${buildDir}/outputs/flutter-apk")
+
+            flutterApkDir.mkdirs()
+
+            apkDir.listFiles().each { file ->
+                if (file.name.endsWith('.apk') && file.name.startsWith('K-VMS')) {
+                    copy {
+                        from file
+                        into flutterApkDir
+                    }
+                }
+            }
+        }
+    }
+}

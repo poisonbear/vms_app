@@ -1,0 +1,50 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "safe_backup_*/**"
+    - "*_backup_*/**"
+    - "backup_*/**"
+    - "**/.dart_tool/**"
+    - "**/build/**"
+    - "**/generated_plugin_registrant.dart"
+    - "backup_*/**"
+    - "**/*_backup*"
+    - "**/*_temp*"
+    - "android/app/.cxx/**"
+    - "windows/flutter/ephemeral/**"
+    - "ios/Flutter/ephemeral/**"
+    - "macos/Flutter/ephemeral/**"
+  
+  errors:
+    invalid_use_of_protected_member: error
+    missing_return: error
+    dead_code: warning
+    unused_import: warning
+    unused_local_variable: warning
+
+linter:
+  rules:
+    # 스타일 규칙
+    - prefer_const_constructors
+    - prefer_const_literals_to_create_immutables
+    - prefer_const_declarations
+    - avoid_unnecessary_containers
+    - sort_child_properties_last
+    
+    # 코드 품질 규칙
+    - avoid_print
+    - avoid_web_libraries_in_flutter
+    - no_logic_in_create_state
+    - prefer_const_constructors_in_immutables
+    - use_build_context_synchronously
+    
+    # 네이밍 규칙
+    - camel_case_types
+    - library_names
+    - file_names
+    - non_constant_identifier_names
+    - constant_identifier_names
+
+    # 상수는 SCREAMING_SNAKE_CASE 허용
+    - constant_identifier_names: false
