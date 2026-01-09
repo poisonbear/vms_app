@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; //InputFormatter용 추가
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vms_app/core/utils/password_utils.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
@@ -336,7 +337,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _apiUrl,
         data: {
           'user_id': _idController.text.trim(),
-          'user_pwd': _passwordController.text,
+          'user_pwd': PasswordUtils.hash(_passwordController.text),
           'mmsi': _mmsiController.text.trim(),
           'mphn_no': _phoneController.text.trim(),
           'email_addr': email,

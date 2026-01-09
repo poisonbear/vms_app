@@ -76,7 +76,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Local UI State
   // ==========================================
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   int selectedIndex = -1;
   bool _isLoadingRoute = false;
 
@@ -122,14 +122,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 60),
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _flashController.reverse();
-        } else if (status == AnimationStatus.dismissed) {
-          if (_controller.isFlashing) {
-            _flashController.forward();
-          }
+      if (status == AnimationStatus.completed) {
+        _flashController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        if (_controller.isFlashing) {
+          _flashController.forward();
         }
-      });
+      }
+    });
   }
 
   Future<void> _initializeServices() async {
@@ -170,7 +170,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _controller.timerService.startPeriodicTimer(
       "vessel_update",
       const Duration(seconds: 2),
-      () {
+          () {
         if (!mounted) return;
         if (!context.mounted) return;
         _vesselDataManager.loadVesselDataAndUpdateMap(context);
@@ -180,7 +180,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _controller.timerService.startPeriodicTimer(
       "main_timer",
       const Duration(seconds: 2),
-      () {
+          () {
         Provider.of<NavigationProvider>(context, listen: false)
             .getWeatherInfo()
             .then((_) {
@@ -195,11 +195,13 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _requestPermissionsSequentially();
     });
 
+    // 항상 초기 위치 설정 - 지도 완전 로드 후 실행 (1초 대기)
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      _performAutoFocus();
+    });
+
     if (widget.autoFocusLocation) {
       AppLogger.d('🚀 자동 포커스 활성화: ${widget.autoFocusLocation}');
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _performAutoFocus();
-      });
     }
   }
 
@@ -211,7 +213,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _requestPermissionsSequentially() async {
     bool locationGranted =
-        await _locationManager.checkAndRequestLocationPermission();
+    await _locationManager.checkAndRequestLocationPermission();
     if (locationGranted) {
       final location = await _locationManager.getCurrentLocation();
       if (location != null) {
@@ -232,7 +234,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     NotificationSettings notifSettings =
-        await FirebaseMessaging.instance.getNotificationSettings();
+    await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus != AuthorizationStatus.authorized &&
         notifSettings.authorizationStatus != AuthorizationStatus.provisional) {
       await FirebaseMessaging.instance.requestPermission();
@@ -240,13 +242,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _performAutoFocus() async {
+    // 기본 위치 (발전단지 중앙)
+    const defaultLocation = LatLng(35.374509, 126.132268);
+
     try {
-      //mounted 체크 추가 (context.read 호출 전)
       if (!mounted) return;
       if (!context.mounted) return;
 
+      // 지도 컨트롤러 준비 대기
+      await Future.delayed(const Duration(milliseconds: 300));
+
       final userMmsi = context.read<UserState>().mmsi;
-      if (userMmsi == null || userMmsi == 0) return;
+      if (userMmsi == null || userMmsi == 0) {
+        // MMSI 없을 때 기본 위치로 이동
+        _controller.mapController.moveAndRotate(defaultLocation, 12.0, 0.0);
+        AppLogger.w('MMSI가 없어 기본 위치로 이동');
+        return;
+      }
 
       final vesselProvider = context.read<VesselProvider>();
 
@@ -258,16 +270,32 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       if (!context.mounted) return;
 
-      VesselFocusHelper.focusOnUserVessel(
-        mapController: _controller.mapController,
-        vessels: vesselProvider.vessels,
-        userMmsi: userMmsi,
-        zoom: 13.0,
-      );
+      // 사용자 선박 찾기
+      final userVessel = vesselProvider.vessels
+          .where((v) => v.mmsi == userMmsi)
+          .firstOrNull;
 
-      AppLogger.i('로그인 후 자동 포커스 완료 (MMSI: $userMmsi)');
+      if (userVessel != null &&
+          userVessel.lttd != null &&
+          userVessel.lntd != null) {
+        // 사용자 선박 위치로 이동
+        final vesselLocation = LatLng(userVessel.lttd!, userVessel.lntd!);
+        _controller.mapController.moveAndRotate(vesselLocation, 13.0, 0.0);
+        AppLogger.i('로그인 후 자동 포커스 완료 (MMSI: $userMmsi)');
+      } else {
+        // 선박을 찾지 못한 경우 기본 위치로 이동
+        _controller.mapController.moveAndRotate(defaultLocation, 12.0, 0.0);
+        AppLogger.w('선박을 찾지 못해 기본 위치로 이동 (MMSI: $userMmsi)');
+      }
     } catch (e) {
       AppLogger.e('자동 포커스 실패: $e');
+
+      // 실패 시 기본 위치(발전단지)로 이동
+      try {
+        _controller.mapController.moveAndRotate(defaultLocation, 12.0, 0.0);
+      } catch (e2) {
+        AppLogger.e('기본 위치 이동도 실패: $e2');
+      }
     }
   }
 
@@ -374,10 +402,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // ==========================================
 
   List<VesselSearchModel> _getFilteredVessels(
-    List<VesselSearchModel> allVessels,
-    String? role,
-    int mmsi,
-  ) {
+      List<VesselSearchModel> allVessels,
+      String? role,
+      int mmsi,
+      ) {
     if (_cachedVessels != null &&
         _cachedRole == role &&
         _cachedMmsi == mmsi &&
@@ -461,7 +489,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   void _showWeatherSheet(BuildContext context) {
     _bottomSheetController = Scaffold.of(context).showBottomSheet(
-      (context) => PopScope(
+          (context) => PopScope(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop) return;

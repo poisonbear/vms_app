@@ -23,10 +23,13 @@ class AuthProvider extends BaseProvider {
 
   /// 초기 사용자 데이터 로드
   Future<void> _initializeUser() async {
+    if (_isInitialized) {
+      return;
+    }
     await loadUserData();
   }
 
-  /// 사용자 역할 설정 (기존 메서드명 유지)
+  /// 사용자 역할 설정
   Future<void> setRole(String newRole) async {
     await executeAsync(() async {
       final previousRole = _role;
@@ -41,16 +44,22 @@ class AuthProvider extends BaseProvider {
           throw Exception(ErrorMessages.roleSaveFailed);
         }
 
+        // 저장 후 재확인
+        _role = prefs.getString(StringConstants.userRoleKey) ??
+            StringConstants.emptyString;
+        _isInitialized = true;
+
         AppLogger.i('User role updated: $newRole');
         safeNotifyListeners();
       } catch (e) {
         _role = previousRole;
+        AppLogger.e('Role save failed: $e');
         rethrow;
       }
     }, errorMessage: ErrorMessages.roleSaveError, showLoading: false);
   }
 
-  /// MMSI 설정 (기존 메서드명 유지)
+  /// MMSI 설정
   Future<void> setMmsi(int? newMmsi) async {
     await executeAsync(() async {
       final previousMmsi = _mmsi;
@@ -72,9 +81,14 @@ class AuthProvider extends BaseProvider {
           throw Exception(ErrorMessages.mmsiSaveFailed);
         }
 
+        // 저장 후 재확인
+        _mmsi = prefs.getInt(StringConstants.userMmsiKey);
+        _isInitialized = true;
+
         safeNotifyListeners();
       } catch (e) {
         _mmsi = previousMmsi;
+        AppLogger.e('MMSI save failed: $e');
         rethrow;
       }
     }, errorMessage: ErrorMessages.mmsiSaveError, showLoading: false);
@@ -124,17 +138,16 @@ class AuthProvider extends BaseProvider {
   bool get isLoggedIn =>
       _role.isNotEmpty && _role != StringConstants.emptyString;
 
-  ///일반 사용자인지 확인 (자기 선박만 볼 수 있음)
+  /// 일반 사용자인지 확인 (자기 선박만 볼 수 있음)
   bool get isUser => _role == 'ROLE_USER';
 
-  ///시스템 관리자인지 확인 (모든 선박 볼 수 있음)
+  /// 시스템 관리자인지 확인 (모든 선박 볼 수 있음)
   bool get isAdmin => _role == 'ROLE_ADMIN';
 
-  ///발전단지 운영자인지 확인 (모든 선박 볼 수 있음)
+  /// 발전단지 운영자인지 확인 (모든 선박 볼 수 있음)
   bool get isOperator => _role == 'ROLE_OPERATOR';
 
-  ///모든 선박을 볼 수 있는 권한이 있는지 확인
-  /// (시스템 관리자 또는 발전단지 운영자)
+  /// 모든 선박을 볼 수 있는 권한이 있는지 확인
   bool get canViewAllVessels => isAdmin || isOperator;
 
   /// 디버그용 - 현재 상태 출력

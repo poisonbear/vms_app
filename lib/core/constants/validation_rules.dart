@@ -7,9 +7,9 @@ class ValidationRules {
   // ============================================
   // ID 검증
   // ============================================
-  static const int idMinLength = 8;
+  static const int idMinLength = 4;
   static const int idMaxLength = 20;
-  static const String idPattern = r'^[a-zA-Z0-9]{8,20}$';
+  static const String idPattern = r'^[a-zA-Z0-9]{4,20}$';
   static final RegExp idRegExp = RegExp(idPattern);
   static bool isValidId(String value) => idRegExp.hasMatch(value);
 

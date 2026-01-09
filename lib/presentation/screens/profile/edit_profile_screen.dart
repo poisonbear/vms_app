@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/utils/password_utils.dart';
 import 'package:vms_app/core/infrastructure/network_client.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 
@@ -509,10 +510,13 @@ class _MembershipviewState extends State<MemberInformationChange> {
     final firebaseToken = await user.getIdToken();
     final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
 
+    // 비밀번호 해싱 적용
     final dataToSend = {
       'user_id': idController.text,
-      if (isChangingPassword) 'user_pwd': password,
-      if (isChangingPassword) 'user_npwd': newPassword,
+      if (isChangingPassword)
+        'user_pwd': PasswordUtils.hash(password), // 현재 비밀번호 해싱
+      if (isChangingPassword)
+        'user_npwd': PasswordUtils.hash(newPassword), // 새 비밀번호 해싱
       'mmsi': mmsi,
       'mphn_no': phone,
       'choice_time': widget.nowTime.toIso8601String(),

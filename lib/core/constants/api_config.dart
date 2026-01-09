@@ -22,6 +22,7 @@ class ApiConfig {
   static const String _memberInfoKey = 'kdn_usm_select_member_info_data';
   static const String _updateMemberKey = 'kdn_usm_update_membership_key';
   static const String _memberSearchKey = 'kdn_usm_select_membership_search_key';
+  static const String _findUserIdByMmsiKey = 'kdn_usm_find_user_id_by_mmsi';
 
   // Terms
   static const String _termsKey = 'kdn_usm_select_cmd_key';
@@ -108,6 +109,7 @@ class ApiConfig {
   static String get memberInfo => _getEnv(_memberInfoKey);
   static String get updateMember => _getEnv(_updateMemberKey);
   static String get memberSearch => _getEnv(_memberSearchKey);
+  static String get findUserIdByMmsi => _getEnv(_findUserIdByMmsiKey);
 
   // ============================================
   // Terms Endpoints

@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
+import 'package:vms_app/presentation/providers/vessel_provider.dart';
 import 'package:vms_app/presentation/screens/auth/login_screen.dart';
 import 'package:vms_app/presentation/screens/profile/edit_profile_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
@@ -24,15 +25,14 @@ class MemberInformationView extends StatefulWidget {
 
 class _RegisterCompleteViewState extends State<MemberInformationView> {
   bool _isSwitched = false;
-  final _secureStorage = SecureStorageService(); // SecureStorage 인스턴스
+  final _secureStorage = SecureStorageService();
 
   @override
   void initState() {
     super.initState();
-    _loadAutoLogin(); // 자동 로그인 상태 불러오기
+    _loadAutoLogin();
   }
 
-  // SharedPreferences에서 자동 로그인 상태 불러오기
   Future<void> _loadAutoLogin() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -43,18 +43,15 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
   Future<void> _saveAutoLogin(bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('auto_login', value);
-
     AppLogger.d('자동 로그인 설정 변경: $value');
   }
 
-  /// SecureStorage도 정리하는 로그아웃
   Future<void> _logout() async {
     try {
-      AppLogger.d('로그아웃 시작...');
-
+      AppLogger.d('로그아웃 시작');
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // 1. SharedPreferences 데이터 삭제
+      // SharedPreferences 데이터 삭제
       await Future.wait([
         prefs.remove('auto_login'),
         prefs.remove('username'),
@@ -62,73 +59,51 @@ class _RegisterCompleteViewState extends State<MemberInformationView> {
         prefs.remove('saved_pw'),
       ]);
 
-      AppLogger.d('SharedPreferences 데이터 삭제 완료');
-
-      // SecureStorage의 모든 데이터 삭제 (토큰, UUID, 비밀번호 등 전부)
+      // SecureStorage 데이터 삭제
       await _secureStorage.clearAll();
-      AppLogger.d('SecureStorage 데이터 삭제 완료');
 
-      if (!mounted) {
-        AppLogger.w('Widget unmounted after clearAll');
-        return;
-      }
-      if (!context.mounted) {
-        AppLogger.w('Context not mounted after clearAll');
-        return;
-      }
+      if (!mounted || !context.mounted) return;
 
-      // 3. UserState 초기화 (Provider 사용)
+      // UserState 초기화
       try {
         final userState = context.read<UserState>();
         await userState.clearUserData();
-        AppLogger.d('UserState 초기화 완료');
       } catch (e) {
         AppLogger.e('UserState 초기화 실패: $e');
       }
 
-      if (!mounted) {
-        AppLogger.w('Widget unmounted after clearUserData');
-        return;
+      if (!mounted || !context.mounted) return;
+
+      // VesselProvider 초기화
+      try {
+        final vesselProvider = context.read<VesselProvider>();
+        vesselProvider.clearCache();
+        vesselProvider.clearVessels();
+      } catch (e) {
+        AppLogger.e('VesselProvider 초기화 실패: $e');
       }
-      if (!context.mounted) {
-        AppLogger.w('Context not mounted after clearUserData');
-        return;
-      }
+
+      if (!mounted || !context.mounted) return;
 
       // Firebase 로그아웃
       try {
         await FirebaseAuth.instance.signOut();
-        AppLogger.d('Firebase 로그아웃 완료');
       } catch (e) {
         AppLogger.e('Firebase 로그아웃 실패: $e');
       }
 
-      if (!mounted) {
-        AppLogger.w('Widget unmounted after signOut');
-        return;
-      }
-      if (!context.mounted) {
-        AppLogger.w('Context not mounted after signOut');
-        return;
-      }
+      if (!mounted || !context.mounted) return;
 
       // 로그인 화면으로 이동
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginView()),
         (Route<dynamic> route) => false,
       );
-      AppLogger.i('로그아웃 완료 - 로그인 화면으로 이동');
+      AppLogger.i('로그아웃 완료');
     } catch (e) {
       AppLogger.e('로그아웃 처리 중 오류 발생', e);
 
-      if (!mounted) {
-        AppLogger.w('Widget unmounted in catch block');
-        return;
-      }
-      if (!context.mounted) {
-        AppLogger.w('Context not mounted in catch block');
-        return;
-      }
+      if (!mounted || !context.mounted) return;
 
       showTopSnackBar(context, '로그아웃 중 오류가 발생했습니다.');
     }

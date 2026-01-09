@@ -8,7 +8,7 @@ import 'package:vms_app/presentation/widgets/widgets.dart';
 import 'package:vms_app/presentation/screens/auth/register_screen.dart';
 import 'package:vms_app/presentation/screens/main/utils/navigation_utils.dart';
 
-/// 리팩토링된 약관 동의 화면
+/// 약관 동의 화면
 class CmdChoiceView extends StatelessWidget {
   const CmdChoiceView({super.key});
 

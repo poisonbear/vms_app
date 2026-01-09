@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:vms_app/core/utils/logging/app_logger.dart';
+import 'package:vms_app/core/utils/password_utils.dart';
 import 'package:vms_app/core/constants/constants.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -352,7 +353,7 @@ class _SplashScreenState extends State<SplashScreen>
       apiUrl,
       data: {
         'user_id': userId,
-        'user_pwd': password,
+        'user_pwd': PasswordUtils.hash(password), // 해싱된 비밀번호 전송
         'auto_login': true,
         'fcm_tkn': fcmToken,
         'uuid': uuid,
