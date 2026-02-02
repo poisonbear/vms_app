@@ -17,7 +17,8 @@ import 'package:vms_app/core/utils/password_utils.dart';
 import 'package:vms_app/core/services/services.dart';
 import 'package:vms_app/presentation/providers/auth_provider.dart';
 import 'package:vms_app/presentation/screens/auth/terms_agreement_screen.dart';
-import 'package:vms_app/presentation/screens/auth/find_account_screen.dart';
+import 'package:vms_app/presentation/screens/auth/force_password_change_screen.dart';
+import 'package:vms_app/presentation/widgets/features/auth/find_account_dialog.dart';
 import 'package:vms_app/presentation/screens/main/main_screen.dart';
 import 'package:vms_app/presentation/widgets/widgets.dart';
 
@@ -41,7 +42,7 @@ class _CmdViewState extends State<LoginView> {
   final String apiUrl = ApiConfig.authLogin;
   final String apiUrl2 = ApiConfig.authRole;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   final _secureStorage = SecureStorageService();
 
   late final FirebaseMessaging messaging;
@@ -58,6 +59,9 @@ class _CmdViewState extends State<LoginView> {
   int _loginAttempts = 0;
   DateTime? _lastAttemptTime;
   bool _isProcessing = false;
+
+  // ✅ 임시 비밀번호 상수
+  static const String _tempPassword = '000000';
 
   // ========================================
   // Lifecycle Methods
@@ -96,7 +100,7 @@ class _CmdViewState extends State<LoginView> {
 
       if (fcmToken != null && fcmToken!.isNotEmpty) {
         final preview =
-        fcmToken!.length > 20 ? fcmToken!.substring(0, 20) : fcmToken!;
+            fcmToken!.length > 20 ? fcmToken!.substring(0, 20) : fcmToken!;
         AppLogger.d('FCM 토큰 초기화 성공: $preview...');
       } else {
         AppLogger.w('FCM 토큰이 null이거나 비어있습니다.');
@@ -167,6 +171,11 @@ class _CmdViewState extends State<LoginView> {
     return true;
   }
 
+  // ✅ 임시 비밀번호 여부 확인
+  bool _isTempPassword(String password) {
+    return password == _tempPassword;
+  }
+
   String? _validateInput(String id, String password) {
     if (id.isEmpty || password.isEmpty) {
       return ErrorMessages.idPasswordRequired;
@@ -181,9 +190,12 @@ class _CmdViewState extends State<LoginView> {
       return '아이디는 영문, 숫자만 사용 가능합니다.';
     }
 
-    if (password.length < ValidationRules.passwordMinLength ||
-        password.length > ValidationRules.passwordMaxLength) {
-      return '비밀번호는 ${ValidationRules.passwordMinLength}-${ValidationRules.passwordMaxLength}자여야 합니다.';
+    // ✅ 임시 비밀번호(0000)는 길이 검증 스킵
+    if (!_isTempPassword(password)) {
+      if (password.length < ValidationRules.passwordMinLength ||
+          password.length > ValidationRules.passwordMaxLength) {
+        return '비밀번호는 ${ValidationRules.passwordMinLength}-${ValidationRules.passwordMaxLength}자여야 합니다.';
+      }
     }
 
     return null;
@@ -298,18 +310,25 @@ class _CmdViewState extends State<LoginView> {
         await prefs.setString('username', username);
         await saveUserId(id);
 
-        // 자동 로그인 설정
-        await prefs.setBool('auto_login', auto_login);
-
-        if (auto_login) {
-          await _secureStorage.saveCredentials(
-            id: id,
-            password: password, // 원본 비밀번호 저장 (자동 로그인 시 다시 해싱)
-          );
-          AppLogger.i('자동 로그인 정보가 안전하게 저장되었습니다');
-        } else {
+        // ✅ 임시 비밀번호로 로그인한 경우 자동 로그인 비활성화
+        if (_isTempPassword(password)) {
+          await prefs.setBool('auto_login', false);
           await _secureStorage.deleteCredentials();
-          AppLogger.i('자동 로그인 정보가 삭제되었습니다');
+          AppLogger.i('임시 비밀번호 로그인 - 자동 로그인 비활성화');
+        } else {
+          // 자동 로그인 설정
+          await prefs.setBool('auto_login', auto_login);
+
+          if (auto_login) {
+            await _secureStorage.saveCredentials(
+              id: id,
+              password: password,
+            );
+            AppLogger.i('자동 로그인 정보가 안전하게 저장되었습니다');
+          } else {
+            await _secureStorage.deleteCredentials();
+            AppLogger.i('자동 로그인 정보가 삭제되었습니다');
+          }
         }
 
         // 역할 정보 조회
@@ -387,16 +406,30 @@ class _CmdViewState extends State<LoginView> {
         await _updateFcmToken(username);
 
         if (mounted) {
-          AppLogger.i('로그인 완료 - 메인 화면으로 이동');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MainScreen(
-                username: username,
-                autoFocusLocation: true,
+          // ✅ 임시 비밀번호로 로그인한 경우 → 비밀번호 변경 화면으로 이동
+          if (_isTempPassword(password)) {
+            AppLogger.i('임시 비밀번호 로그인 - 비밀번호 변경 화면으로 이동');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ForcePasswordChangeScreen(
+                  username: username,
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            // 일반 로그인 → 메인 화면으로 이동
+            AppLogger.i('로그인 완료 - 메인 화면으로 이동');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MainScreen(
+                  username: username,
+                  autoFocusLocation: true,
+                ),
+              ),
+            );
+          }
         }
       } else {
         if (!mounted) {
@@ -444,10 +477,10 @@ class _CmdViewState extends State<LoginView> {
         errorMessage = responseData is Map && responseData['message'] != null
             ? responseData['message']
             : statusCode == 401
-            ? '아이디 또는 비밀번호를 확인해주세요.'
-            : statusCode == 500
-            ? ErrorMessages.serverError
-            : ErrorMessages.loginFailed;
+                ? '아이디 또는 비밀번호를 확인해주세요.'
+                : statusCode == 500
+                    ? ErrorMessages.serverError
+                    : ErrorMessages.loginFailed;
       } else {
         errorMessage = ErrorMessages.serverConnection;
       }
@@ -556,7 +589,7 @@ class _CmdViewState extends State<LoginView> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius:
-                      BorderRadius.circular(DesignConstants.radiusS),
+                          BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: inputWidget(
                       AppSizes.s266,
@@ -575,7 +608,7 @@ class _CmdViewState extends State<LoginView> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius:
-                      BorderRadius.circular(DesignConstants.radiusS),
+                          BorderRadius.circular(DesignConstants.radiusS),
                     ),
                     child: passwordInputWidget(
                       AppSizes.s266,
@@ -602,10 +635,10 @@ class _CmdViewState extends State<LoginView> {
                           onTap: _isProcessing
                               ? null
                               : () {
-                            setState(() {
-                              auto_login = !auto_login;
-                            });
-                          },
+                                  setState(() {
+                                    auto_login = !auto_login;
+                                  });
+                                },
                           borderRadius: BorderRadius.circular(4),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -623,13 +656,13 @@ class _CmdViewState extends State<LoginView> {
                                     onChanged: _isProcessing
                                         ? null
                                         : (bool? value) {
-                                      setState(() {
-                                        auto_login = value ?? false;
-                                      });
-                                    },
+                                            setState(() {
+                                              auto_login = value ?? false;
+                                            });
+                                          },
                                     activeColor: AppColors.skyType2,
                                     materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -650,10 +683,10 @@ class _CmdViewState extends State<LoginView> {
                           onTap: _isProcessing
                               ? null
                               : () {
-                            setState(() {
-                              save_id = !save_id;
-                            });
-                          },
+                                  setState(() {
+                                    save_id = !save_id;
+                                  });
+                                },
                           borderRadius: BorderRadius.circular(4),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
@@ -671,13 +704,13 @@ class _CmdViewState extends State<LoginView> {
                                     onChanged: _isProcessing
                                         ? null
                                         : (bool? value) {
-                                      setState(() {
-                                        save_id = value ?? false;
-                                      });
-                                    },
+                                            setState(() {
+                                              save_id = value ?? false;
+                                            });
+                                          },
                                     activeColor: AppColors.skyType2,
                                     materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -712,7 +745,7 @@ class _CmdViewState extends State<LoginView> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.skyType2,
                             disabledBackgroundColor:
-                            AppColors.skyType2.withValues(alpha: 0.5),
+                                AppColors.skyType2.withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                   DesignConstants.radiusS),
@@ -721,22 +754,22 @@ class _CmdViewState extends State<LoginView> {
                           ),
                           child: _isProcessing
                               ? const SizedBox(
-                            width: AppSizes.s20,
-                            height: AppSizes.s20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: AppSizes.s2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          )
+                                  width: AppSizes.s20,
+                                  height: AppSizes.s20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: AppSizes.s2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
                               : const Text(
-                            '로그인',
-                            style: TextStyle(
-                              fontSize: DesignConstants.fontSizeM,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                                  '로그인',
+                                  style: TextStyle(
+                                    fontSize: DesignConstants.fontSizeM,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                         ),
                       ),
 
@@ -750,18 +783,18 @@ class _CmdViewState extends State<LoginView> {
                           onPressed: _isProcessing
                               ? null
                               : () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                const CmdChoiceView(),
-                              ),
-                            );
-                          },
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const CmdChoiceView(),
+                                    ),
+                                  );
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.grayType3,
                             disabledBackgroundColor:
-                            AppColors.grayType3.withValues(alpha: 0.5),
+                                AppColors.grayType3.withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                   DesignConstants.radiusS),
@@ -787,13 +820,8 @@ class _CmdViewState extends State<LoginView> {
                   onTap: _isProcessing
                       ? null
                       : () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FindAccountView(),
-                      ),
-                    );
-                  },
+                          FindAccountDialog.show(context);
+                        },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
@@ -878,13 +906,13 @@ class _CmdViewState extends State<LoginView> {
   // ========================================
 
   Widget inputWidget(
-      double width,
-      double height,
-      TextEditingController controller,
-      String hintText,
-      Color hintColor, {
-        bool obscureText = false,
-      }) {
+    double width,
+    double height,
+    TextEditingController controller,
+    String hintText,
+    Color hintColor, {
+    bool obscureText = false,
+  }) {
     return SizedBox(
       width: width,
       height: height,
@@ -917,12 +945,12 @@ class _CmdViewState extends State<LoginView> {
   // ========================================
 
   Widget passwordInputWidget(
-      double width,
-      double height,
-      TextEditingController controller,
-      String hintText,
-      Color hintColor,
-      ) {
+    double width,
+    double height,
+    TextEditingController controller,
+    String hintText,
+    Color hintColor,
+  ) {
     return SizedBox(
       width: width,
       height: height,

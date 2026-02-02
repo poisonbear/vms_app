@@ -76,7 +76,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // Local UI State
   // ==========================================
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   int selectedIndex = -1;
   bool _isLoadingRoute = false;
 
@@ -122,14 +122,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 60),
     )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _flashController.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        if (_controller.isFlashing) {
-          _flashController.forward();
+        if (status == AnimationStatus.completed) {
+          _flashController.reverse();
+        } else if (status == AnimationStatus.dismissed) {
+          if (_controller.isFlashing) {
+            _flashController.forward();
+          }
         }
-      }
-    });
+      });
   }
 
   Future<void> _initializeServices() async {
@@ -170,7 +170,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _controller.timerService.startPeriodicTimer(
       "vessel_update",
       const Duration(seconds: 2),
-          () {
+      () {
         if (!mounted) return;
         if (!context.mounted) return;
         _vesselDataManager.loadVesselDataAndUpdateMap(context);
@@ -180,7 +180,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     _controller.timerService.startPeriodicTimer(
       "main_timer",
       const Duration(seconds: 2),
-          () {
+      () {
         Provider.of<NavigationProvider>(context, listen: false)
             .getWeatherInfo()
             .then((_) {
@@ -213,7 +213,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _requestPermissionsSequentially() async {
     bool locationGranted =
-    await _locationManager.checkAndRequestLocationPermission();
+        await _locationManager.checkAndRequestLocationPermission();
     if (locationGranted) {
       final location = await _locationManager.getCurrentLocation();
       if (location != null) {
@@ -234,7 +234,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     NotificationSettings notifSettings =
-    await FirebaseMessaging.instance.getNotificationSettings();
+        await FirebaseMessaging.instance.getNotificationSettings();
     if (notifSettings.authorizationStatus != AuthorizationStatus.authorized &&
         notifSettings.authorizationStatus != AuthorizationStatus.provisional) {
       await FirebaseMessaging.instance.requestPermission();
@@ -271,9 +271,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       if (!context.mounted) return;
 
       // 사용자 선박 찾기
-      final userVessel = vesselProvider.vessels
-          .where((v) => v.mmsi == userMmsi)
-          .firstOrNull;
+      final userVessel =
+          vesselProvider.vessels.where((v) => v.mmsi == userMmsi).firstOrNull;
 
       if (userVessel != null &&
           userVessel.lttd != null &&
@@ -402,10 +401,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // ==========================================
 
   List<VesselSearchModel> _getFilteredVessels(
-      List<VesselSearchModel> allVessels,
-      String? role,
-      int mmsi,
-      ) {
+    List<VesselSearchModel> allVessels,
+    String? role,
+    int mmsi,
+  ) {
     if (_cachedVessels != null &&
         _cachedRole == role &&
         _cachedMmsi == mmsi &&
@@ -489,7 +488,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   void _showWeatherSheet(BuildContext context) {
     _bottomSheetController = Scaffold.of(context).showBottomSheet(
-          (context) => PopScope(
+      (context) => PopScope(
         canPop: false,
         onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop) return;

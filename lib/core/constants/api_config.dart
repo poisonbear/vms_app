@@ -23,6 +23,7 @@ class ApiConfig {
   static const String _updateMemberKey = 'kdn_usm_update_membership_key';
   static const String _memberSearchKey = 'kdn_usm_select_membership_search_key';
   static const String _findUserIdByMmsiKey = 'kdn_usm_find_user_id_by_mmsi';
+  static const String _resetPasswordKey = 'kdn_usm_reset_password';
 
   // Terms
   static const String _termsKey = 'kdn_usm_select_cmd_key';
@@ -110,6 +111,7 @@ class ApiConfig {
   static String get updateMember => _getEnv(_updateMemberKey);
   static String get memberSearch => _getEnv(_memberSearchKey);
   static String get findUserIdByMmsi => _getEnv(_findUserIdByMmsiKey);
+  static String get resetPassword => _getEnv(_resetPasswordKey);
 
   // ============================================
   // Terms Endpoints
@@ -208,6 +210,8 @@ class ApiConfig {
       'memberInfo': memberInfo,
       'updateMember': updateMember,
       'memberSearch': memberSearch,
+      'findUserIdByMmsi': findUserIdByMmsi,
+      'resetPassword': resetPassword,
       'termsList': termsList,
       'vesselList': vesselList,
       'vesselRoute': vesselRoute,
